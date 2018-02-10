@@ -55,7 +55,8 @@ Paths within the `$cde.CD_PATH` array will be considered for expansion. Example:
 
 Two argument cd
 ----------
-Attempt to replace all instances of the first argument in the current path with the second argument, changing to the resulting directory if it exists. Uses `Transpose-Location` function.
+Attempt to replace all instances of the first argument in the current path with the second argument,
+changing to the resulting directory if it exists. Uses `Transpose-Location` function.
 
 Example:
 ```
@@ -85,7 +86,8 @@ C:\Windows>_
 
 Note that the aliases are `cd-` and `cd+` *not* `cd -` and `cd +`.
 
-Each of these functions except `cd:` takes an optional parameter, `n`, used to specify the number of levels or locations to traverse. Example:
+Each of these functions except `cd:` takes an optional parameter, `n`, used to specify the number of levels
+or locations to traverse. Example:
 ```
 C:\Windows\System32> .. 2
 C:\> cd temp
@@ -113,6 +115,9 @@ Install-Module cd-extras
 Add-Content $PROFILE @("`n", "import-module cd-extras -DisableNameChecking")
 Import-Module cd-extras -DisableNameChecking
 ```
+
+Note: if you import the module without using the `-DisableNameChecking` switch, you'll see a warning about
+the use of 'unapproved' verbs.
 
 Configure
 --------
