@@ -96,6 +96,12 @@ C:\Windows\System32> cd+ 2
 C:\temp\> _
 ```
 
+Note: when the AUTO_CD option is enabled, three or more dot syntax for `up` is also supported. Example:
+```
+C:\Windows\System32> ...
+C:\>
+```
+
 
 Additional helpers
 ---------
