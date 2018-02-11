@@ -99,8 +99,14 @@ function Transpose-Location {
 
   [CmdletBinding()]
   param([string]$Replace, [string]$With)
-  if (Test-Path ($path = $PWD.Path -replace $Replace, $With)) {
+  if (-not ($PWD.Path -match $Replace)) {
+    throw "String '$Replace' isn't in '$PWD'"
+  }
+  if (Test-Path ($path = $PWD.Path -replace $Replace, $With) -PathType Container) {
     Set-LocationEx $path
+  }
+  else {
+    throw "No such directory: '$path'"
   }
 }
 
