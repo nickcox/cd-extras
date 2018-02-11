@@ -75,16 +75,32 @@ C:\>_
 #>
 function Raise-Location {
 
-  [CmdletBinding()]
-  param([byte]$n = 1)
+  [CmdletBinding(DefaultParameterSetName = 'levels')]
+  param(
+    [Parameter(ParameterSetName = 'levels', Position = 0)] [byte]$n = 1,
+    [Parameter(ParameterSetName = 'named', Position = 0)] [string]$name
+  )
 
   Push-Location -StackName $fwd
-  1..$n | % {
-    $parent = $PWD | Split-Path -Parent
-    if ($parent) { Set-Location $parent }
+
+  if ($PSCmdlet.ParameterSetName -eq 'levels') {
+    1..$n | % {
+      $parent = $PWD | Split-Path -Parent
+      if ($parent) { Set-Location $parent }
+    }
+  }
+
+  if ($PSCmdlet.ParameterSetName -eq 'named') {
+    $next = Get-Item $PWD
+    while ($next) {
+      if ($next.Name -match $name) {
+        Set-LocationEx $next.FullName
+        break
+      }
+      $next = $next.Parent
+    }
   }
 }
-
 
 <#
 .SYNOPSIS
