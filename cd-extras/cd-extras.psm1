@@ -10,6 +10,7 @@
 $defaults = [ordered]@{
   AUTO_CD = $true
   CD_PATH = @()
+  NOARG_CD = '~'
 }
 
 if (-not (Test-Path variable:cde)) {
@@ -24,7 +25,11 @@ if (-not (Get-Member -InputObject $global:cde -Name AUTO_CD)) {
 }
 
 if (-not (Get-Member -InputObject $global:cde -Name CD_PATH)) {
-  Add-Member -InputObject $cde AUTO_CD $defaults.CD_PATH
+  Add-Member -InputObject $cde CD_PATH $defaults.CD_PATH
+}
+
+if (-not (Get-Member -InputObject $global:cde -Name NOARG_CD)) {
+  Add-Member -InputObject $cde NOARG_CD $defaults.NOARG_CD
 }
 
 Set-CdExtrasOption -Option 'AUTO_CD' -Value $global:cde.AUTO_CD

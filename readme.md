@@ -52,6 +52,13 @@ Paths within the `$cde.CD_PATH` array will be considered for expansion. Example:
 ~\Documents\WindowsPowerShell\Modules > _
 ```
 
+No argument cd
+----------
+If the option `NOARG_CD` is defined, `cd` with no arguments will attempt to change to the nominated directory. Defaults to `'~'`. Example:
+```
+C:\Windows\System32\> cd
+~> _
+```
 
 Two argument cd
 ----------
@@ -84,7 +91,7 @@ C:\Windows\System32> cd+
 C:\Windows>_
 ```
 
-Note that the aliases are `cd-` and `cd+` *not* `cd -` and `cd +`.
+Note that the aliases are `cd-` and `cd+` *not* `cd -` and `cd +`. Also note that repeated uses of `cd-` will keep moving backwards towards the beginning of the stack rather than toggling between the two most recent directories as in vanilla bash.
 
 Each of these functions except `cd:` takes an optional parameter, `n`, used to specify the number of levels
 or locations to traverse. Example:
@@ -127,16 +134,18 @@ the use of 'unapproved' verbs.
 
 Configure
 --------
-Two options are currently provided:
+Three options are currently provided:
 
-* AUTO_CD: [bool] default = $true
-* CD_PATH: [array] default = @()
+* AUTO_CD: `[bool] = $true`. Any truthy value to enable auto_cd.
+* CD_PATH: `[array] = @()`. Array of paths to be searched by cd and tab expansion.
+* NOARG_CD: `[string] = '~'`. If specified, `cd` command with no arguments will change to this directory.
 
 Either create a global hashtable, `cde`, with one or more of these keys _before_ importing the cd-extras module:
 ```
 $global:cde = @{
   AUTO_CD = $false
   CD_PATH = @('C:\Users\Nick\Documents\')
+  NOARG_CD = 'C:\'
 }
 Import-Module cd-extras -DisableNameChecking
 ```
@@ -144,4 +153,5 @@ or call the `Set-CdExtrasOption` function after importing the module:
 ```
 Import-Module cd-extras -DisableNameChecking
 Set-CdExtrasOption -Option AUTO_CD -Value $false
+Set-CdExtrasOption -Option NOARG_CD -Value '~'
 ```

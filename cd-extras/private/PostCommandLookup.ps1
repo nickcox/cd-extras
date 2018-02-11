@@ -19,7 +19,7 @@ function PostCommandLookup($commands, $helpers) {
         if (
           @($arg).Length -eq 2 -and
           @($params).Length -eq 0 -and
-          (-not ($args -match '/|\\'))) {
+          (-not ($args -match '^(/|\\)'))) {
           Transpose-Location @args
         }
 
@@ -42,8 +42,15 @@ function PostCommandLookup($commands, $helpers) {
           }
         }
 
+        # noarg cd
+        elseif (@($arg).Length -eq 0 -and @($params).Length -eq 0) {
+          if (Test-Path $cde.NOARG_CD) {
+            &$helpers.setLocation $cde.NOARG_CD
+          }
+        }
+
         else {
-          Set-Location @args
+          &$helpers.setLocation @args
         }
 
       }.GetNewClosure()
