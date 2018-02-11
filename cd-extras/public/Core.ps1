@@ -137,7 +137,7 @@ function Expand-Path {
   else { $wildcardedPaths = $wildcardedPath }
 
   Write-Verbose "Expanding $Candidate to: $wildcardedPaths"
-  return Get-ChildItem $wildcardedPaths
+  return Get-ChildItem $wildcardedPaths -Force
 }
 
 
