@@ -16,12 +16,16 @@ function PostCommandLookup($commands, $helpers) {
         $arg = $tokens | Where-Object type -eq CommandArgument
 
         # two arg: transpose
-        if (@($arg).Length -eq 2 -and @($params).Length -eq 0) {
+        if (
+          @($arg).Length -eq 2 -and
+          @($params).Length -eq 0 -and
+          (-not ($args -match '/|\\'))) {
           Transpose-Location @args
         }
 
         # single arg: expand if necessary
         elseif (@($arg).Length -eq 1 -and @($params).Length -eq 0) {
+
           try {
             &$helpers.setLocation @args -ErrorAction Stop
           }
@@ -36,6 +40,10 @@ function PostCommandLookup($commands, $helpers) {
 
             else { throw }
           }
+        }
+
+        else {
+          Set-Location @args
         }
 
       }.GetNewClosure()
