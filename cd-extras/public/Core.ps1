@@ -169,7 +169,11 @@ function Set-CdExtrasOption {
 
   [CmdletBinding()]
   param (
-    [ValidateSet('AUTO_CD', 'CD_PATH')]$Option,
+    [ValidateSet(
+      'AUTO_CD',
+      'CD_PATH',
+      'NOARG_CD')]
+    $Option,
     $Value)
 
   $Global:cde.$option = $value
