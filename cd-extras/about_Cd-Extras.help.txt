@@ -52,6 +52,13 @@ Paths within the `$cde.CD_PATH` array will be considered for expansion. Example:
 ~\Documents\WindowsPowerShell\Modules > _
 ```
 
+No argument cd
+----------
+If the option `NOARG_CD` is defined, `cd` with no arguments will attempt to change to the nominated directory. Defaults to `'~'`. Example:
+```
+C:\Windows\System32\> cd
+~> _
+```
 
 Two argument cd
 ----------
@@ -94,6 +101,11 @@ C:\> cd temp
 C:\temp\> cd- 2
 C:\Windows\System32> cd+ 2
 C:\temp\> _
+```
+The `Raise-Location (up, ..)` function also supports passing a string parameter to change to the first ancestor directory which contains the given string. Example:
+```
+C:\Windows\System32\drivers\etc> up win
+C:\Windows >_
 ```
 
 Note: when the AUTO_CD option is enabled, three or more dot syntax for `up` is also supported. Example:

@@ -102,7 +102,7 @@ C:\temp\> cd- 2
 C:\Windows\System32> cd+ 2
 C:\temp\> _
 ```
-The `Raise-Location (up, ..)` function also supports passing a string parameter to change to the first parent directory which contains the given string. Example:
+The `Raise-Location (up, ..)` function also supports passing a string parameter to change to the first ancestor directory which contains the given string. Example:
 ```
 C:\Windows\System32\drivers\etc> up win
 C:\Windows >_

@@ -114,7 +114,9 @@ changing to the resulting directory if it exists
 function Transpose-Location {
 
   [CmdletBinding()]
-  param([string]$Replace, [string]$With)
+  param(
+    [Parameter(Mandatory)][string]$Replace, 
+    [Parameter(Mandatory)][string]$With)
   if (-not ($PWD.Path -match $Replace)) {
     throw "String '$Replace' isn't in '$PWD'"
   }
