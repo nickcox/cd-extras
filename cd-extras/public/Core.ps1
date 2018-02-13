@@ -85,8 +85,8 @@ function Raise-Location {
 
   if ($PSCmdlet.ParameterSetName -eq 'levels') {
     1..$n | % {
-      $parent = $PWD | Split-Path -Parent
-      if ($parent) { Set-Location $parent }
+      $parent = (Get-Item .).Parent
+      if ($parent) { Set-Location $parent.FullName }
     }
   }
 
@@ -115,7 +115,7 @@ function Transpose-Location {
 
   [CmdletBinding()]
   param(
-    [Parameter(Mandatory)][string]$Replace, 
+    [Parameter(Mandatory)][string]$Replace,
     [Parameter(Mandatory)][string]$With)
   if (-not ($PWD.Path -match $Replace)) {
     throw "String '$Replace' isn't in '$PWD'"
