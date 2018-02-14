@@ -13,18 +13,17 @@ function PostCommandLookup($commands, $helpers) {
         $fullCommand = (@($commandname) + $args) -join ' '
         $tokens = [System.Management.Automation.PSParser]::Tokenize($fullCommand, [ref]$null)
         $params = $tokens | Where-Object type -eq CommandParameter
-        $arg = $tokens | Where-Object type -eq CommandArgument
 
         # two arg: transpose
         if (
-          @($arg).Length -eq 2 -and
+          @($args).Length -eq 2 -and
           @($params).Length -eq 0 -and
           (-not ($args -match '^(/|\\)'))) {
           Transpose-Location @args
         }
 
         # single arg: expand if necessary
-        elseif (@($arg).Length -eq 1 -and @($params).Length -eq 0) {
+        elseif (@($args).Length -eq 1 -and @($params).Length -eq 0) {
 
           try {
             &$helpers.setLocation @args -ErrorAction Stop
@@ -43,7 +42,7 @@ function PostCommandLookup($commands, $helpers) {
         }
 
         # noarg cd
-        elseif (@($arg).Length -eq 0 -and @($params).Length -eq 0) {
+        elseif (@($args).Length -eq 0 -and @($params).Length -eq 0) {
           if (Test-Path $cde.NOARG_CD) {
             &$helpers.setLocation $cde.NOARG_CD
           }
