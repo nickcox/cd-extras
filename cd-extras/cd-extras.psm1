@@ -37,4 +37,5 @@ Set-CdExtrasOption -Option 'AUTO_CD' -Value $global:cde.AUTO_CD
 $MyInvocation.MyCommand.ScriptBlock.Module.OnRemove = {
   $ExecutionContext.InvokeCommand.PostCommandLookupAction = $null
   $ExecutionContext.SessionState.InvokeCommand.CommandNotFoundAction = $null
+  $global:cde = $null
 }
