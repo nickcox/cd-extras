@@ -149,7 +149,8 @@ function Expand-Path {
   [string]$wildcardedPath =
   $Candidate -replace '(\w/|\w\\|\w$)', '$0*' `
     -replace '(/\*|\\\*)', ('*' + [System.IO.Path]::DirectorySeparatorChar) `
-    -replace '(/$|\\$)', '$0*'
+    -replace '(/$|\\$)', '$0*' `
+    -replace '(\.\w|\.$)', '*$0'
 
   if ($SearchPaths -and -not (IsRootedOrRelative $Candidate)) {
     # always include the local path, regardeless of whether it was passed
