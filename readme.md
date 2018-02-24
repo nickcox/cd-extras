@@ -6,7 +6,7 @@ What is it?
 AUTO_CD
 -------
 
-Change directory without typing `cd`. Example:
+Change directory without typing `cd`.
 
 ```powershell
 ~> projects
@@ -18,7 +18,7 @@ Change directory without typing `cd`. Example:
 CD_PATH
 --------
 
-Additional paths to be searched for candidate directories. Example:
+Additional paths to be searched for candidate directories.
 
 ```powershell
 ~> $cde.CD_PATH += '~/documents'
@@ -26,7 +26,7 @@ Additional paths to be searched for candidate directories. Example:
 ~/documents/WindowsPowerShell> _
 ```
 
-Note that CD_PATHs are _not_ searched when an absolute or relative path is given. Example:
+Note that CD_PATHs are _not_ searched when an absolute or relative path is given.
 
 ```powershell
 
@@ -38,21 +38,28 @@ Set-Location : Cannot find path '~\WindowsPowerShell' because it does not exist.
 Path expansion
 -----------
 
-`cd` will provide tab expansions by expanding all path segments rather than having to individually tab through each one. Example:
+`cd` will provide tab expansions by expanding all path segments rather than having to individually tab through each one.
 
 ```powershell
 ~> cd /w/s/set[Tab]
 C:\Windows\System32\setup  C:\Windows\SysWOW64\setup
 ```
 
-If only a single path is matched then `cd` can be used directly, without invoking tab expansion. Example:
+Periods (`.`) are expanded around, so a segment containing `.sdk` is expanded into `*.sdk*`.
+
+```powershell
+~> cd proj/pow/s/.sdk[Tab]
+~\projects\powershell\src\Microsoft.PowerShell.SDK
+```
+
+If only a single path is matched then `cd` can be used directly, without invoking tab expansion.
 
 ```powershell
 ~> cd /w/s/d/et
 C:\Windows\System32\drivers\etc > _
 ```
 
-Paths within the `$cde.CD_PATH` array will be considered for expansion. Example:
+Paths within the `$cde.CD_PATH` array will be considered for expansion.
 ```
 ~> $cde.CD_PATH += "~\Documents\"
 ~> cd win/mod
@@ -62,7 +69,7 @@ Paths within the `$cde.CD_PATH` array will be considered for expansion. Example:
 No argument cd
 ----------
 
-If the option `NOARG_CD` is defined, `cd` with no arguments will attempt to change to the nominated directory. Defaults to `'~'`. Example:
+If the option `NOARG_CD` is defined, `cd` with no arguments will attempt to change to the nominated directory. Defaults to `'~'`.
 
 ```powershell
 C:\Windows\System32\> cd
