@@ -8,7 +8,9 @@ function RegisterArgumentCompleter([array]$commands) {
     $dirs = Expand-Path $wordToComplete $cde.CD_PATH |
       Where-Object {$_ -is [System.IO.DirectoryInfo]} |
       % { if ($currentDir.IsBaseOf((New-Object Uri ($_)))) { Resolve-Path -Relative $_} else {$_} } |
-      % { if ($_ -match ' ') { "'$_'" } else { $_ } } # quote if contains spaces
+      % { if ($_ -match ' ') { "'$_'" } else { $_ } } | # quote if contains spaces
+      % { $_ + [System.IO.Path]::DirectorySeparatorChar} | # put a bow on it
+      Select -Unique
 
     $dirs | % {
       New-Object Management.Automation.CompletionResult $_, $_, "ParameterValue", $_
