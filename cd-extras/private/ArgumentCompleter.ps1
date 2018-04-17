@@ -9,7 +9,7 @@ function RegisterArgumentCompleter([array]$commands) {
       Where-Object {$_ -is [System.IO.DirectoryInfo]} |
       % { if ($currentDir.IsBaseOf((New-Object Uri ($_)))) { Resolve-Path -Relative $_} else {$_} } |
       % { if ($_ -match ' ') { "'$_'" } else { $_ } } | # quote if contains spaces
-      % { $_ + [System.IO.Path]::DirectorySeparatorChar} | # put a bow on it
+      % { "$_" + [System.IO.Path]::DirectorySeparatorChar } | # put a bow on it
       Select -Unique
 
     $dirs | % {
