@@ -1,12 +1,11 @@
 function PostCommandLookup($commands, $helpers) {
 
-  $IsUnderTest = { $Global:cde.IsUnderTest -eq $true }
+  $IsUnderTest = { $Global:cde.IsUnderTest -eq $true } # hack!
 
   $ExecutionContext.InvokeCommand.PostCommandLookupAction = {
     param($CommandName, $CommandLookupEventArgs)
 
-    if ((
-        &$IsUnderTest -ErrorAction Ignore) -or (
+    if ((&$IsUnderTest -ErrorAction Ignore) -or (
         $CommandLookupEventArgs.CommandOrigin -eq 'Runspace') -and
       $commands -contains $CommandName) {
 
