@@ -7,7 +7,7 @@ PS C:\Windows\System32> # Move backwards to the previous location
 
 PS C:\Windows\System32> cd ..
 PS C:\Windows> Undo-Location
-PS C:\Windows\System32>_
+PS C:\Windows\System32> _
 
 .EXAMPLE
 PS C:\Windows\System32> # Move backwards to the 2nd last location
@@ -15,7 +15,7 @@ PS C:\Windows\System32> # Move backwards to the 2nd last location
 PS C:\Windows\System32> cd ..
 PS C:\Windows\> cd ..
 PS C:\> Undo-Location 2
-PS C:\Windows\System32>_
+PS C:\Windows\System32> _
 
 .LINK
 Redo-Location
@@ -43,7 +43,7 @@ C:\Windows\System32> # Move backward using Undo-Location, then forward using Red
 C:\Windows\System32> cd ..
 C:\Windows> Undo-Location
 C:\Windows\System32> Redo-Location
-C:\Windows>_
+C:\Windows> _
 
 .LINK
 Undo-Location
@@ -67,11 +67,11 @@ Navigate upward by n levels (one level by default)
 
 .EXAMPLE
 C:\Windows\System32> Raise-Location
-C:\Windows>_
+C:\Windows> _
 
 .EXAMPLE
 C:\Windows\System32> Raise-Location 2
-C:\>_
+C:\> _
 #>
 function Raise-Location {
 
@@ -109,7 +109,7 @@ changing to the resulting directory if it exists
 
 .EXAMPLE
 ~\Modules\Unix\Microsoft.PowerShell.Utility> Transpose-Location unix shared
-~\Modules\Shared\Microsoft.PowerShell.Utility>_
+~\Modules\Shared\Microsoft.PowerShell.Utility> _
 #>
 function Transpose-Location {
 
@@ -156,7 +156,7 @@ function Expand-Path {
     # always include the local path, regardeless of whether it was passed
     # in the searchPaths parameter (this differs from the behaviour in bash)
     $wildcardedPaths = @($wildcardedPath) + (
-      $SearchPaths | % { Join-Path $_ $wildcardedPath })
+      $SearchPaths |% { Join-Path $_ $wildcardedPath })
   }
 
   else { $wildcardedPaths = $wildcardedPath }
@@ -210,6 +210,7 @@ function Set-CdExtrasOption {
     raiseLocation = {Raise-Location @args}
     setLocation   = {Set-LocationEx @args}
     expandPath    = {Expand-Path @args}
+    transpose     = {Transpose-Location @args}
   }
 
   $commandsToComplete = @('Push-Location', 'Set-Location')

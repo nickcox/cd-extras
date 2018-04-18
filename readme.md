@@ -3,12 +3,63 @@ general conveniences for the `cd` command inspired by bash and zsh
 What is it?
 ==========
 
+Navigation helpers
+---------
+
+Provides the following aliases (and functions):
+
+* cd- (Undo-Location)
+* cd+ (Redo-Location)
+* cd: (Transpose-Location)
+* up, .. (Raise-Location)
+
+Examples:
+
+```powershell
+
+C:\Windows\System32> up # or ..
+C:\Windows> cd-
+C:\Windows\System32> cd+
+C:\Windows> _
+```
+
+Note that the aliases are `cd-` and `cd+` *not* `cd -` and `cd +`. Repeated uses of `cd-` will keep moving backwards towards the beginning of the stack rather than toggling between the two most recent directories as in vanilla bash.
+
+Each of these functions except `cd:` takes an optional parameter, `n`, used to specify the number of levels
+or locations to traverse.
+
+```powershell
+
+C:\Windows\System32> .. 2 # or `up 2`
+C:\> cd temp
+C:\temp> cd- 2
+C:\Windows\System32> cd+ 2
+C:\temp> _
+```
+
+The `Raise-Location (up, ..)` function also supports passing a string parameter to change to the first ancestor directory which contains the given string.
+
+```powershell
+
+C:\Windows\System32\drivers\etc> up win # or `.. win`
+C:\Windows> _
+```
+
+When the [AUTO_CD](auto_cd) option is enabled, three or more dot syntax for `up` is supported as an alternative to `up [n]` or `.. [n]`. Example:
+
+```powershell
+
+C:\Windows\System32> ... # same as `up 2`
+C:\> _
+```
+
 AUTO_CD
 -------
 
 Change directory without typing `cd`.
 
 ```powershell
+
 ~> projects
 ~/projects> cd-extras
 ~/projects/cd-extras> ..
@@ -18,9 +69,10 @@ Change directory without typing `cd`.
 CD_PATH
 --------
 
-Additional paths to be searched for candidate directories.
+Search additional locations for candidate directories.
 
 ```powershell
+
 ~> $cde.CD_PATH += '~/documents'
 ~> cd WindowsPowerShell
 ~/documents/WindowsPowerShell> _
@@ -41,26 +93,32 @@ Path expansion
 `cd` will provide tab expansions by expanding all path segments rather than having to individually tab through each one.
 
 ```powershell
-~> cd /w/s/set[Tab]
-C:\Windows\System32\setup  C:\Windows\SysWOW64\setup
+
+~> cd /w/s/set[Tab][Tab]
+C:\Windows\System32\setup\  C:\Windows\SysWOW64\setup\
+                            ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 ```
 
-Periods (`.`) are expanded around, so a segment containing `.sdk` is expanded into `*.sdk*`.
+Periods (`.`) are expanded around so a segment containing `.sdk` is expanded into `*.sdk*`.
 
 ```powershell
+
 ~> cd proj/pow/s/.sdk[Tab]
-~\projects\powershell\src\Microsoft.PowerShell.SDK
+~\projects\powershell\src\Microsoft.PowerShell.SDK\
 ```
 
-If only a single path is matched then `cd` can be used directly, without invoking tab expansion.
+If only a single path matches then `cd` can be used directly, without invoking tab expansion.
 
 ```powershell
+
 ~> cd /w/s/d/et
 C:\Windows\System32\drivers\etc > _
 ```
 
 Paths within the `$cde.CD_PATH` array will be considered for expansion.
-```
+
+```powershell
+
 ~> $cde.CD_PATH += "~\Documents\"
 ~> cd win/mod
 ~\Documents\WindowsPowerShell\Modules > _
@@ -69,9 +127,10 @@ Paths within the `$cde.CD_PATH` array will be considered for expansion.
 No argument cd
 ----------
 
-If the option `NOARG_CD` is defined, `cd` with no arguments will attempt to change to the nominated directory. Defaults to `'~'`.
+If the option `$cde.NOARG_CD` is defined then `cd` with no arguments will change to the nominated directory. Defaults to `'~'`.
 
 ```powershell
+
 C:\Windows\System32\> cd
 ~> _
 ```
@@ -79,61 +138,13 @@ C:\Windows\System32\> cd
 Two argument cd
 ----------
 
-Attempt to replace all instances of the first argument in the current path with the second argument,
-changing to the resulting directory if it exists. Uses `Transpose-Location` function.
-
-Example:
+Attempts to replace all instances of the first argument in the current path with the second argument,
+changing to the resulting directory if it exists. Uses the `Transpose-Location` (`cd:`) function.
 
 ```powershell
+
 ~\Modules\Unix\Microsoft.PowerShell.Utility> cd unix shared
 ~\Modules\Shared\Microsoft.PowerShell.Utility>_
-```
-
-Navigation helpers
----------
-
-Provides the following aliases (and functions):
-
-* cd- (Undo-Location)
-* cd+ (Redo-Location)
-* cd: (Transpose-Location)
-* up, .. (Raise-Location)
-
-Example:
-
-```powershell
-C:\Windows\System32> # Move backward using cd-, then forward using cd+
-C:\Windows\System32> up
-C:\Windows> cd-
-C:\Windows\System32> cd+
-C:\Windows>_
-```
-
-Note that the aliases are `cd-` and `cd+` *not* `cd -` and `cd +`. Also note that repeated uses of `cd-` will keep moving backwards towards the beginning of the stack rather than toggling between the two most recent directories as in vanilla bash.
-
-Each of these functions except `cd:` takes an optional parameter, `n`, used to specify the number of levels
-or locations to traverse. Example:
-
-```powershell
-C:\Windows\System32> .. 2
-C:\> cd temp
-C:\temp\> cd- 2
-C:\Windows\System32> cd+ 2
-C:\temp\> _
-```
-
-The `Raise-Location (up, ..)` function also supports passing a string parameter to change to the first ancestor directory which contains the given string. Example:
-
-```powershell
-C:\Windows\System32\drivers\etc> up win
-C:\Windows >_
-```
-
-Note: when the AUTO_CD option is enabled, three or more dot syntax for `up` is also supported. Example:
-
-```powershell
-C:\Windows\System32> ...
-C:\>
 ```
 
 Additional helpers
@@ -144,12 +155,13 @@ Additional helpers
 * Set-CdExtrasOption: enable or disable `AUTO_CD` after the module has loaded
 
 Get started
-======
+=======
 
 Install
 -------
 
 ```powershell
+
 Install-Module cd-extras
 Add-Content $PROFILE @("`n", "import-module cd-extras -DisableNameChecking")
 Import-Module cd-extras -DisableNameChecking
@@ -170,6 +182,7 @@ Three options are currently provided:
 Either create a global hashtable, `cde`, with one or more of these keys _before_ importing the cd-extras module:
 
 ```powershell
+
 $global:cde = @{
   AUTO_CD = $false
   CD_PATH = @('C:\Users\Nick\Documents\')
