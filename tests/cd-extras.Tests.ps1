@@ -1,16 +1,24 @@
 Push-Location $PSScriptRoot
 $Global:cde = $null
 Import-Module ../cd-extras/cd-extras.psd1 -Force -DisableNameChecking
+Add-Member -InputObject $cde IsUnderTest $true
+
+function WithHandling($block) {
+  $Global:cde.IsUnderTest = $true
+  &$block
+}
 
 Describe 'cd-extras' {
   BeforeAll {
     Push-Location
-    Get-Content sampleStructure.txt | % { mkdir "TestDrive:\$_"}
+    Get-Content sampleStructure.txt |% { mkdir "TestDrive:\$_"}
   }
 
   AfterAll { Pop-Location }
 
-  BeforeEach { Set-Location TestDrive:\ }
+  BeforeEach {
+    Set-Location TestDrive:\
+  }
 
   Describe 'AUTO_CD' {
     It 'can change directory' {
@@ -55,7 +63,8 @@ Describe 'cd-extras' {
   Describe 'CD_PATH' {
     It 'searches CD_PATH for candidate directories' {
       Set-CdExtrasOption -Option CD_PATH -Value @('TestDrive:\powershell\src\')
-      # todo
+      WithHandling {cd resgen}
+      Get-Location | Split-Path -Leaf | Should Be resgen
     }
   }
 
@@ -83,9 +92,12 @@ Describe 'cd-extras' {
   }
 
   Describe 'No arg cd' {
-    Set-Location TestDrive:\
-    cd
-    # Get-Location | Should Be (Resolve-Path ~)
+    It 'moves to the expected location' {
+      Set-Location TestDrive:\
+      WithHandling { cd }
+      $cde.NOARG_CD | Should Be '~'
+      (Get-Location).Path | Should Be (Resolve-Path ~).Path
+    }
   }
 
   InModuleScope cd-extras {
@@ -117,13 +129,23 @@ Describe 'cd-extras' {
       }
     }
 
-    Describe 'Raise-Location' {
-      It 'moves up "n" levels' {
-        Set-Location powershell\src\Modules\Shared\
-        up
-        Get-Location | Should Be "$TestDrive\powershell\src\Modules"
-        up 2
-        Get-Location | Should Be "$TestDrive\powershell"
+    Describe 'Tab-Expansion' {
+      It 'expands multiple items' {
+        $actual = Complete 'pow/t/c' |% {$_.CompletionText}
+        $actual.Count | Should Be 3
+
+        function ShouldContain($likeStr) {
+          $actual | Where {$_ -like $likeStr} | Should Not BeNullOrEmpty
+        }
+
+        ShouldContain '*test\csharp\'
+        ShouldContain '*test\common\'
+        ShouldContain '*tools\credscan\'
+      }
+
+      It 'expands around periods' {
+        $actual = Complete 'pow/s/.sdk'
+        $actual.CompletionText | Should BeLike '*powershell\src\Microsoft.PowerShell.SDK\'
       }
     }
   }

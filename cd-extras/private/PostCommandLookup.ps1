@@ -1,11 +1,16 @@
 function PostCommandLookup($commands, $helpers) {
-  $ExecutionContext.InvokeCommand.PostCommandLookupAction = $null
+
+  $IsUnderTest = { $Global:cde.IsUnderTest -eq $true }
 
   $ExecutionContext.InvokeCommand.PostCommandLookupAction = {
     param($CommandName, $CommandLookupEventArgs)
-    if (
-      $CommandLookupEventArgs.CommandOrigin -eq "Runspace" -and
+
+    if ((
+        &$IsUnderTest -ErrorAction Ignore) -or (
+        $CommandLookupEventArgs.CommandOrigin -eq 'Runspace') -and
       $commands -contains $CommandName) {
+
+      if ($cde | Get-Member IsUnderTest) { $Global:cde.IsUnderTest = $false }
 
       $helpers = $helpers # make available to inner closure
 
@@ -18,8 +23,8 @@ function PostCommandLookup($commands, $helpers) {
         if (
           @($args).Length -eq 2 -and
           @($params).Length -eq 0 -and
-          (-not ($args -match '^(/|\\)'))) {
-          Transpose-Location @args
+          -not ($args -match '^(/|\\)') ) {
+          &$helpers.transpose @args
         }
 
         # single arg: expand if necessary
@@ -48,9 +53,7 @@ function PostCommandLookup($commands, $helpers) {
           }
         }
 
-        else {
-          &$helpers.setLocation @args
-        }
+        else { &$helpers.setLocation @args }
 
       }.GetNewClosure()
     }
