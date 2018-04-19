@@ -1,7 +1,21 @@
-general conveniences for the `cd` command inspired by bash and zsh
+cd-extras
+===
+
+* [What is it?](#what-is-it)
+  * [Navigation helpers](#navigation-helpers)
+  * [AUTO_CD](#auto_cd)
+  * [CD_PATH](#cd_path)
+  * [Path expansion](#path_expansion)
+  * [No argument cd](#no-argument-cd)
+  * [Two argument cd](#two-argument-cd)
+  * [Additional helpers](#additional-helpers)
+* [Get started](#get-started)
+  * [Install](#install)
+  * [Configure](#configure)
 
 What is it?
 ==========
+general conveniences for the `cd` command in PowerShell inspired by bash and zsh
 
 Navigation helpers
 ---------
@@ -45,12 +59,14 @@ C:\Windows\System32\drivers\etc> up win # or `.. win`
 C:\Windows> _
 ```
 
-When the [AUTO_CD](#auto_cd) option is enabled, three or more dot syntax for `up` is supported as an alternative to `up [n]` or `.. [n]`. Example:
+When the [AUTO_CD](#auto_cd) option is enabled, multiple dot syntax for `up` is supported as an alternative to `up [n]` or `.. [n]`.
 
 ```powershell
 
-C:\Windows\System32> ... # same as `up 2`
-C:\> _
+C:\Windows\System32\drivers\etc> ... # same as `up 2` or `.. 2`
+C:\Windows\System32> cd-
+C:\Windows\System32\drivers\etc> .... # same as `up 3` or `.. 3`
+C:\Windows> _
 ```
 
 AUTO_CD
@@ -107,11 +123,11 @@ Periods (`.`) are expanded around so a segment containing `.sdk` is expanded int
 ~\projects\powershell\src\Microsoft.PowerShell.SDK\
 ```
 
-If only a single path matches then `cd` can be used directly, without invoking tab expansion.
+If an unambiguous match is available then `cd` can be used directly, without invoking tab expansion.
 
 ```powershell
 
-~> cd /w/s/d/et
+~> cd /w/s/d/et[Return]
 C:\Windows\System32\drivers\etc > _
 ```
 
@@ -138,7 +154,7 @@ C:\Windows\System32\> cd
 Two argument cd
 ----------
 
-Attempts to replace all instances of the first argument in the current path with the second argument,
+Replaces all instances of the first argument in the current path with the second argument,
 changing to the resulting directory if it exists. Uses the `Transpose-Location` (`cd:`) function.
 
 ```powershell
