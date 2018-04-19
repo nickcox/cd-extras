@@ -45,7 +45,7 @@ C:\Windows\System32\drivers\etc> up win # or `.. win`
 C:\Windows> _
 ```
 
-When the [AUTO_CD](auto_cd) option is enabled, three or more dot syntax for `up` is supported as an alternative to `up [n]` or `.. [n]`. Example:
+When the [AUTO_CD](#auto_cd) option is enabled, three or more dot syntax for `up` is supported as an alternative to `up [n]` or `.. [n]`. Example:
 
 ```powershell
 
