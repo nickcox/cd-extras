@@ -1,13 +1,12 @@
-function CommandNotFound($actions) {
-
-  $ExecutionContext.SessionState.InvokeCommand.CommandNotFoundAction = $null
+function CommandNotFound($actions, $helpers) {
 
   $ExecutionContext.SessionState.InvokeCommand.CommandNotFoundAction = {
     param($CommandName, $CommandLookupEventArgs)
+    if ($CommandName -like 'get-*') { return }
 
-    $actions | % {$_.Invoke(
-        $CommandName,
-        $CommandLookupEventArgs)
-    }
+    if (!(&$helpers.isUnderTest) -and
+      $CommandLookupEventArgs.CommandOrigin -ne 'Runspace') { return }
+
+    $actions | % { $_.Invoke($CommandName, $CommandLookupEventArgs) }
   }.GetNewClosure()
 }

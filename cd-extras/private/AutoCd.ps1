@@ -1,9 +1,7 @@
 function AutoCd($helpers) {
   return {
     param($CommandName, $CommandLookupEventArgs)
-    if ($CommandName -like 'get-*' -or $args.Length -gt 0) {
-      return
-    }
+    if ($args.Length -gt 0) { return }
 
     $helpers = $helpers
     $scriptBlock = $null

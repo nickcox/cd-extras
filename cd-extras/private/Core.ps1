@@ -14,3 +14,8 @@ function IsRootedOrRelative($path) {
   if ([System.IO.Path]::IsPathRooted($path)) {return $true}
   return $path -match '^\W/|\W\\' #e.g. starts with ~/, ./, ../
 }
+
+function DoUnderTest($block) {
+  $Global:__cdeUnderTest = $true
+  &$block
+}

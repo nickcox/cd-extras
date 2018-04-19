@@ -211,6 +211,7 @@ function Set-CdExtrasOption {
     setLocation   = {Set-LocationEx @args}
     expandPath    = {Expand-Path @args}
     transpose     = {Transpose-Location @args}
+    isUnderTest   = {$Global:__cdeUnderTest -and !($Global:__cdeUnderTest = $false)}
   }
 
   $commandsToComplete = @('Push-Location', 'Set-Location')
@@ -219,7 +220,7 @@ function Set-CdExtrasOption {
   PostCommandLookup $commandsToAutoExpand $helpers
 
   if ($cde.AUTO_CD) {
-    CommandNotFound @(AutoCd $helpers)
+    CommandNotFound @(AutoCd $helpers) $helpers
   }
   else {
     CommandNotFound @() @()

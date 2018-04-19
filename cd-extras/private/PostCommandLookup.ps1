@@ -1,15 +1,11 @@
 function PostCommandLookup($commands, $helpers) {
 
-  $IsUnderTest = { $Global:cde.IsUnderTest -eq $true } # hack!
-
   $ExecutionContext.InvokeCommand.PostCommandLookupAction = {
     param($CommandName, $CommandLookupEventArgs)
 
-    if ((&$IsUnderTest -ErrorAction Ignore) -or (
-        $CommandLookupEventArgs.CommandOrigin -eq 'Runspace') -and
-      $commands -contains $CommandName) {
-
-      if ($cde | Get-Member IsUnderTest) { $Global:cde.IsUnderTest = $false }
+    if ($commands -contains $CommandName -and
+      ((&$helpers.isUnderTest) -or $CommandLookupEventArgs.CommandOrigin -eq 'Runspace')) {
+      Write-Verbose "Entered post command lookup"
 
       $helpers = $helpers # make available to inner closure
 
