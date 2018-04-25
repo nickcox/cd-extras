@@ -85,8 +85,8 @@ function Raise-Location {
 
   if ($PSCmdlet.ParameterSetName -eq 'levels') {
     1..$n | % {
-      $parent = (Get-Item .).Parent
-      if ($parent) { Set-Location $parent.FullName }
+      $parent = Split-Path (Get-Location) -Parent
+      if ($parent) { Set-Location $parent }
     }
   }
 

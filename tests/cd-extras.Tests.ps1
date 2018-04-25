@@ -68,6 +68,12 @@ Describe 'cd-extras' {
         Raise-Location com
         Get-Location | Split-Path -Leaf | Should Be common
       }
+
+      It 'can navigate within the registry on Windows' {
+        Set-Location HKLM:\Software\Microsoft\Windows\CurrentVersion
+        Raise-Location 2
+        Get-Location | Split-Path -Leaf | Should Be Microsoft
+      }
     }
 
     Describe 'Tab-Expansion' {
