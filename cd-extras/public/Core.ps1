@@ -81,11 +81,11 @@ function Raise-Location {
     [Parameter(ParameterSetName = 'named', Position = 0)] [string]$name
   )
 
-  Push-Location -StackName $fwd
+  if ($PSCmdlet.ParameterSetName -eq 'levels' -and $n -ge 1) {
 
-  if ($PSCmdlet.ParameterSetName -eq 'levels') {
+    Push-Location -StackName $fwd
     1..$n | % {
-      $parent = Split-Path (Get-Location) -Parent
+      $parent = Get-Location | Split-Path -Parent
       if ($parent) { Set-Location $parent }
     }
   }
