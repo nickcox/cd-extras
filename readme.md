@@ -110,7 +110,7 @@ Path expansion
 
 ```powershell
 
-~> cd /w/s/set[Tab][Tab]
+~> cd /w/s/set<[Tab]><[Tab]>
 C:\Windows\System32\setup\  C:\Windows\SysWOW64\setup\
                             ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 ```
@@ -119,7 +119,7 @@ Periods (`.`) are expanded around so a segment containing `.sdk` is expanded int
 
 ```powershell
 
-~> cd proj/pow/s/.sdk[Tab]
+~> cd proj/pow/s/.sdk<[Tab]>
 ~\projects\powershell\src\Microsoft.PowerShell.SDK\
 ```
 
@@ -127,7 +127,7 @@ If an unambiguous match is available then `cd` can be used directly, without inv
 
 ```powershell
 
-~> cd /w/s/d/et[Return]
+~> cd /w/s/d/et<[Return]>
 C:\Windows\System32\drivers\etc > _
 ```
 

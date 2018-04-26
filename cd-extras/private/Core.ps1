@@ -12,7 +12,7 @@ function Set-LocationEx {
 }
 
 function IsRootedOrRelative($path) {
-  if ([System.IO.Path]::IsPathRooted($path)) {return $true}
+  if ([System.IO.Path]::IsPathRooted($path)) { return $true }
   return $path -match '^\W/|\W\\' #e.g. starts with ~/, ./, ../
 }
 

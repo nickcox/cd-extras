@@ -91,13 +91,13 @@ function Raise-Location {
   }
 
   if ($PSCmdlet.ParameterSetName -eq 'named') {
-    $next = Get-Item $PWD
-    while ($next) {
+
+    $next = Get-Location | Get-Item
+    while ($next = $next.Parent) {
       if ($next.Name -match $name) {
         Set-LocationEx $next.FullName
         break
       }
-      $next = $next.Parent
     }
   }
 }

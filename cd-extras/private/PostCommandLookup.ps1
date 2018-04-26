@@ -18,9 +18,7 @@ function PostCommandLookup($commands, $helpers) {
         if (
           @($args).Length -eq 2 -and
           @($params).Length -eq 0 -and
-          -not ($args -match '^(/|\\)') ) {
-          &$helpers.transpose @args
-        }
+          -not ($args -match '^(/|\\)') ) { &$helpers.transpose @args }
 
         # single arg: expand if necessary
         elseif (@($args).Length -eq 1 -and @($params).Length -eq 0) {
