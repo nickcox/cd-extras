@@ -7,8 +7,6 @@
 . $PSScriptRoot/public/Core.ps1
 . $PSScriptRoot/public/Aliases.ps1
 
-$Global:__cdeUnderTest = $false # filth
-
 $defaults = [ordered]@{
   AUTO_CD = $true
   CD_PATH = @()
