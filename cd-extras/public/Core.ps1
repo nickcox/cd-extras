@@ -219,6 +219,8 @@ function Set-CdExtrasOption {
     isUnderTest   = {$Global:__cdeUnderTest -and !($Global:__cdeUnderTest = $false)}
   }
 
+
+  $commandsToComplete = @('Push-Location', 'Set-Location')
   $commandsToAutoExpand = @('cd', 'Set-Location')
   RegisterArgumentCompleter $commandsToComplete
   PostCommandLookup $commandsToAutoExpand $helpers
