@@ -1,15 +1,16 @@
-Push-Location $PSScriptRoot
-$Global:cde = $null
-Import-Module ../cd-extras/cd-extras.psd1 -Force -DisableNameChecking
-Add-Member -InputObject $cde IsUnderTest $true
-
 Describe 'cd-extras' {
   BeforeAll {
-    Push-Location
+    $Script:xcde = $cde
+    $Global:cde = $null
+    Push-Location $PSScriptRoot
+    Import-Module ../cd-extras/cd-extras.psd1 -Force -DisableNameChecking
     Get-Content sampleStructure.txt | % { mkdir "TestDrive:\$_"}
   }
 
-  AfterAll { Pop-Location }
+  AfterAll {
+    $Global:cde = $xcde
+    Pop-Location
+  }
 
   BeforeEach {
     Set-Location TestDrive:\
@@ -48,6 +49,16 @@ Describe 'cd-extras' {
         DoUnderTest { cd shared unix }
         Get-Location | Split-Path -parent | Should Be TestDrive:\powershell\src\Modules\Unix
       }
+
+      It 'throws if the replaceable text is not in the current directory name' {
+        Set-Location powershell\src\Modules\Shared\Microsoft.PowerShell.Utility
+        {cd: shard unix} | Should Throw
+      }
+
+      It 'throws if the replacement results in a path which does not exist' {
+        Set-Location powershell\src\Modules\Shared\Microsoft.PowerShell.Utility
+        {cd: shared unice} | Should Throw
+      }
     }
 
     Describe 'Raise-Location' {
@@ -79,7 +90,7 @@ Describe 'cd-extras' {
     Describe 'Tab-Expansion' {
       It 'expands multiple items' {
         $actual = Complete 'pow/t/c' | % {$_.CompletionText}
-        $actual.Count | Should Be 3
+        $actual | Should HaveCount 3
 
         function ShouldContain($likeStr) {
           $actual | Where {$_ -like $likeStr} | Should Not BeNullOrEmpty
@@ -94,12 +105,23 @@ Describe 'cd-extras' {
         $actual = Complete 'pow/s/.sdk'
         $actual.CompletionText | Should BeLike '*powershell\src\Microsoft.PowerShell.SDK\'
       }
+
+      It 'completes directories with spaces correctly' {
+        $actual = Complete 'pow/directory with spaces/child one'
+        $actual.CompletionText | Should BeLike "'*\child one\'"
+      }
     }
 
     Describe 'AUTO_CD' {
       It 'can change directory' {
         Set-Location powershell
         DoUnderTest { src }
+        Get-Location | Split-Path -Leaf | Should Be src
+      }
+
+      It 'can change directory using a partial match' {
+        Set-Location powershell
+        DoUnderTest { sr }
         Get-Location | Split-Path -Leaf | Should Be src
       }
 
@@ -139,6 +161,11 @@ Describe 'cd-extras' {
           Should Be (Join-Path $TestDrive powershell\src\Modules\Unix)
       }
 
+      It 'expands rooted paths' {
+        Expand-Path /p/s/m/u |
+          Should Be (Join-Path $TestDrive powershell\src\Modules\Unix)
+      }
+
       It 'can return multiple expansions' {
         (Expand-Path p/s/m/s/m).Length |
           Should Be 2
@@ -146,8 +173,7 @@ Describe 'cd-extras' {
 
       It 'considers CD_PATH for expansion' {
         Set-CdExtrasOption -Option CD_PATH -Value @('TestDrive:\powershell\src\')
-        (Expand-Path Microsoft.WSMan $cde.CD_PATH).Length |
-          Should Be 2
+        Expand-Path Microsoft.WSMan $cde.CD_PATH | Should HaveCount 2
       }
 
       It 'expands around periods' {
@@ -155,7 +181,13 @@ Describe 'cd-extras' {
           Should Be (Join-Path $TestDrive powershell\src\Microsoft.PowerShell.ConsoleHost)
       }
     }
+
+    Describe 'Peek-Stack' {
+      It 'shows the redo and undo stacks' {
+        Peek-Stack | Select -Expand Count | Should Be 2
+        (Peek-Stack)['Undo'] | Should Not BeNullOrEmpty
+        (Peek-Stack)['Redo'] | Should Not BeNullOrEmpty
+      }
+    }
   }
 }
-
-Pop-Location

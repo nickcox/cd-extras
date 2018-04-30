@@ -64,6 +64,7 @@ function Redo-Location {
 <#
 .SYNOPSIS
 Navigate upward by n levels (one level by default)
+or to the first parent directory matching a given search term
 
 .EXAMPLE
 C:\Windows\System32> Raise-Location
@@ -72,6 +73,10 @@ C:\Windows> _
 .EXAMPLE
 C:\Windows\System32> Raise-Location 2
 C:\> _
+
+.EXAMPLE
+C:\Windows\System32> Raise-Location win
+C:\Windows> _
 #>
 function Raise-Location {
 
@@ -214,7 +219,6 @@ function Set-CdExtrasOption {
     isUnderTest   = {$Global:__cdeUnderTest -and !($Global:__cdeUnderTest = $false)}
   }
 
-  $commandsToComplete = @('Push-Location', 'Set-Location')
   $commandsToAutoExpand = @('cd', 'Set-Location')
   RegisterArgumentCompleter $commandsToComplete
   PostCommandLookup $commandsToAutoExpand $helpers
