@@ -37,7 +37,7 @@ Describe 'cd-extras' {
       }
     }
 
-    Describe 'Transpose-Location' {
+    Describe 'Set-TransposedLocation' {
       It 'can be called explicitly' {
         Set-Location powershell\src\Modules\Shared\Microsoft.PowerShell.Utility
         cd: shared Unix
@@ -61,28 +61,28 @@ Describe 'cd-extras' {
       }
     }
 
-    Describe 'Raise-Location' {
+    Describe 'Step-Up' {
       It 'can navigate upward by a given number of directories' {
         Set-Location p*\src\Sys*\Format*\common\Utilities
-        Raise-Location 4
+        Step-Up 4
         Get-Location | Split-Path -Leaf | Should Be src
       }
 
       It 'can navigate upward by name' {
         Set-Location p*\src\Sys*\Format*\common\Utilities
-        Raise-Location src
+        Step-Up src
         Get-Location | Split-Path -Leaf | Should Be src
       }
 
       It 'can navigate upward by partial name' {
         Set-Location p*\src\Sys*\Format*\common\Utilities
-        Raise-Location com
+        Step-Up com
         Get-Location | Split-Path -Leaf | Should Be common
       }
 
       It 'can navigate within the registry on Windows' {
         Set-Location HKLM:\Software\Microsoft\Windows\CurrentVersion
-        Raise-Location 2
+        Step-Up 2
         Get-Location | Split-Path -Leaf | Should Be Microsoft
       }
     }
@@ -182,11 +182,11 @@ Describe 'cd-extras' {
       }
     }
 
-    Describe 'Peek-Stack' {
+    Describe 'Show-Stack' {
       It 'shows the redo and undo stacks' {
-        Peek-Stack | Select -Expand Count | Should Be 2
-        (Peek-Stack)['Undo'] | Should Not BeNullOrEmpty
-        (Peek-Stack)['Redo'] | Should Not BeNullOrEmpty
+        Show-Stack | Select -Expand Count | Should Be 2
+        (Show-Stack)['Undo'] | Should Not BeNullOrEmpty
+        (Show-Stack)['Redo'] | Should Not BeNullOrEmpty
       }
     }
   }

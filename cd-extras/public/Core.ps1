@@ -67,18 +67,18 @@ Navigate upward by n levels (one level by default)
 or to the first parent directory matching a given search term
 
 .EXAMPLE
-C:\Windows\System32> Raise-Location
+C:\Windows\System32> Step-Up
 C:\Windows> _
 
 .EXAMPLE
-C:\Windows\System32> Raise-Location 2
+C:\Windows\System32> Step-Up 2
 C:\> _
 
 .EXAMPLE
-C:\Windows\System32> Raise-Location win
+C:\Windows\System32> Step-Up win
 C:\Windows> _
 #>
-function Raise-Location {
+function Step-Up {
 
   [CmdletBinding(DefaultParameterSetName = 'levels')]
   param(
@@ -113,10 +113,10 @@ Attempt to replace all instances of 'replace' with 'with' in the current path,
 changing to the resulting directory if it exists
 
 .EXAMPLE
-~\Modules\Unix\Microsoft.PowerShell.Utility> Transpose-Location unix shared
+~\Modules\Unix\Microsoft.PowerShell.Utility> Set-TransposedLocation unix shared
 ~\Modules\Shared\Microsoft.PowerShell.Utility> _
 #>
-function Transpose-Location {
+function Set-TransposedLocation {
 
   [CmdletBinding()]
   param(
@@ -176,7 +176,7 @@ function Expand-Path {
 See the items in the cd-extras history stack (wraps Get-Location -Stack
 in the context of the cd-extras module)
 #>
-function Peek-Stack {
+function Show-Stack {
 
   [CmdletBinding()]
   param()
@@ -212,10 +212,10 @@ function Set-CdExtrasOption {
   $Script:back = 'back'
 
   $helpers = @{
-    raiseLocation = {Raise-Location @args}
+    raiseLocation = {Step-Up @args}
     setLocation   = {Set-LocationEx @args}
     expandPath    = {Expand-Path @args}
-    transpose     = {Transpose-Location @args}
+    transpose     = {Set-TransposedLocation @args}
     isUnderTest   = {$Global:__cdeUnderTest -and !($Global:__cdeUnderTest = $false)}
   }
 

@@ -24,8 +24,8 @@ Provides the following aliases (and functions):
 
 * cd- (Undo-Location)
 * cd+ (Redo-Location)
-* cd: (Transpose-Location)
-* up, .. (Raise-Location)
+* cd: (Set-TransposedLocation)
+* up, .. (Step-Up)
 
 Examples:
 
@@ -51,7 +51,7 @@ C:\Windows\System32> cd+ 2
 C:\temp> _
 ```
 
-The `Raise-Location (up, ..)` function also supports passing a string parameter to change to the first ancestor directory which contains the given string.
+The `Step-Up (up, ..)` function also supports passing a string parameter to change to the first ancestor directory which contains the given string.
 
 ```powershell
 
@@ -155,7 +155,7 @@ Two argument cd
 ----------
 
 Replaces all instances of the first argument in the current path with the second argument,
-changing to the resulting directory if it exists. Uses the `Transpose-Location` (`cd:`) function.
+changing to the resulting directory if it exists. Uses the `Set-TransposedLocation` (`cd:`) function.
 
 ```powershell
 
@@ -166,7 +166,7 @@ changing to the resulting directory if it exists. Uses the `Transpose-Location` 
 Additional helpers
 ---------
 
-* Peek-Stack: view contents of undo (`cd-`) and redo (`cd+`) stacks
+* Show-Stack: view contents of undo (`cd-`) and redo (`cd+`) stacks
 * Expand-Path: helper used for path segment expansion
 * Set-CdExtrasOption: enable or disable `AUTO_CD` after the module has loaded
 
