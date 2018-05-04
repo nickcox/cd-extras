@@ -19,8 +19,8 @@ function AutoCd($helpers) {
     }
 
     #Try smart expansion
-    elseif ($expanded = &$helpers.expandPath $CommandName) {
-      if ($expanded -is [System.IO.DirectoryInfo]) {
+    elseif ($expanded = &$helpers.expandPath $CommandName $cde.CD_PATH -Directory) {
+      if ($expanded.Count -eq 1) {
         $scriptBlock = { &$helpers.setLocation $expanded }
       }
     }

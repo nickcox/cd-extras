@@ -5,7 +5,6 @@ function PostCommandLookup($commands, $helpers) {
 
     if ($commands -contains $CommandName -and
       ((&$helpers.isUnderTest) -or $CommandLookupEventArgs.CommandOrigin -eq 'Runspace')) {
-      Write-Verbose "Entered post command lookup"
 
       $helpers = $helpers # make available to inner closure
 
@@ -28,8 +27,7 @@ function PostCommandLookup($commands, $helpers) {
           }
           catch [Management.Automation.ItemNotFoundException] {
             if (
-              ($expanded = &$helpers.expandPath $args $cde.CD_PATH) -and
-              ($dirs = $expanded | Where {$_ -is [System.IO.DirectoryInfo]}) -and
+              ($dirs = &$helpers.expandPath $args $cde.CD_PATH -Directory) -and
               ($dirs.Count -eq 1)) {
 
               &$helpers.setLocation $dirs
