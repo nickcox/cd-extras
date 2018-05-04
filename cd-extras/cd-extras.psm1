@@ -13,11 +13,11 @@ $defaults = [ordered]@{
   NOARG_CD = '~'
 }
 
-if (-not (Test-Path variable:cde)) {
-  $global:cde = New-Object PSObject -Property $defaults
+if ((Test-Path variable:cde) -and $cde -is [System.Collections.IDictionary]) {
+  $global:cde = New-Object PSObject -Property $global:cde
 }
 else {
-  $global:cde = New-Object PSObject -Property $global:cde
+  $global:cde = New-Object PSObject -Property $defaults
 }
 
 if (-not (Get-Member -InputObject $global:cde -Name AUTO_CD)) {
