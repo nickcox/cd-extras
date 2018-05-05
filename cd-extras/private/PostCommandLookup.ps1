@@ -11,7 +11,7 @@ function PostCommandLookup($commands, $helpers) {
       $CommandLookupEventArgs.CommandScriptBlock = {
         $fullCommand = (@($commandname) + $args) -join ' '
         $tokens = [System.Management.Automation.PSParser]::Tokenize($fullCommand, [ref]$null)
-        $params = $tokens | Where-Object type -eq CommandParameter
+        $params = $tokens | Where type -eq CommandParameter
 
         # two arg: transpose
         if (
