@@ -11,23 +11,22 @@ function PostCommandLookup($commands, $helpers) {
       $CommandLookupEventArgs.CommandScriptBlock = {
         $fullCommand = (@($commandname) + $args) -join ' '
         $tokens = [System.Management.Automation.PSParser]::Tokenize($fullCommand, [ref]$null)
-        $params = $tokens | Where type -eq CommandParameter
+        $arguments = $tokens | Where type -eq CommandArgument | Select -Expand Content
 
         # two arg: transpose
         if (
-          @($args).Length -eq 2 -and
-          @($params).Length -eq 0 -and
-          -not ($args -match '^(/|\\)') ) { &$helpers.transpose @args }
+          @($arguments).Length -eq 2 -and
+          -not ($arguments -match '^(/|\\)') ) { &$helpers.transpose @arguments }
 
         # single arg: expand if necessary
-        elseif (@($args).Length -eq 1 -and @($params).Length -eq 0) {
+        elseif (@($arguments).Length -eq 1) {
 
           try {
-            &$helpers.setLocation @args -ErrorAction Stop
+            &$helpers.setLocation $arguments -ErrorAction Stop
           }
           catch [Management.Automation.ItemNotFoundException] {
             if (
-              ($dirs = &$helpers.expandPath $args $cde.CD_PATH -Directory) -and
+              ($dirs = &$helpers.expandPath $arguments $cde.CD_PATH -Directory) -and
               ($dirs.Count -eq 1)) {
 
               &$helpers.setLocation $dirs
@@ -38,13 +37,13 @@ function PostCommandLookup($commands, $helpers) {
         }
 
         # noarg cd
-        elseif (@($args).Length -eq 0 -and @($params).Length -eq 0) {
+        elseif (@($arguments).Length -eq 0) {
           if (Test-Path $cde.NOARG_CD) {
             &$helpers.setLocation $cde.NOARG_CD
           }
         }
 
-        else { &$helpers.setLocation @args }
+        else { Set-Location @args }
 
       }.GetNewClosure()
     }
