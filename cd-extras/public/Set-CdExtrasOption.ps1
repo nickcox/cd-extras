@@ -26,7 +26,7 @@ function Set-CdExtrasOption {
     raiseLocation = {Step-Up @args}
     setLocation = {SetLocationEx @args}
     expandPath = {Expand-Path @args}
-    transpose = {Set-TransposedLocation @args}
+    transpose = {Switch-LocationPart @args}
     isUnderTest = {$Global:__cdeUnderTest -and !($Global:__cdeUnderTest = $false)}
   }
 

@@ -37,7 +37,7 @@ Describe 'cd-extras' {
       }
     }
 
-    Describe 'Set-TransposedLocation' {
+    Describe 'Switch-LocationPart' {
       It 'can be called explicitly' {
         Set-Location powershell\src\Modules\Shared\Microsoft.PowerShell.Utility
         cd: shared Unix

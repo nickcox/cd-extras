@@ -24,7 +24,7 @@ Provides the following aliases (and functions):
 
 * cd- (Undo-Location)
 * cd+ (Redo-Location)
-* cd: (Set-TransposedLocation)
+* cd: (Switch-LocationPart)
 * up, .. (Step-Up)
 
 Examples:
@@ -155,7 +155,7 @@ Two argument cd
 ----------
 
 Replaces all instances of the first argument in the current path with the second argument,
-changing to the resulting directory if it exists. Uses the `Set-TransposedLocation` (`cd:`) function.
+changing to the resulting directory if it exists. Uses the `Switch-LocationPart` (`cd:`) function.
 
 ```powershell
 
