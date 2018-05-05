@@ -3,6 +3,12 @@
 Navigate upward by n levels (one level by default)
 or to the first parent directory matching a given search term
 
+.PARAMETER n
+Number of levels above the starting location. (One by default.)
+
+.PARAMETER NamePart
+Partial directory name for which to search.
+
 .EXAMPLE
 C:\Windows\System32> Step-Up
 C:\Windows> _
@@ -20,7 +26,7 @@ function Step-Up {
   [CmdletBinding(DefaultParameterSetName = 'levels')]
   param(
     [Parameter(ParameterSetName = 'levels', Position = 0)] [byte]$n = 1,
-    [Parameter(ParameterSetName = 'named', Position = 0)] [string]$name
+    [Parameter(ParameterSetName = 'named', Position = 0)] [string]$NamePart
   )
 
   if ($target = Get-Up @PSBoundParameters) {

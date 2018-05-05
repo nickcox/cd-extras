@@ -18,9 +18,9 @@ src                            C:\projects\powershell\src\
 powershell                     C:\projects\powershell\
 projects                       C:\projects\
 
-C:\projects\powershell\src\Microsoft.PowerShell.SDK > $powershell
+C:\projects\powershell\src\Microsoft.PowerShell.SDK> $powershell
 C:\projects\powershell\
-C:\projects\powershell\src\Microsoft.PowerShell.SDK > _
+C:\projects\powershell\src\Microsoft.PowerShell.SDK> _
 #>
 function Export-Up() {
   [CmdletBinding()]

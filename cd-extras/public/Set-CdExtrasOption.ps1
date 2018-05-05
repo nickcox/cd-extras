@@ -2,9 +2,17 @@
 .SYNOPSIS
 Update cd-extras option ('AUTO_CD' or 'CD_PATH')
 
+.PARAMETER Option
+The option to set
+
+.PARAMETER Value
+The option value
+
 .EXAMPLE
-PS C:\> # disable AUTO_CD
-PS C:\> Set-CdExtrasOption -Option AUTO_CD -Value $true
+PS C:\> Set-CdExtrasOption -Option AUTO_CD -Value $false
+
+.EXAMPLE
+PS C:\> Set-CdExtrasOption -Option CD_PATH -Value @('/temp')
 #>
 function Set-CdExtrasOption {
 

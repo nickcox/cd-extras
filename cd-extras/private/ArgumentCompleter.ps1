@@ -13,7 +13,7 @@ function Complete($wordToComplete) {
     if ($_ -match ' ') { "'$_${/}'" } else { "$_${/}" }
   }
 
-  $dirs = Expand-Path $wordToComplete $cde.CD_PATH -Directory |
+  $dirs = Expand-Path $wordToComplete -Directory |
     % { if (&$shouldBeRelative) { Resolve-Path -Relative $_} else {$_} } |
     Select -Unique
 

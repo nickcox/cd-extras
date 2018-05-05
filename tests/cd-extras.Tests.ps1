@@ -202,7 +202,7 @@ Describe 'cd-extras' {
 
       It 'considers CD_PATH for expansion' {
         Set-CdExtrasOption -Option CD_PATH -Value @('TestDrive:\powershell\src\')
-        Expand-Path Microsoft.WSMan $cde.CD_PATH | Should HaveCount 2
+        Expand-Path Microsoft.WSMan | Should HaveCount 2
       }
 
       It 'expands around periods' {

@@ -3,6 +3,12 @@
 Attempt to replace all instances of 'replace' with 'with' in the current path,
 changing to the resulting directory if it exists
 
+.PARAMETER Replace
+Part of the current directory path to replace.
+
+.PARAMETER With
+Text with which to replace.
+
 .EXAMPLE
 ~\Modules\Unix\Microsoft.PowerShell.Utility> Switch-LocationPart unix shared
 ~\Modules\Shared\Microsoft.PowerShell.Utility> _

@@ -1,7 +1,7 @@
 <#
 .SYNOPSIS
-See the items in the cd-extras history stack (wraps Get-Location -Stack
-in the context of the cd-extras module)
+See the items in the cd-extras history stack.
+(Wraps Get-Location -Stack in the context of the cd-extras module.)
 #>
 function Show-Stack {
 
