@@ -21,7 +21,8 @@ function Set-CdExtrasOption {
     [ValidateSet(
       'AUTO_CD',
       'CD_PATH',
-      'NOARG_CD')]
+      'NOARG_CD',
+      'Completable')]
     $Option,
     $Value)
 
@@ -32,16 +33,15 @@ function Set-CdExtrasOption {
 
   $helpers = @{
     raiseLocation = {Step-Up @args}
-    setLocation = {SetLocationEx @args}
-    expandPath = {Expand-Path @args}
-    transpose = {Switch-LocationPart @args}
-    isUnderTest = {$Global:__cdeUnderTest -and !($Global:__cdeUnderTest = $false)}
+    setLocation   = {SetLocationEx @args}
+    expandPath    = {Expand-Path @args}
+    transpose     = {Switch-LocationPart @args}
+    isUnderTest   = {$Global:__cdeUnderTest -and !($Global:__cdeUnderTest = $false)}
   }
 
-  $commandsToComplete = @('Push-Location', 'Set-Location')
   $commandsToAutoExpand = @('cd', 'Set-Location')
-  RegisterArgumentCompleter $commandsToComplete
   PostCommandLookup $commandsToAutoExpand $helpers
+  RegisterArgumentCompleter $cde.Completable
 
   if ($cde.AUTO_CD) {
     CommandNotFound @(AutoCd $helpers) $helpers

@@ -216,11 +216,15 @@ Add-Content $PROFILE @("`n", "import-module cd-extras")
 Configure
 --------
 
-Three options are currently provided:
+Four options are currently provided:
 
 * AUTO_CD: `[bool] = $true`. Any truthy value to enable auto_cd.
 * CD_PATH: `[array] = @()`. Array of paths to be searched by cd and tab expansion.
 * NOARG_CD: `[string] = '~'`. If specified, `cd` command with no arguments will change to this directory.
+* Completable: `[array] = @(
+  'Push-Location',
+  'Set-Location',
+  'Get-ChildItem' )`. Commands eligible for advanced tab completion.
 
 Either create a global hashtable, `cde`, with one or more of these keys _before_ importing the cd-extras module:
 
