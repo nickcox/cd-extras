@@ -1,6 +1,6 @@
 ${Script:/} = [System.IO.Path]::DirectorySeparatorChar
 
-function Set-LocationEx {
+function SetLocationEx {
   [CmdletBinding()]
   param($path)
 

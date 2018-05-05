@@ -1,15 +1,9 @@
-. $PSScriptRoot/private/Core.ps1
-. $PSScriptRoot/private/AutoCd.ps1
-. $PSScriptRoot/private/PostCommandLookup.ps1
-. $PSScriptRoot/private/CommandNotFound.ps1
-. $PSScriptRoot/private/ArgumentCompleter.ps1
-
-. $PSScriptRoot/public/Core.ps1
-. $PSScriptRoot/public/Aliases.ps1
+Get-ChildItem $PSScriptRoot/private/*.ps1 | % { . $_.FullName}
+Get-ChildItem $PSScriptRoot/public/*.ps1 | % { . $_.FullName}
 
 $defaults = [ordered]@{
-  AUTO_CD = $true
-  CD_PATH = @()
+  AUTO_CD  = $true
+  CD_PATH  = @()
   NOARG_CD = '~'
 }
 
@@ -20,16 +14,11 @@ else {
   $global:cde = New-Object PSObject -Property $defaults
 }
 
-if (-not (Get-Member -InputObject $global:cde -Name AUTO_CD)) {
-  Add-Member -InputObject $cde AUTO_CD $defaults.AUTO_CD
-}
-
-if (-not (Get-Member -InputObject $global:cde -Name CD_PATH)) {
-  Add-Member -InputObject $cde CD_PATH $defaults.CD_PATH
-}
-
-if (-not (Get-Member -InputObject $global:cde -Name NOARG_CD)) {
-  Add-Member -InputObject $cde NOARG_CD $defaults.NOARG_CD
+# account for any properties missing in user supplied hash
+$defaults.GetEnumerator() | % {
+  if (-not (Get-Member -InputObject $global:cde -Name $_.Name)) {
+    Add-Member -InputObject $cde $_.Name $_.Value
+  }
 }
 
 Set-CdExtrasOption -Option 'AUTO_CD' -Value $global:cde.AUTO_CD

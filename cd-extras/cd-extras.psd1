@@ -8,26 +8,13 @@
   Description       = 'cd conveniences from bash and zsh'
   PowerShellVersion = '3.0'
 
-  FunctionsToExport = @(
-    'Undo-Location',
-    'Redo-Location',
-    'Get-Up',
-    'Step-Up',
-    'Export-Up',
-    'Set-TransposedLocation',
-    'Show-Stack',
-    'Expand-Path',
-    'Set-CdExtrasOption')
-
-  CmdletsToExport   = @()
+  FunctionsToExport = '*-*'
   VariablesToExport = 'cde'
   AliasesToExport   = '*'
 
   PrivateData       = @{
-
     PSData = @{
-
-      Tags = @('AUTO_CD', 'CD_PATH', 'bash')
+      Tags       = @('AUTO_CD', 'CD_PATH', 'bash')
       LicenseUri = 'https://github.com/nickcox/cd-extras/blob/master/LICENSE'
       ProjectUri = 'https://github.com/nickcox/cd-extras'
     }

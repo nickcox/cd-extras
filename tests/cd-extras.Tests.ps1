@@ -20,8 +20,8 @@ Describe 'cd-extras' {
 
     Describe 'Undo-Location' {
       It 'moves back to previous directory' {
-        Set-LocationEx powershell
-        Set-LocationEx src
+        SetLocationEx powershell
+        SetLocationEx src
         cd-
         Get-Location | Should Be TestDrive:\powershell
       }
@@ -29,8 +29,8 @@ Describe 'cd-extras' {
 
     Describe 'Redo-Location' {
       It 'moves forward on the stack' {
-        Set-LocationEx powershell
-        Set-LocationEx src
+        SetLocationEx powershell
+        SetLocationEx src
         cd-
         cd+
         Get-Location | Should Be TestDrive:\powershell\src

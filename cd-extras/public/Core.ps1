@@ -192,7 +192,7 @@ function Step-Up {
   )
 
   if ($target = Get-Up @PSBoundParameters) {
-    Set-LocationEx $target
+    SetLocationEx $target
   }
 }
 
@@ -215,7 +215,7 @@ function Set-TransposedLocation {
     Write-Error "String '$Replace' isn't in '$PWD'" -ErrorAction Stop
   }
   if (Test-Path ($path = $PWD.Path -replace $Replace, $With) -PathType Container) {
-    Set-LocationEx $path
+    SetLocationEx $path
   }
   else {
     Write-Error "No such directory: '$path'" -ErrorAction Stop
@@ -308,7 +308,7 @@ function Set-CdExtrasOption {
 
   $helpers = @{
     raiseLocation = {Step-Up @args}
-    setLocation = {Set-LocationEx @args}
+    setLocation = {SetLocationEx @args}
     expandPath = {Expand-Path @args}
     transpose = {Set-TransposedLocation @args}
     isUnderTest = {$Global:__cdeUnderTest -and !($Global:__cdeUnderTest = $false)}
