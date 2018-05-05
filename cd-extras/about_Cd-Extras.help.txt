@@ -29,7 +29,7 @@ Provides the following aliases (and functions):
 
 Examples:
 
-```powershell
+```sh
 
 [C:\Windows\System32]> up # or ..
 [C:\Windows]> cd-
@@ -44,7 +44,7 @@ rather than toggling between the two most recent directories as in vanilla bash.
 Each of these functions except `cd:` takes an optional parameter, `n`,
 used to specify the number of levels or locations to traverse.
 
-```powershell
+```sh
 
 [C:\Windows\System32]> .. 2 # or `up 2`
 [C:\]> cd temp
@@ -56,7 +56,7 @@ used to specify the number of levels or locations to traverse.
 The `Step-Up` (`up`, `..`) function alternatively supports passing a string parameter
 to change to the first ancestor directory which contains the given string.
 
-```powershell
+```sh
 
 [C:\Windows\System32\drivers\etc]> up win # or `.. win`
 [C:\Windows]> _
@@ -65,7 +65,7 @@ to change to the first ancestor directory which contains the given string.
 When the [AUTO_CD](#auto_cd) option is enabled, multiple dot syntax for `up` is supported
 as an alternative to `up [n]` or `.. [n]`.
 
-```powershell
+```sh
 
 [C:\Windows\System32\drivers\etc]> ... # same as `up 2` or `.. 2`
 [C:\Windows\System32]> cd-
@@ -74,10 +74,10 @@ as an alternative to `up [n]` or `.. [n]`.
 ```
 
 The `Expand-Up` (`eup`) function recursively expands each parent path into a global variable
-with a corresponding name. Why? It can be useful for navigating a deeply nested folder without
+with a corresponding name. Why? It can be useful for navigating a deeply nested folder structure without
 needing to count `..`s all the time. For example:
 
-```powershell
+```sh
 
 [C:\projects\powershell\src\Modules\Unix]> Export-Up
 
@@ -96,12 +96,22 @@ temp                           C:\temp
 ‾‾‾‾‾‾‾‾
 ```
 
+is likely easier than:
+
+```sh
+
+[C:\projects\powershell\src\Modules\Unix]> cd ../../../<[Tab]>
+[C:\projects\powershell\src\Modules\Unix]> cd C:\projects\powershell\
+.git     .github  .vscode  assets   demos    docker   docs     src      test     tools
+‾‾‾‾‾‾‾‾
+```
+
 AUTO_CD
 -------
 
 Change directory without typing `cd`.
 
-```powershell
+```sh
 
 [~]> projects
 [~/projects]> cd-extras
@@ -114,7 +124,7 @@ CD_PATH
 
 Search additional locations for candidate directories.
 
-```powershell
+```sh
 
 [~]> $cde.CD_PATH += '~/documents'
 [~]> cd WindowsPowerShell
@@ -123,7 +133,7 @@ Search additional locations for candidate directories.
 
 Note that CD_PATHs are _not_ searched when an absolute or relative path is given.
 
-```powershell
+```sh
 
 [~]> $cde.CD_PATH += '~/documents'
 [~]> cd ./WindowsPowerShell
@@ -136,7 +146,7 @@ Path expansion
 `cd` will provide tab expansions by expanding all path segments so that
 you don't have to individually tab through each one.
 
-```powershell
+```sh
 
 [~]> cd /w/s/set<[Tab]><[Tab]>
 C:\Windows\System32\setup\  C:\Windows\SysWOW64\setup\
@@ -145,15 +155,19 @@ C:\Windows\System32\setup\  C:\Windows\SysWOW64\setup\
 
 Periods (`.`) are expanded around so a segment containing `.sdk` is expanded into `*.sdk*`.
 
-```powershell
+```sh
 
 [~]> cd proj/pow/s/.sdk<[Tab]>
 [~]> cd .\projects\powershell\src\Microsoft.PowerShell.SDK\
+[~\projects\powershell\src\Microsoft.PowerShell.SDK]> cd..
+[~\projects\powershell\src]> cd .SDK
+[~\projects\powershell\src\Microsoft.PowerShell.SDK]> _
+
 ```
 
 If an unambiguous match is available then `cd` can be used directly, without first invoking tab expansion.
 
-```powershell
+```sh
 
 [~]> cd /w/s/d/et<[Return]>
 [C:\Windows\System32\drivers\etc]> _
@@ -161,7 +175,7 @@ If an unambiguous match is available then `cd` can be used directly, without fir
 
 Paths within the `$cde.CD_PATH` array will be considered for expansion.
 
-```powershell
+```sh
 
 [~]> $cde.CD_PATH += "~\Documents\"
 [~]> cd win/mod
@@ -174,7 +188,7 @@ No argument cd
 If the option `$cde.NOARG_CD` is defined then `cd` with no arguments
 will change to the nominated directory. Defaults to `'~'`.
 
-```powershell
+```sh
 
 [C:\Windows\System32\]> cd
 [~]> _
@@ -186,7 +200,7 @@ Two argument cd
 Replaces all instances of the first argument in the current path with the second argument,
 changing to the resulting directory if it exists. Uses the `Switch-LocationPart` (`cd:`) function.
 
-```powershell
+```sh
 
 [~\Modules\Unix\Microsoft.PowerShell.Utility]> cd unix shared
 [~\Modules\Shared\Microsoft.PowerShell.Utility]> _
@@ -195,10 +209,10 @@ changing to the resulting directory if it exists. Uses the `Switch-LocationPart`
 Additional helpers
 ---------
 
-* Get-Up: get the path of an ancestor directory, either by name or by traversing upwards n levels
 * Show-Stack: view contents of undo (`cd-`) and redo (`cd+`) stacks
+* Get-Up: get the path of an ancestor directory, either by name or by traversing upwards n levels
 * Expand-Path: helper used for path segment expansion
-* Set-CdExtrasOption: enable or disable `AUTO_CD` after the module has loaded
+* Set-CdExtrasOption: enable or disable `AUTO_CD`, etc. after the module has loaded
 
 Get started
 =======
@@ -206,11 +220,13 @@ Get started
 Install
 -------
 
-```powershell
+```sh
 
 Install-Module cd-extras
 Import-Module cd-extras
-Add-Content $PROFILE @("`n", "import-module cd-extras")
+
+# add to profile by hand or:
+Add-Content $PROFILE @("`n", "Import-Module cd-extras")
 ```
 
 Configure
@@ -218,31 +234,32 @@ Configure
 
 Four options are currently provided:
 
-* AUTO_CD: `[bool] = $true`. Any truthy value to enable auto_cd.
+* AUTO_CD: `[bool] = $true`. Any truthy value will enable auto_cd.
 * CD_PATH: `[array] = @()`. Array of paths to be searched by cd and tab expansion.
 * NOARG_CD: `[string] = '~'`. If specified, `cd` command with no arguments will change to this directory.
 * Completable: `[array] = @(
   'Push-Location',
   'Set-Location',
-  'Get-ChildItem' )`. Commands eligible for advanced tab completion.
+  'Get-ChildItem' )`. Commands that use advanced tab completion.
 
 Either create a global hashtable, `cde`, with one or more of these keys _before_ importing the cd-extras module:
 
-```powershell
+```sh
 
 $global:cde = @{
   AUTO_CD = $false
-  CD_PATH = @('C:\Users\Nick\Documents\')
-  NOARG_CD = 'C:\'
+  CD_PATH = @('~\Documents\')
+  NOARG_CD = '/',
+  Completable = @('Set-Location)
 }
 
-Import-Module cd-extras -DisableNameChecking
+Import-Module cd-extras
 ```
 
 or call the `Set-CdExtrasOption` function after importing the module:
 
-```powershell
-Import-Module cd-extras -DisableNameChecking
+```sh
+Import-Module cd-extras
 Set-CdExtrasOption -Option AUTO_CD -Value $false
 Set-CdExtrasOption -Option NOARG_CD -Value '~'
 ```
