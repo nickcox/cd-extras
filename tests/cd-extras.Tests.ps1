@@ -3,7 +3,7 @@ Describe 'cd-extras' {
     $Script:xcde = $cde
     $Global:cde = $null
     Push-Location $PSScriptRoot
-    Import-Module ../cd-extras/cd-extras.psd1 -Force -DisableNameChecking
+    Import-Module ../cd-extras/cd-extras.psd1 -Force
     Get-Content sampleStructure.txt | % { mkdir "TestDrive:\$_"}
   }
 
@@ -85,6 +85,23 @@ Describe 'cd-extras' {
         Step-Up 2
         Get-Location | Split-Path -Leaf | Should Be Microsoft
       }
+
+      It 'can navigate within the registry on Windows by name' {
+        Set-Location HKLM:\Software\Microsoft\Windows\CurrentVersion
+        Step-Up mic
+        Get-Location | Split-Path -Leaf | Should Be Microsoft
+      }
+    }
+
+    Describe 'Export-Up' {
+      It 'exports parents up to but not including the root' {
+        Set-Location p*\src\Sys*\Format*\common\Utilities
+        Export-Up -Force
+        $Global:utilities | Should Be (Resolve-Path .).Path
+        $Global:common | Should Be (Resolve-Path ..).Path
+        $Global:formatAndOutput | Should Be (Resolve-Path ../..).Path
+        # ...
+      }
     }
 
     Describe 'Tab-Expansion' {
@@ -108,6 +125,11 @@ Describe 'cd-extras' {
 
       It 'completes directories with spaces correctly' {
         $actual = Complete 'pow/directory with spaces/child one'
+        $actual.CompletionText | Should BeLike "'*\child one\'"
+      }
+
+      It 'completes relative directories with spaces correctly' {
+        $actual = Complete './pow/directory with spaces/child one'
         $actual.CompletionText | Should BeLike "'*\child one\'"
       }
     }
@@ -135,6 +157,13 @@ Describe 'cd-extras' {
         Set-Location p*\src\Sys*\Format*\common\Utilities
         DoUnderTest { ..... }
         Get-Location | Split-Path -Leaf | Should Be src
+      }
+
+      It 'does nothing when turned off' {
+        Set-CdExtrasOption -Option AUTO_CD -Value $false
+        Set-Location powershell
+        {DoUnderTest { src }} | Should Throw
+        Get-Location | Split-Path -Leaf | Should Be powershell
       }
     }
 
