@@ -14,8 +14,15 @@ function Set-LocationEx {
 }
 
 function IsRootedOrRelative($path) {
-  if ([System.IO.Path]::IsPathRooted($path)) { return $true }
-  return $path -match '^\W/|\W\\' #e.g. starts with ~/, ./, ../
+  IsRooted $path -or IsRelative $path
+}
+
+function IsRooted($path) {
+  return [System.IO.Path]::IsPathRooted($path) -or $path -match '~/*'
+}
+
+function IsRelative($path) {
+  return $path -match '^+\.(/|\\)' #e.g. starts with ./, ../
 }
 
 function DoUnderTest($block) {

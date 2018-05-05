@@ -1,14 +1,24 @@
 function Complete($wordToComplete) {
-  $currentDir = New-Object Uri ($pwd)
+
+  # logic:
+  # use a relative path if the supplied word isn't rooted (e.g. /temp/... or ~/... C:\...)
+  # *and* the resolved path is a child of the current directory or its parent
+  $shouldBeRelative = {
+    -not (IsRooted $wordToComplete) -and
+    (Resolve-Path $_) -like (Resolve-Path ..).Path + "*" # eww
+  }
+
+   # and terminal directory separator; quote if contains spaces
+  $bowOnIt = {
+    if ($_ -match ' ') { "'$_${/}'" } else { "$_${/}" }
+  }
 
   $dirs = Expand-Path $wordToComplete $cde.CD_PATH -Directory |
-    % { if ($currentDir.IsBaseOf((New-Object Uri ($_)))) { Resolve-Path -Relative $_} else {$_} } |
-    % { "$_" + [System.IO.Path]::DirectorySeparatorChar } | # put a bow on it
-    % { if ($_ -match ' ') { "'$_'" } else { $_ } } | # quote if contains spaces
+    % { if (&$shouldBeRelative) { Resolve-Path -Relative $_} else {$_} } |
     Select -Unique
 
-  $dirs |% {
-    New-Object Management.Automation.CompletionResult $_, $_, "ParameterValue", $_
+  $dirs | % {
+    New-Object Management.Automation.CompletionResult (&$bowOnIt), $_, 'ParameterValue', $_
   }
 }
 function RegisterArgumentCompleter([array]$commands) {
