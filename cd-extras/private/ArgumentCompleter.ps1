@@ -8,16 +8,20 @@ function Complete($wordToComplete) {
     (Resolve-Path $_) -like (Resolve-Path ..).Path + "*" # eww
   }
 
-   # and terminal directory separator; quote if contains spaces
-  $bowOnIt = {
-    if ($_ -match ' ') { "'$_${/}'" } else { "$_${/}" }
-  }
+  # and trailing directory separator; quote if contains spaces
+  $bowOnIt = { if ($_ -notmatch ' ') { "$_${/}" } else { "'$_${/}'" }   }
 
   $dirs = Expand-Path $wordToComplete -Directory |
-    % { if (&$shouldBeRelative) { Resolve-Path -Relative $_} else {$_} } |
-    Select -Unique
+    % { if (&$shouldBeRelative) { Resolve-Path -Relative $_} else {$_} }
 
-  $dirs | % {
+  $variDirs =
+  Get-Variable "$wordToComplete*" |
+    Where { $cde.CDABLE_VARS -and (Test-Path ($_.Value) -PathType Container) } |
+    Select -ExpandProperty Value
+
+  (@($dirs) + @($variDirs)) |
+  Select -Unique |
+  % {
     New-Object Management.Automation.CompletionResult (&$bowOnIt), $_, 'ParameterValue', $_
   }
 }

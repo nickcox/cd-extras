@@ -5,6 +5,7 @@ cd-extras
   * [Navigation helpers](#navigation-helpers)
   * [AUTO_CD](#auto_cd)
   * [CD_PATH](#cd_path)
+  * [CDABLE_VARS](#cdable_vars)
   * [Path expansion](#path_expansion)
   * [No argument cd](#no-argument-cd)
   * [Two argument cd](#two-argument-cd)
@@ -106,6 +107,14 @@ is likely easier than:
 ‾‾‾‾‾‾‾‾
 ```
 
+When combined with the [CDABLE_VARS](#cdable_vars) option, it's even easier.
+
+```sh
+
+[C:\projects\powershell\src\Modules\Unix]> cd pr<[Tab]>
+[C:\projects\powershell\src\Modules\Unix]> cd C:\projects\
+```
+
 AUTO_CD
 -------
 
@@ -139,6 +148,31 @@ Note that CD_PATHs are _not_ searched when an absolute or relative path is given
 [~]> cd ./WindowsPowerShell
 Set-Location : Cannot find path '~\WindowsPowerShell' because it does not exist.
 ```
+
+CDABLE_VARS
+-----------
+
+Save yourself a `$` and cd directly into folders using a variable name instead of a folder path.
+Given a variable containing the path to a folder (configured, for example, in your `$PROFILE`
+or by first invoking `Export-Up`), you can cd into it using the name of the variable.
+
+```sh
+[~]> $power = '~/projects/powershell'
+[~]> cd power
+[~/projects/powershell]> _
+
+```
+
+This also works with relative paths so if you find yourself frequently `cd`ing into the same
+subdirectories you could create a corresponding variable.
+
+```sh
+[~/projects/powershell]> $gh = './.git/hooks'
+[~/projects/powershell]> cd gh
+[~/projects/powershell/.git/hooks]> _
+
+```
+
 
 Path expansion
 -----------

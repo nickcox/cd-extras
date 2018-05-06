@@ -26,7 +26,14 @@ function PostCommandLookup($commands, $helpers) {
           }
           catch [Management.Automation.ItemNotFoundException] {
             if (
-              ($dirs = &$helpers.expandPath $arguments $cde.CD_PATH -Directory) -and
+              $cde.CDABLE_VARS -and
+              (Test-Path variable:$arguments) -and
+              (Test-Path ($path = Get-Variable $arguments -ValueOnly))
+            ) {
+              &$helpers.setLocation $path
+            }
+            elseif (
+              ($dirs = &$helpers.expandPath $arguments -Directory) -and
               ($dirs.Count -eq 1)) {
 
               &$helpers.setLocation $dirs

@@ -4,6 +4,7 @@ Get-ChildItem $PSScriptRoot/public/*.ps1 | % { . $_.FullName}
 $defaults = [ordered]@{
   AUTO_CD     = $true
   CD_PATH     = @()
+  CDABLE_VARS = $false
   NOARG_CD    = '~'
   Completable = @('Push-Location', 'Set-Location', 'Get-ChildItem')
 }

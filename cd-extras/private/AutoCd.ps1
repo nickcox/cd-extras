@@ -18,8 +18,17 @@ function AutoCd($helpers) {
       $scriptBlock = { &$helpers.setLocation $CommandName }
     }
 
+    elseif ($cde.CDABLE_VARS) {
+      if (
+        (Test-Path variable:$CommandName) -and
+        (Test-Path ($path = Get-Variable $CommandName -ValueOnly))
+      ) {
+        $scriptBlock = { &$helpers.setLocation $path }
+      }
+    }
+
     #Try smart expansion
-    elseif ($expanded = &$helpers.expandPath $CommandName $cde.CD_PATH -Directory) {
+    elseif ($expanded = &$helpers.expandPath $CommandName -Directory) {
       if ($expanded.Count -eq 1) {
         $scriptBlock = { &$helpers.setLocation $expanded }
       }

@@ -167,6 +167,23 @@ Describe 'cd-extras' {
       }
     }
 
+    Describe 'CDABLE_VARS' {
+      It 'can change directory using a variable name' {
+        $Global:psh = Resolve-Path ./pow*/src/mod*/shared/*.host
+        Set-CdExtrasOption CDABLE_VARS $true
+        DoUnderTest { cd psh }
+        Get-Location | Split-Path -Leaf | Should Be 'Microsoft.PowerShell.Host'
+      }
+
+      It 'works with AUTO_CD' {
+        $Global:psh = Resolve-Path ./pow*/src/mod*/shared/*.host
+        Set-CdExtrasOption CDABLE_VARS $true
+        Set-CdExtrasOption AUTO_CD $true
+        DoUnderTest { psh }
+        Get-Location | Split-Path -Leaf | Should Be 'Microsoft.PowerShell.Host'
+      }
+    }
+
     Describe 'No arg cd' {
       It 'moves to the expected location' {
         Set-Location TestDrive:\
