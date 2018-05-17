@@ -6,10 +6,11 @@ cd-extras
   * [AUTO_CD](#auto_cd)
   * [CD_PATH](#cd_path)
   * [CDABLE_VARS](#cdable_vars)
-  * [Path expansion](#path_expansion)
+  * [Path expansion](#path-expansion)
   * [No argument cd](#no-argument-cd)
   * [Two argument cd](#two-argument-cd)
   * [Additional helpers](#additional-helpers)
+
 * [Get started](#get-started)
   * [Install](#install)
   * [Configure](#configure)
@@ -21,12 +22,12 @@ general conveniences for the `cd` command in PowerShell inspired by bash and zsh
 Navigation helpers
 ---------
 
-Provides the following aliases (and functions):
+Provides the following aliases (and corresponding functions):
 
-* cd- (Undo-Location)
-* cd+ (Redo-Location)
-* cd: (Switch-LocationPart)
-* up, .. (Step-Up)
+* `cd-` (`Undo-Location`)
+* `cd+` (`Redo-Location`)
+* `cd:` (`Switch-LocationPart`)
+* `up`, `..` (`Step-Up`)
 
 Examples:
 
@@ -84,15 +85,15 @@ needing to count `..`s. For example:
 
 Name                           Value
 ----                           -----
-Unix                           C:\temp\powershell\src\Modules\Unix
-Modules                        C:\temp\powershell\src\Modules
-src                            C:\temp\powershell\src
-powershell                     C:\temp\powershell
-temp                           C:\temp
+Unix                           C:\projects\powershell\src\Modules\Unix
+Modules                        C:\projects\powershell\src\Modules
+src                            C:\projects\powershell\src
+powershell                     C:\projects\powershell
+projects                       C:\projects
 
-[C:\projects\powershell\src\Modules\Unix]> cd $p<[Tab]>
+[C:\projects\powershell\src\Modules\Unix]> cd $po<[Tab]>
 [C:\projects\powershell\src\Modules\Unix]> cd $powershell/<[Tab]>
-[C:\projects\powershell\src\Modules\Unix]> cd C:\projects\powershell\<[Tab]>
+[C:\projects\powershell\src\Modules\Unix]> cd C:\projects\powershell\
 .git     .github  .vscode  assets   demos    docker   docs     src      test     tools
 ‾‾‾‾‾‾‾‾
 ```
@@ -152,9 +153,9 @@ Set-Location : Cannot find path '~\WindowsPowerShell' because it does not exist.
 CDABLE_VARS
 -----------
 
-Save yourself a `$` and cd directly into folders using a variable name instead of a folder path.
-Given a variable containing the path to a folder (configured, for example, in your `$PROFILE`
-or by first invoking `Export-Up`), you can cd into it using the name of the variable.
+Save yourself a `$` when cding into folders using a variable name.
+Given a variable containing the path to a folder (configured, perhaps, in your `$PROFILE`
+or by invoking `Export-Up`), you can cd into it using the name of the variable.
 
 ```sh
 [~]> $power = '~/projects/powershell'
@@ -173,6 +174,7 @@ subdirectories you could create a corresponding variable.
 
 ```
 
+CDABLE_VARS is off by default. Enable it with: `Set-CdExtrasOption CDABLE_VARS $true`.
 
 Path expansion
 -----------
@@ -243,10 +245,16 @@ changing to the resulting directory if it exists. Uses the `Switch-LocationPart`
 Additional helpers
 ---------
 
-* Show-Stack: view contents of undo (`cd-`) and redo (`cd+`) stacks
-* Get-Up: get the path of an ancestor directory, either by name or by traversing upwards n levels
-* Expand-Path: helper used for path segment expansion
-* Set-CdExtrasOption: enable or disable `AUTO_CD`, etc. after the module has loaded
+* Show-Stack
+  * view contents of undo (`cd-`) and redo (`cd+`) stacks;
+  limit output with the `-Undo` or `-Redo` switches
+* Get-Up
+  * get the path of an ancestor directory,
+  either by name or by traversing upwards n levels
+* Expand-Path
+  * helper used for path segment expansion
+* Set-CdExtrasOption
+  * [configure](#configure) cd-extras
 
 Get started
 =======
@@ -264,17 +272,19 @@ Add-Content $PROFILE @("`n", "Import-Module cd-extras")
 ```
 
 Configure
---------
+---------
 
-Four options are currently provided:
+Options provided:
 
-* AUTO_CD: `[bool] = $true`
+* _AUTO_CD_: `[bool] = $true`
   * Any truthy value will enable auto_cd.
-* CD_PATH: `[array] = @()`
+* _CD_PATH_: `[array] = @()`
   * Paths to be searched by cd and tab expansion. This is an array, not a delimited string.
-* NOARG_CD: `[string] = '~'`
+* _CDABLE_VARS_: `[bool] = $false`
+  * cd into directory paths stored in variables without prefixing the variable name with `$`.
+* _NOARG_CD_: `[string] = '~'`
   * If specified, `cd` command with no arguments will change to this directory.
-* Completable: `[array] = @('Push-Location', 'Set-Location', 'Get-ChildItem')`
+* _Completable_: `[array] = @('Push-Location', 'Set-Location', 'Get-ChildItem')`
   * Commands that participate in advanced tab expansion.
 
 Either create a global hashtable, `cde`, with one or more of these keys _before_ importing the cd-extras module:
@@ -283,9 +293,7 @@ Either create a global hashtable, `cde`, with one or more of these keys _before_
 
 $global:cde = @{
   AUTO_CD = $false
-  CD_PATH = @('~\Documents\')
-  NOARG_CD = '/',
-  Completable = @('Set-Location)
+  CD_PATH = @('~\Documents\', '~\Downloads')
 }
 
 Import-Module cd-extras
@@ -294,7 +302,9 @@ Import-Module cd-extras
 or call the `Set-CdExtrasOption` function after importing the module:
 
 ```sh
+
 Import-Module cd-extras
+
 Set-CdExtrasOption -Option AUTO_CD -Value $false
-Set-CdExtrasOption -Option NOARG_CD -Value '~'
+Set-CdExtrasOption -Option NOARG_CD -Value '/'
 ```
