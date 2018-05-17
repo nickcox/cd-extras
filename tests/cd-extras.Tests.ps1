@@ -44,6 +44,11 @@ Describe 'cd-extras' {
         Get-Location | Split-Path -parent | Should Be TestDrive:\powershell\src\Modules\Unix
       }
 
+      It 'can replace more than one path segment' {
+        Set-Location powershell\demos\apache\apache
+        cd: apache/apache crontab/crontab
+      }
+
       It 'works with two arg cd' {
         Set-Location powershell\src\Modules\Shared\Microsoft.PowerShell.Utility
         DoUnderTest { cd shared unix }
@@ -231,8 +236,14 @@ Describe 'cd-extras' {
     Describe 'Show-Stack' {
       It 'shows the redo and undo stacks' {
         Show-Stack | Select -Expand Count | Should Be 2
-        (Show-Stack)['Undo'] | Should Not BeNullOrEmpty
-        (Show-Stack)['Redo'] | Should Not BeNullOrEmpty
+      }
+
+      It 'shows the undo stack' {
+        Show-Stack -Undo | Select -First 1 | Select Path | Should Not Be $null
+      }
+
+      It 'shows the redo stack' {
+        Show-Stack -Redo | Select -First 1 | Select Path | Should Not Be $null
       }
     }
   }
