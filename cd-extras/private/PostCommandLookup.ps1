@@ -11,29 +11,30 @@ function PostCommandLookup($commands, $helpers) {
       $CommandLookupEventArgs.CommandScriptBlock = {
         $fullCommand = (@($commandname) + $args) -join ' '
         $tokens = [System.Management.Automation.PSParser]::Tokenize($fullCommand, [ref]$null)
-        $arguments = $tokens | Where type -eq CommandArgument | Select -Expand Content
+        $params = $tokens | Where type -eq CommandParameter
 
         # two arg: transpose
         if (
-          @($arguments).Length -eq 2 -and
-          -not ($arguments -match '^(/|\\)') ) { &$helpers.transpose @arguments }
+          @($args).Length -eq 2 -and
+          @($params).Length -eq 0 -and
+          -not ($args -match '^(/|\\)') ) { &$helpers.transpose @args }
 
         # single arg: expand if necessary
-        elseif (@($arguments).Length -eq 1) {
+        elseif (@($args).Length -eq 1 -and @($params).Length -eq 0) {
 
           try {
-            &$helpers.setLocation $arguments -ErrorAction Stop
+            &$helpers.setLocation @args -ErrorAction Stop
           }
           catch [Management.Automation.ItemNotFoundException] {
             if (
               $cde.CDABLE_VARS -and
-              (Test-Path variable:$arguments) -and
-              (Test-Path ($path = Get-Variable $arguments -ValueOnly))
+              (Test-Path variable:$args) -and
+              (Test-Path ($path = Get-Variable $args -ValueOnly))
             ) {
               &$helpers.setLocation $path
             }
             elseif (
-              ($dirs = &$helpers.expandPath $arguments -Directory) -and
+              ($dirs = &$helpers.expandPath $args $cde.CD_PATH -Directory) -and
               ($dirs.Count -eq 1)) {
 
               &$helpers.setLocation $dirs
@@ -44,13 +45,13 @@ function PostCommandLookup($commands, $helpers) {
         }
 
         # noarg cd
-        elseif (@($arguments).Length -eq 0) {
+        elseif (@($args).Length -eq 0 -and @($params).Length -eq 0) {
           if (Test-Path $cde.NOARG_CD) {
             &$helpers.setLocation $cde.NOARG_CD
           }
         }
 
-        else { Set-Location @args }
+        else { &$helpers.setLocation @args }
 
       }.GetNewClosure()
     }

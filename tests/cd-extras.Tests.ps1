@@ -18,6 +18,13 @@ Describe 'cd-extras' {
 
   InModuleScope cd-extras {
 
+    Describe 'Set-Location' {
+      It 'works with spaces' {
+        DoUnderTest {cd 'pow/directory with spaces'}
+        Get-Location | Split-Path -leaf | Should Be 'directory with spaces'
+      }
+    }
+
     Describe 'Undo-Location' {
       It 'moves back to previous directory' {
         SetLocationEx powershell
