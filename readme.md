@@ -245,7 +245,7 @@ changing to the resulting directory if it exists. Uses the `Switch-LocationPart`
 Additional helpers
 ---------
 
-* Show-Stack
+* Get-Stack
   * view contents of undo (`cd-`) and redo (`cd+`) stacks;
   limit output with the `-Undo` or `-Redo` switches
 * Get-Up

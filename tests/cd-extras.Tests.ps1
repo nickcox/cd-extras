@@ -240,17 +240,17 @@ Describe 'cd-extras' {
       }
     }
 
-    Describe 'Show-Stack' {
+    Describe 'Get-Stack' {
       It 'shows the redo and undo stacks' {
-        Show-Stack | Select -Expand Count | Should Be 2
+        Get-Stack | Select -Expand Count | Should Be 2
       }
 
       It 'shows the undo stack' {
-        Show-Stack -Undo | Select -First 1 | Select Path | Should Not Be $null
+        Get-Stack -Undo | Select -First 1 | Select Path | Should Not Be $null
       }
 
       It 'shows the redo stack' {
-        Show-Stack -Redo | Select -First 1 | Select Path | Should Not Be $null
+        Get-Stack -Redo | Select -First 1 | Select Path | Should Not Be $null
       }
     }
   }

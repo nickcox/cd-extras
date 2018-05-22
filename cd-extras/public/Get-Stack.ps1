@@ -10,7 +10,7 @@ Show contents of the Undo stack
 Show contents of the Redo stack
 #>
 
-function Show-Stack {
+function Get-Stack {
 
   [CmdletBinding()]
   param(
