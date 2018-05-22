@@ -6,8 +6,8 @@ function AutoCd($helpers) {
     $helpers = $helpers
     $scriptBlock = $null
 
-    #If the command is two or more dots
-    if ($CommandName -match '^\.{2,}$') {
+    #If the command is three or more dots
+    if ($CommandName -match '^\.{3,}$') {
       $scriptBlock = {
         &$helpers.raiseLocation ($CommandName.Length - 1)
       }

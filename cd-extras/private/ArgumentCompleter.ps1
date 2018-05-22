@@ -17,7 +17,17 @@ function Complete($wordToComplete) {
   # and trailing directory separator; quote if contains spaces
   $bowOnIt = { param($x) if ($x -notmatch ' ') { "$x${/}" } else { "'$x${/}'" } }
 
-  $dirs = Expand-Path $wordToComplete -Directory
+  $dirs = if ($wordToComplete -match '^\.{3,}') {
+    # if we're multi-dotting...
+    $dots = $Matches[0].Trim()
+    Expand-Path (
+      Join-Path (Get-Up ($dots.Length - 1)) `
+        $wordToComplete.Replace($dots, '')
+    )
+  }
+  else {
+    Expand-Path $wordToComplete -Directory
+  }
 
   $variDirs =
   Get-Variable "$wordToComplete*" |
@@ -34,13 +44,14 @@ function Complete($wordToComplete) {
 
     $listItemText = if (($_ | Split-Path -Parent) -eq (Resolve-Path .)) {
       $_ | Split-Path -Leaf
-    } else { $_ }
+    }
+    else { $_ }
 
     New-Object Management.Automation.CompletionResult `
       $completionText,
-      $listItemText,
-      'ParameterValue',
-      $_
+    $listItemText,
+    'ParameterValue',
+    $_
   }
 }
 function RegisterArgumentCompleter([array]$commands) {

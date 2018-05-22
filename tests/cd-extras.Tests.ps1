@@ -167,7 +167,7 @@ Describe 'cd-extras' {
 
     Describe 'Tab-Expansion' {
       It 'expands multiple items' {
-        $actual = Complete 'pow/t/c' | % {$_.CompletionText}
+        $actual = Complete 'pow/t/c' | Select -Expand CompletionText
         $actual | Should HaveCount 3
 
         function ShouldContain($likeStr) {
@@ -207,6 +207,11 @@ Describe 'cd-extras' {
         cd- 2
         $actual = CompleteStack '' '+'
         $actual.Count | Should -BeGreaterThan 1
+      }
+
+      It 'expands multiple dots' {
+        Set-Location p*\src\Sys*\Format*\common\Utilities
+        (Complete '...').CompletionText | Should Match 'FormatAndOutput'
       }
     }
 
