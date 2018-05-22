@@ -55,13 +55,27 @@ used to specify the number of levels or locations to traverse.
 [C:\temp]> _
 ```
 
-The `Step-Up` (`up`, `..`) function alternatively supports passing a string parameter
-to change to the first ancestor directory which contains the given string.
+`Step-Up` (`up`, `..`), `Undo-Location` (`cd-`) and `Redo-Location` (`cd+`) alternatively
+support passing a string parameter to change to the closest directory which matches the given string.
 
 ```sh
 
 [C:\Windows\System32\drivers\etc]> up win # or `.. win`
 [C:\Windows]> _
+```
+
+The logic of `cd- <name>` and `cd+ <name>` is to search the stack, starting at the current location,
+for directories whose name contains the given string. If none is found then it will attempt
+to match against the full path. For example:
+
+```sh
+[C:\Windows]> cd system32
+[C:\Windows\System32]> cd drivers
+[C:\Windows\System32\drivers]> cd- sys
+[C:\Windows\System32]> cd+
+[C:\Windows\System32\drivers]> cd- win
+[C:\Windows\]> cd+ 32/dr
+[C:\Windows\System32\drivers]> _
 ```
 
 When the [AUTO_CD](#auto_cd) option is enabled, multiple dot syntax for `up` is supported

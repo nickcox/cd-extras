@@ -25,6 +25,7 @@ $defaults.GetEnumerator() | % {
 
 #some set up happens in Set-Option
 Set-CdExtrasOption -Option 'AUTO_CD' -Value $global:cde.AUTO_CD
+RegisterStackCompletion
 
 $MyInvocation.MyCommand.ScriptBlock.Module.OnRemove = {
   $ExecutionContext.InvokeCommand.PostCommandLookupAction = $null

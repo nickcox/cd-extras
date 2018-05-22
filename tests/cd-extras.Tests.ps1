@@ -32,6 +32,33 @@ Describe 'cd-extras' {
         cd-
         Get-Location | Should Be TestDrive:\powershell
       }
+
+      It 'moves back "n" locations' {
+        SetLocationEx powershell
+        SetLocationEx src
+        SetLocationEx Modules
+        SetLocationEx Shared
+        cd- 2
+        Get-Location | Should Be TestDrive:\powershell\src
+      }
+
+      It 'moves back to a named location' {
+        SetLocationEx powershell
+        SetLocationEx src
+        SetLocationEx Modules
+        SetLocationEx Shared
+        cd- src
+        Get-Location | Should Be TestDrive:\powershell\src
+      }
+
+      It 'matches more than one segment if necessary' {
+        SetLocationEx powershell
+        SetLocationEx src
+        SetLocationEx Modules
+        SetLocationEx Shared
+        cd- src/mod
+        Get-Location | Should Be TestDrive:\powershell\src\Modules
+      }
     }
 
     Describe 'Redo-Location' {
@@ -41,6 +68,28 @@ Describe 'cd-extras' {
         cd-
         cd+
         Get-Location | Should Be TestDrive:\powershell\src
+      }
+
+      It 'moves forward "n" locations' {
+        SetLocationEx powershell
+        SetLocationEx src
+        SetLocationEx Modules
+        SetLocationEx Shared
+        cd-
+        cd-
+        cd+ 2
+        Get-Location | Split-Path -leaf | Should Be Shared
+      }
+
+      It 'moves forward to a named location' {
+        SetLocationEx powershell
+        SetLocationEx src
+        SetLocationEx Modules
+        SetLocationEx Shared
+        cd-
+        cd-
+        cd+ shared
+        Get-Location | Split-Path -leaf | Should Be Shared
       }
     }
 
@@ -143,6 +192,21 @@ Describe 'cd-extras' {
       It 'completes relative directories with spaces correctly' {
         $actual = Complete './pow/directory with spaces/child one'
         $actual.CompletionText | Should BeLike "'*\child one\'"
+      }
+
+      It 'expands the undo stack' {
+        SetLocationEx powershell
+        SetLocationEx src
+        $actual = CompleteStack '' '-'
+        $actual.Count | Should -BeGreaterThan 1
+      }
+
+      It 'expands the redo stack' {
+        SetLocationEx powershell
+        SetLocationEx src
+        cd- 2
+        $actual = CompleteStack '' '+'
+        $actual.Count | Should -BeGreaterThan 1
       }
     }
 
