@@ -43,8 +43,8 @@ Note that the aliases are `cd-` and `cd+` *not* `cd -` and `cd +`.
 Repeated uses of `cd-` will keep moving backwards towards the beginning of the stack
 rather than toggling between the two most recent directories as in vanilla bash.
 
-Each of these functions except `cd:` takes an optional parameter, `n`,
-used to specify the number of levels or locations to traverse.
+Each of these functions except `cd:` can take a single optional parameter:
+either a number, `n`, used to specify the number of levels or locations to traverse
 
 ```sh
 
@@ -55,8 +55,8 @@ used to specify the number of levels or locations to traverse.
 [C:\temp]> _
 ```
 
-`Step-Up` (`up`, `..`), `Undo-Location` (`cd-`) and `Redo-Location` (`cd+`) alternatively
-support passing a string parameter to change to the closest directory which matches the given string.
+or a string, `NamePart`, used to change to the nearest directory whose name matches
+the given argument.
 
 ```sh
 
@@ -64,9 +64,9 @@ support passing a string parameter to change to the closest directory which matc
 [C:\Windows]> _
 ```
 
-The logic of `cd- <name>` and `cd+ <name>` is to search the stack, starting at the current location,
-for directories whose name contains the given string. If none is found then it will attempt
-to match against the full path. For example:
+The logic of `cd- <NamePart>` and `cd+ <NamePart>` is to search the stack, starting at
+the current location, for directories whose name contains the given string. If none is found
+then it will attempt to match against the full path instead. For example:
 
 ```sh
 [C:\Windows]> cd system32
@@ -90,8 +90,8 @@ as an alternative to `up [n]` or `.. [n]`.
 ```
 
 The `Export-Up` (`xup`) function recursively expands each parent path into a global variable
-with a corresponding name. Why? It can be useful for navigating a deeply nested folder structure without
-needing to count `..`s. For example:
+with a corresponding name. Why? It can be useful for navigating a deeply nested folder
+structure without needing to count `..`s. For example:
 
 ```sh
 
@@ -112,11 +112,11 @@ projects                       C:\projects
 ‾‾‾‾‾‾‾‾
 ```
 
-is likely easier than:
+might be easier than:
 
 ```sh
 
-[C:\projects\powershell\src\Modules\Unix]> cd ../../../<[Tab]>
+[C:\projects\powershell\src\Modules\Unix]> cd ....<[Tab]> # or cd ../../../<[Tab]>
 [C:\projects\powershell\src\Modules\Unix]> cd C:\projects\powershell\
 .git     .github  .vscode  assets   demos    docker   docs     src      test     tools
 ‾‾‾‾‾‾‾‾
@@ -150,7 +150,7 @@ Search additional locations for candidate directories.
 
 ```sh
 
-[~]> $cde.CD_PATH += '~/documents'
+[~]> $cde.CD_PATH = @('~/documents')
 [~]> cd WindowsPowerShell
 [~/documents/WindowsPowerShell]> _
 ```
@@ -159,7 +159,7 @@ Note that CD_PATHs are _not_ searched when an absolute or relative path is given
 
 ```sh
 
-[~]> $cde.CD_PATH += '~/documents'
+[~]> $cde.CD_PATH = @('~/documents')
 [~]> cd ./WindowsPowerShell
 Set-Location : Cannot find path '~\WindowsPowerShell' because it does not exist.
 ```

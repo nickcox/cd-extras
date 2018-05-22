@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-Update cd-extras option ('AUTO_CD' or 'CD_PATH')
+Update cd-extras option ('AUTO_CD', 'CD_PATH', ...etc)
 
 .PARAMETER Option
 The option to set
