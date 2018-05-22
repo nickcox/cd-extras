@@ -3,16 +3,21 @@ function Complete($wordToComplete) {
   # logic:
   # use a relative path if the supplied word isn't rooted (e.g. /temp/... or ~/... C:\...)
   # *and* the resolved path is a child of the current directory or its parent
-  $shouldBeRelative = {
-    -not (IsRooted $wordToComplete) -and
-    (Resolve-Path $_) -like (Resolve-Path ..).Path + "*" # eww
+  $resolve = {
+    if (
+      -not (IsRooted $wordToComplete) -and
+      (Resolve-Path $_) -like (Resolve-Path ..).Path + "*") {
+      Resolve-Path -Relative $_
+    }
+    else {
+      $_
+    }
   }
 
   # and trailing directory separator; quote if contains spaces
-  $bowOnIt = { if ($_ -notmatch ' ') { "$_${/}" } else { "'$_${/}'" }   }
+  $bowOnIt = { param($x) if ($x -notmatch ' ') { "$x${/}" } else { "'$x${/}'" } }
 
-  $dirs = Expand-Path $wordToComplete -Directory |
-    % { if (&$shouldBeRelative) { Resolve-Path -Relative $_} else {$_} }
+  $dirs = Expand-Path $wordToComplete -Directory
 
   $variDirs =
   Get-Variable "$wordToComplete*" |
@@ -20,9 +25,22 @@ function Complete($wordToComplete) {
     Select -ExpandProperty Value
 
   (@($dirs) + @($variDirs)) |
-  Select -Unique |
-  % {
-    New-Object Management.Automation.CompletionResult (&$bowOnIt), $_, 'ParameterValue', $_
+    Select -Unique |
+    % {
+
+    $resolved = (&$resolve)
+
+    $completionText = (&$bowOnIt $resolved)
+
+    $listItemText = if (($_ | Split-Path -Parent) -eq (Resolve-Path .)) {
+      $_ | Split-Path -Leaf
+    } else { $_ }
+
+    New-Object Management.Automation.CompletionResult `
+      $completionText,
+      $listItemText,
+      'ParameterValue',
+      $_
   }
 }
 function RegisterArgumentCompleter([array]$commands) {
