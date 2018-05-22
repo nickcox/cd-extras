@@ -41,7 +41,7 @@ function Undo-Location {
     1..$n | % {
       if ((Get-Location -StackName $fwd -ea Ignore) -ne $null) {
         Push-Location -StackName $back
-        Pop-Location -StackName $fwd
+        Pop-Location -StackName $fwd -ea Ignore
       }
     }
   }
