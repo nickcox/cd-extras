@@ -1,17 +1,22 @@
 ${Script:/} = [System.IO.Path]::DirectorySeparatorChar
+$Script:Multidot = '^\.{3,}$'
+$Script:fwd = 'forward'
+$Script:back = 'back'
+$Script:OLDPWD # used by Step-Back
 
 function SetLocationEx {
   [CmdletBinding()]
-  param($path)
+  param([string]$Path, [switch]$PassThru)
 
   #don't push dupes onto stack
   if (
     (@((Get-Location -StackName $fwd -ea Ignore )) | Select -First 1).Path -ne
     (Get-Location).Path) {
-      if (Get-Item $path -ea Ignore) { Push-Location -StackName $fwd }
+    if (Get-Item $path -ea Ignore) { Push-Location -StackName $fwd }
   }
 
-  Set-Location $path
+  $Script:OLDPWD = $PWD
+  Set-Location @PSBoundParameters
 }
 
 function IsRootedOrRelative($path) {
@@ -38,7 +43,7 @@ function GetStackIndex([array]$stack, [string]$namepart) {
     $stack,
     [Predicate[System.Management.Automation.PathInfo]] {
       ($leafName = $args[0] | Split-Path -Leaf) -and
-        $leafName -match [regex]::Escape($namePart)
+      $leafName -match [regex]::Escape($namePart)
     })
 
   if ($index -ge 0) { return $index }
@@ -48,6 +53,24 @@ function GetStackIndex([array]$stack, [string]$namepart) {
     [Predicate[System.Management.Automation.PathInfo]] {
       $args[0] -match (NormaliseAndEscape $namepart)
     })
+}
+
+function EmitIndexedCompletion($items) {
+  $items | % {
+    $itemText =
+      if ($cde.MenuCompletion -and $items.Count -gt 1) {"$($_.index)"}
+      else {"'$($_.long)'"}
+
+    New-Object Management.Automation.CompletionResult `
+      $itemText,
+      "$($_.index). $($_.short)" ,
+      "ParameterValue",
+      "$($_.index). $($_.long)"
+  }
+}
+
+function RegisterCompletions([array] $commands, $param, $target) {
+  Register-ArgumentCompleter -CommandName $commands -ParameterName $param -ScriptBlock $target
 }
 
 function DoUnderTest($block) {

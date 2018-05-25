@@ -8,6 +8,9 @@ The folder from which to start. $PWD by default.
 .PARAMETER Force
 Overwrites any existing globals variables with the same names.
 
+.PARAMETER NoGlobals
+Don't copy output into global variables
+
 .EXAMPLE
 C:\projects\powershell\src\Microsoft.PowerShell.SDK > Export-Up
 
@@ -26,7 +29,8 @@ function Export-Up() {
   [CmdletBinding()]
   param(
     [string] $From = $PWD,
-    [switch] $Force
+    [switch] $Force,
+    [switch] $NoGlobals
   )
 
   if (-not ($next = Resolve-Path $From)) { return }
@@ -41,8 +45,10 @@ function Export-Up() {
     $output.Add((&$getPair).name, (&$getPair).path)
   }
 
-  $output.GetEnumerator() | % {
-    New-Variable  $_.Name $_.Value -Scope Global -Force:$Force -ErrorAction Ignore
+  if (-not $NoGlobals) {
+    $output.GetEnumerator() | % {
+      New-Variable  $_.Name $_.Value -Scope Global -Force:$Force -ErrorAction Ignore
+    }
   }
 
   $output

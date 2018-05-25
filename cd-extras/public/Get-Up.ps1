@@ -42,7 +42,14 @@ function Get-Up {
 
   if ($PSCmdlet.ParameterSetName -eq 'named') {
     while ($next = $next | Split-Path -Parent) {
-      if (($next | Split-Path -Leaf) -match $NamePart) { return $next }
+      if (($next | Split-Path -Leaf) -match (NormaliseAndEscape $NamePart)) { return $next }
+    }
+
+    # if we couldn't match by leaf name then match by complete path
+    # this is only really used for completion when MenuCompletion is off
+    $next = $From | Resolve-Path
+    while ($next = $next | Split-Path -Parent) {
+      if (($next) -eq (Resolve-Path $NamePart)) { return $next }
     }
   }
 }

@@ -2,11 +2,12 @@ Get-ChildItem $PSScriptRoot/private/*.ps1 | % { . $_.FullName}
 Get-ChildItem $PSScriptRoot/public/*.ps1 | % { . $_.FullName}
 
 $defaults = [ordered]@{
-  AUTO_CD     = $true
-  CD_PATH     = @()
-  CDABLE_VARS = $false
-  NOARG_CD    = '~'
-  Completable = @('Push-Location', 'Set-Location', 'Get-ChildItem')
+  AUTO_CD         = $true
+  CD_PATH         = @()
+  CDABLE_VARS     = $false
+  NOARG_CD        = '~'
+  Completable     = @('Push-Location', 'Set-Location', 'Get-ChildItem')
+  MenuCompletion = if (Get-Module PSReadline) {$true} else {$false}
 }
 
 if ((Test-Path variable:cde) -and $cde -is [System.Collections.IDictionary]) {
@@ -25,7 +26,6 @@ $defaults.GetEnumerator() | % {
 
 #some set up happens in Set-Option
 Set-CdExtrasOption -Option 'AUTO_CD' -Value $global:cde.AUTO_CD
-RegisterStackCompletion
 
 $MyInvocation.MyCommand.ScriptBlock.Module.OnRemove = {
   $ExecutionContext.InvokeCommand.PostCommandLookupAction = $null
