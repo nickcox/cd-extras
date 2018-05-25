@@ -1,4 +1,5 @@
 Describe 'cd-extras' {
+
   BeforeAll {
     $Script:xcde = $cde
     $Global:cde = $null
@@ -163,6 +164,12 @@ Describe 'cd-extras' {
         Step-Up mic
         Get-Location | Split-Path -Leaf | Should Be Microsoft
       }
+
+      It 'can navigate by full name if no matching leaf name' {
+        Set-Location powershell\src\Modules\Shared\
+        Step-Up (Resolve-Path ..).Path
+        Get-Location | Split-Path -Leaf | Should Be Modules
+      }
     }
 
     Describe 'Export-Up' {
@@ -176,57 +183,11 @@ Describe 'cd-extras' {
       }
     }
 
-    Describe 'Tab-Expansion' {
-      It 'expands multiple items' {
-        $actual = Complete 'pow/t/c' | Select -Expand CompletionText
-        $actual | Should HaveCount 3
-
-        function ShouldContain($likeStr) {
-          $actual | Where {$_ -like $likeStr} | Should Not BeNullOrEmpty
-        }
-
-        ShouldContain '*test\csharp\'
-        ShouldContain '*test\common\'
-        ShouldContain '*tools\credscan\'
-      }
-
-      It 'expands around periods' {
-        $actual = Complete 'pow/s/.sdk'
-        $actual.CompletionText | Should BeLike '*powershell\src\Microsoft.PowerShell.SDK\'
-      }
-
-      It 'completes directories with spaces correctly' {
-        $actual = Complete 'pow/directory with spaces/child one'
-        $actual.CompletionText | Should BeLike "'*\child one\'"
-      }
-
-      It 'completes relative directories with spaces correctly' {
-        $actual = Complete './pow/directory with spaces/child one'
-        $actual.CompletionText | Should BeLike "'*\child one\'"
-      }
-
-      It 'expands the undo stack' {
-        SetLocationEx powershell
-        SetLocationEx src
-        $actual = CompleteStack '' '-'
-        $actual.Count | Should -BeGreaterThan 1
-      }
-
-      It 'expands the redo stack' {
-        SetLocationEx powershell
-        SetLocationEx src
-        cd- 2
-        $actual = CompleteStack '' '+'
-        $actual.Count | Should -BeGreaterThan 1
-      }
-
-      It 'expands multiple dots' {
-        Set-Location p*\src\Sys*\Format*\common\Utilities
-        (Complete '...').CompletionText | Should Match 'FormatAndOutput'
-      }
-    }
-
     Describe 'AUTO_CD' {
+      BeforeAll {
+        Set-CdExtrasOption -Option AUTO_CD -Value $true
+      }
+
       It 'can change directory' {
         Set-Location powershell
         DoUnderTest { src }
@@ -268,9 +229,10 @@ Describe 'cd-extras' {
       }
 
       It 'works with AUTO_CD' {
-        $Global:psh = Resolve-Path ./pow*/src/mod*/shared/*.host
         Set-CdExtrasOption CDABLE_VARS $true
         Set-CdExtrasOption AUTO_CD $true
+
+        $Global:psh = Resolve-Path ./pow*/src/mod*/shared/*.host
         DoUnderTest { psh }
         Get-Location | Split-Path -Leaf | Should Be 'Microsoft.PowerShell.Host'
       }
@@ -331,6 +293,79 @@ Describe 'cd-extras' {
 
       It 'shows the redo stack' {
         Get-Stack -Redo | Select -First 1 | Select Path | Should Not Be $null
+      }
+    }
+
+    Describe 'Tab expansion' {
+      It 'expands multiple items' {
+        $actual = Complete -wordToComplete 'pow/t/c' | Select -Expand CompletionText
+        $actual | Should HaveCount 3
+
+        function ShouldContain($likeStr) {
+          $actual | Where {$_ -like $likeStr} | Should Not BeNullOrEmpty
+        }
+
+        ShouldContain '*test\csharp\'
+        ShouldContain '*test\common\'
+        ShouldContain '*tools\credscan\'
+      }
+
+      It 'expands around periods' {
+        $actual = Complete -wordToComplete 'pow/s/.sdk'
+        $actual.CompletionText | Should BeLike '*powershell\src\Microsoft.PowerShell.SDK\'
+      }
+
+      It 'completes directories with spaces correctly' {
+        $actual = Complete  -wordToComplete 'pow/directory with spaces/child one'
+        $actual.CompletionText | Should BeLike "'*\child one\'"
+      }
+
+      It 'completes relative directories with spaces correctly' {
+        $actual = Complete -wordToComplete './pow/directory with spaces/child one'
+        $actual.CompletionText | Should BeLike "'*\child one\'"
+      }
+
+      It 'expands multiple dots' {
+        Set-Location p*\src\Sys*\Format*\common\Utilities
+        (Complete -wordToComplete '...').CompletionText | Should Match 'FormatAndOutput'
+      }
+
+      It 'completes CDABLE_VARS' {
+        Set-CdExtrasOption -Option CDABLE_VARS $true
+        $Global:dir = Resolve-Path ./powershell/src
+        (Complete -wordToComplete 'dir').CompletionText | Should Match 'src'
+      }
+    }
+
+    Describe 'Stack expansion' {
+      It 'expands the undo stack' {
+        SetLocationEx powershell
+        SetLocationEx src
+        $actual = CompleteStack -wordToComplete '' -commandName 'Undo'
+        $actual.Count | Should BeGreaterThan 1
+      }
+
+      It 'expands the redo stack' {
+        SetLocationEx powershell
+        SetLocationEx src
+        cd- 2
+        $actual = CompleteStack -wordToComplete '' -commandName 'Undo'
+        $actual.Count | Should BeGreaterThan 1
+      }
+    }
+
+    Describe 'Ancestor expansion' {
+      It 'expands ancestors' {
+        Set-Location p*\src\Sys*\Format*\common\Utilities
+        $actual = CompleteAncestors -wordToComplete ''
+        $actual.Count | Should BeGreaterThan 5
+      }
+
+      It 'uses the full path when menu completion is off' {
+        Set-Location powershell/demos/apache
+        $cde.MenuCompletion = $false
+        $actual = CompleteAncestors -wordToComplete ''
+        $actual[0].CompletionText | Should BeLike "*powershell${/}demos'"
       }
     }
   }

@@ -7,7 +7,7 @@ function AutoCd($helpers) {
     $scriptBlock = $null
 
     #If the command is three or more dots
-    if ($CommandName -match '^\.{3,}$') {
+    if ($CommandName -match $helpers.Multidot) {
       $scriptBlock = {
         &$helpers.raiseLocation ($CommandName.Length - 1)
       }
@@ -18,19 +18,19 @@ function AutoCd($helpers) {
       $scriptBlock = { &$helpers.setLocation $CommandName }
     }
 
+    #Try smart expansion
+    elseif ($expanded = &$helpers.expandPath $CommandName -Directory) {
+      if ($expanded.Count -eq 1) {
+        $scriptBlock = { &$helpers.setLocation $expanded }
+      }
+    }
+
     elseif ($cde.CDABLE_VARS) {
       if (
         (Test-Path variable:$CommandName) -and
         (Test-Path ($path = Get-Variable $CommandName -ValueOnly))
       ) {
         $scriptBlock = { &$helpers.setLocation $path }
-      }
-    }
-
-    #Try smart expansion
-    elseif ($expanded = &$helpers.expandPath $CommandName -Directory) {
-      if ($expanded.Count -eq 1) {
-        $scriptBlock = { &$helpers.setLocation $expanded }
       }
     }
 

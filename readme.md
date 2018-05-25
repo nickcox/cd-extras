@@ -57,7 +57,7 @@ either a number, `n`, used to specify the number of levels or locations to trave
 [C:\temp]> _
 ```
 
-or a string, `NamePart`, used to change to the nearest directory whose name matches
+...or a string, `NamePart`, used to change to the nearest directory whose name matches
 the given argument.
 
 ```sh
@@ -91,13 +91,30 @@ as an alternative to `up [n]` or `.. [n]`.
 [C:\Windows]> _
 ```
 
+This syntax also provides tab completion into ancestor directories.
+
+```sh
+
+[C:\projects\powershell\docs\git]> cd .../<[Tab]>
+
+C:\projects\powershell\.git     C:\projects\powershell\.vscode
+‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+C:\projects\powershell\demos    C:\projects\powershell\docs
+
+C:\projects\powershell\test     C:\projects\powershell\.github
+
+C:\projects\powershell\assets   C:\projects\powershell\docker
+
+C:\projects\powershell\src      C:\projects\powershell\tools
+```
+
 The `Export-Up` (`xup`) function recursively expands each parent path into a global variable
 with a corresponding name. Why? It can be useful for navigating a deeply nested folder
 structure without needing to count `..`s. For example:
 
 ```sh
 
-[C:\projects\powershell\src\Modules\Unix]> Export-Up
+[C:\projects\powershell\src\Modules\Unix]> xup
 
 Name                           Value
 ----                           -----
@@ -110,6 +127,7 @@ projects                       C:\projects
 [C:\projects\powershell\src\Modules\Unix]> cd $po<[Tab]>
 [C:\projects\powershell\src\Modules\Unix]> cd $powershell/<[Tab]>
 [C:\projects\powershell\src\Modules\Unix]> cd C:\projects\powershell\
+
 .git     .github  .vscode  assets   demos    docker   docs     src      test     tools
 ‾‾‾‾‾‾‾‾
 ```

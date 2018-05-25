@@ -25,6 +25,11 @@ function PostCommandLookup($commands, $helpers) {
           try {
             &$helpers.setLocation @args -ErrorAction Stop
           }
+          catch [Management.Automation.PSArgumentException] {
+            if ($args -match $Multidot) {
+              Step-Up ($args[0].Length - 1)
+            }
+          }
           catch [Management.Automation.ItemNotFoundException] {
             if (
               $cde.CDABLE_VARS -and
@@ -50,8 +55,6 @@ function PostCommandLookup($commands, $helpers) {
             &$helpers.setLocation $cde.NOARG_CD
           }
         }
-
-        else { &$helpers.setLocation @args }
 
       }.GetNewClosure()
     }
