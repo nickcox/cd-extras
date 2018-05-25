@@ -24,10 +24,11 @@ Navigation helpers
 
 Provides the following aliases (and corresponding functions):
 
+* `up`, `..` (`Step-Up`)
 * `cd-` (`Undo-Location`)
 * `cd+` (`Redo-Location`)
 * `cd:` (`Switch-LocationPart`)
-* `up`, `..` (`Step-Up`)
+* `cdb` (`Step-Back`)
 
 Examples:
 
@@ -41,10 +42,11 @@ Examples:
 
 Note that the aliases are `cd-` and `cd+` *not* `cd -` and `cd +`.
 Repeated uses of `cd-` will keep moving backwards towards the beginning of the stack
-rather than toggling between the two most recent directories as in vanilla bash.
+rather than toggling between the two most recent directories as in vanilla bash. (You can
+use `Step-Back` (`cdb`) if you want to toggle between the current and previous directories.)
 
-Each of these functions except `cd:` can take a single optional parameter:
-either a number, `n`, used to specify the number of levels or locations to traverse
+Each of these functions except `cd:` and `cdb` may take a single optional parameter:
+either a number, `n`, used to specify the number of levels or locations to traverse...
 
 ```sh
 

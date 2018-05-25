@@ -93,6 +93,17 @@ Describe 'cd-extras' {
       }
     }
 
+    Describe 'Step-Back' {
+      It 'toggles between two directories' {
+        SetLocationEx \powershell\src\Modules
+        SetLocationEx \powershell\demos\apache
+        cdb
+        Get-Location | Select -Expand Path | Should BeLike '*src\modules'
+        cdb
+        Get-Location | Select -Expand Path | Should BeLike '*demos\apache'
+      }
+    }
+
     Describe 'Switch-LocationPart' {
       It 'can be called explicitly' {
         Set-Location powershell\src\Modules\Shared\Microsoft.PowerShell.Utility
