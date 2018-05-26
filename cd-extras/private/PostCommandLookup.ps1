@@ -26,11 +26,13 @@ function PostCommandLookup($commands, $helpers) {
             &$helpers.setLocation @args -ErrorAction Stop
           }
           catch [Management.Automation.PSArgumentException] {
+            $Global:Error.Clear()
             if ($args -match $Multidot) {
               Step-Up ($args[0].Length - 1)
             }
           }
           catch [Management.Automation.ItemNotFoundException] {
+            $Global:Error.Clear()
             if (
               $cde.CDABLE_VARS -and
               (Test-Path variable:$args) -and
