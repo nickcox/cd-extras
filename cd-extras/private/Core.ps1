@@ -55,6 +55,10 @@ function GetStackIndex([array]$stack, [string]$namepart) {
     })
 }
 
+function PathIsDescendedFrom($maybeAncestor, $maybeDescendant) {
+  (Resolve-Path $maybeAncestor) -like "$(Resolve-Path $maybeDescendant)*"
+}
+
 function EmitIndexedCompletion($items) {
   $items | % {
     $itemText =

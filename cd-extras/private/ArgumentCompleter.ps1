@@ -4,17 +4,26 @@ function Complete {
   # logic:
   # use a relative path if the supplied word isn't rooted (e.g. /temp/... or ~/... C:\...)
   # *and* the resolved path is a child of the current directory or its parent
+  # for absolute paths, replace
   $resolve = {
-    if (
-      -not (IsRooted $wordToComplete) -and
-      (Resolve-Path $_) -like (Resolve-Path ..).Path + "*") {
-      Resolve-Path -Relative $_
+    $friendly = $_
+    if (-not (IsRooted $wordToComplete) -and (PathIsDescendedFrom $_ .)) {
+      $friendly = Resolve-Path -Relative $_
     }
-    else {$_}
+    elseif ($homeDir = (Get-Location).Provider.Home) {
+      $friendly = $_ -replace "^$(NormaliseAndEscape $homeDir)", "~"
+    }
+    return @{full = $_; friendly = $friendly}
   }
 
-  # and trailing directory separator; quote if contains spaces
-  $bowOnIt = { param($x) if ($x -notmatch ' ') { "$x${/}" } else { "'$x${/}'" } }
+  # and normalised trailing directory separator; quote if contains spaces
+  $bowOnIt = {
+    param($x)
+    $x -replace '[/|\\]$', '' | % {
+      if ($_ -notmatch ' ') { "$_${/}" }
+      else { "'$_${/}'" }
+    }
+  }
 
   $dirs = if ($wordToComplete -match '^\.{3,}') {
     # if we're multi-dotting...
@@ -26,28 +35,29 @@ function Complete {
     Expand-Path -Directory $wordToComplete
   }
 
-  $variDirs =
-  Get-Variable "$wordToComplete*" |
-    Where { $cde.CDABLE_VARS -and $_.Value -and (Test-Path ($_.Value) -PathType Container) } |
-    Select -ExpandProperty Value
+  #replace cdable_vars
+  $variDirs = if (
+    $cde.CDABLE_VARS -and
+    $wordToComplete -match '[^/|\\]+' -and
+    ($maybeVar = Get-Variable "$($Matches[0])*" |
+        Where {$_.Value -and (Test-Path ($_.Value) -PathType Container)} |
+        Select -ExpandProperty Value)
+  ) {
+    Expand-Path -Directory ($wordToComplete -replace $Matches[0], $maybeVar)
+  }
+  else { @() }
 
   (@($dirs) + @($variDirs)) |
     Sort -Unique |
     % {
 
     $resolved = (&$resolve)
-
-    $completionText = (&$bowOnIt $resolved)
-
-    $listItemText = if (($_ | Split-Path -Parent) -eq (Resolve-Path .)) {
-      $_ | Split-Path -Leaf
-    }
-    else { $_ }
+    $completionText = (&$bowOnIt $resolved.friendly)
 
     New-Object Management.Automation.CompletionResult `
       $completionText,
-      $listItemText,
+      $resolved.friendly,
       'ParameterValue',
-      $_
+      $resolved.full
   }
 }

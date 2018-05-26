@@ -109,24 +109,24 @@ C:\projects\powershell\src      C:\projects\powershell\tools
 ```
 
 The `Export-Up` (`xup`) function recursively expands each parent path into a global variable
-with a corresponding name. Why? It can be useful for navigating a deeply nested folder
-structure without needing to count `..`s. For example:
+with a corresponding name. Why? In combination with [CDABLE_VARS](#cdable_vars),
+it can be useful for navigating a deeply nested folder structure without needing to count
+`..`s. For example:
 
 ```sh
 
-[C:\projects\powershell\src\Modules\Unix]> xup
+[~\projects\powershell\src\Modules\Unix]> xup
 
 Name                           Value
 ----                           -----
-Unix                           C:\projects\powershell\src\Modules\Unix
-Modules                        C:\projects\powershell\src\Modules
-src                            C:\projects\powershell\src
-powershell                     C:\projects\powershell
-projects                       C:\projects
+Unix                           ~\projects\powershell\src\Modules\Unix
+Modules                        ~\projects\powershell\src\Modules
+src                            ~\projects\powershell\src
+powershell                     ~\projects\powershell
+projects                       ~\projects
 
-[C:\projects\powershell\src\Modules\Unix]> cd $po<[Tab]>
-[C:\projects\powershell\src\Modules\Unix]> cd $powershell/<[Tab]>
-[C:\projects\powershell\src\Modules\Unix]> cd C:\projects\powershell\
+[~\projects\powershell\src\Modules\Unix]> cd po<[Tab]>
+[~\projects\powershell\src\Modules\Unix]> cd ~\projects\powershell\<[Tab]>
 
 .git     .github  .vscode  assets   demos    docker   docs     src      test     tools
 ‾‾‾‾‾‾‾‾
@@ -140,14 +140,6 @@ might be easier than:
 [C:\projects\powershell\src\Modules\Unix]> cd C:\projects\powershell\
 .git     .github  .vscode  assets   demos    docker   docs     src      test     tools
 ‾‾‾‾‾‾‾‾
-```
-
-When combined with the [CDABLE_VARS](#cdable_vars) option, it's even easier.
-
-```sh
-
-[C:\projects\powershell\src\Modules\Unix]> cd pr<[Tab]>
-[C:\projects\powershell\src\Modules\Unix]> cd C:\projects\
 ```
 
 AUTO_CD
