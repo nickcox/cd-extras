@@ -42,7 +42,7 @@ function Set-CdExtrasOption {
   $commandsToAutoExpand = @('cd', 'Set-Location')
   PostCommandLookup $commandsToAutoExpand $helpers
 
-  RegisterCompletions $cde.Completable 'Path' {Complete @args}
+  RegisterCompletions $cde.Completable 'Path' {CompletePaths @args}
   RegisterCompletions @('Step-Up') 'n' {CompleteAncestors @args}
   RegisterCompletions @('Undo-Location', 'Redo-Location') 'n' {CompleteStack @args}
 

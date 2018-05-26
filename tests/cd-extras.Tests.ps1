@@ -298,7 +298,7 @@ Describe 'cd-extras' {
 
     Describe 'Tab expansion' {
       It 'expands multiple items' {
-        $actual = Complete -wordToComplete 'pow/t/c' | Select -Expand CompletionText
+        $actual = CompletePaths -wordToComplete 'pow/t/c' | Select -Expand CompletionText
         $actual | Should HaveCount 3
 
         function ShouldContain($likeStr) {
@@ -311,29 +311,29 @@ Describe 'cd-extras' {
       }
 
       It 'expands around periods' {
-        $actual = Complete -wordToComplete 'pow/s/.sdk'
+        $actual = CompletePaths -wordToComplete 'pow/s/.sdk'
         $actual.CompletionText | Should BeLike '*powershell\src\Microsoft.PowerShell.SDK\'
       }
 
       It 'completes directories with spaces correctly' {
-        $actual = Complete  -wordToComplete 'pow/directory with spaces/child one'
+        $actual = CompletePaths  -wordToComplete 'pow/directory with spaces/child one'
         $actual.CompletionText | Should BeLike "'*\child one\'"
       }
 
       It 'completes relative directories with spaces correctly' {
-        $actual = Complete -wordToComplete './pow/directory with spaces/child one'
+        $actual = CompletePaths -wordToComplete './pow/directory with spaces/child one'
         $actual.CompletionText | Should BeLike "'*\child one\'"
       }
 
       It 'expands multiple dots' {
         Set-Location p*\src\Sys*\Format*\common\Utilities
-        (Complete -wordToComplete '...').CompletionText | Should Match 'FormatAndOutput'
+        (CompletePaths -wordToComplete '...').CompletionText | Should Match 'FormatAndOutput'
       }
 
       It 'completes CDABLE_VARS' {
         Set-CdExtrasOption -Option CDABLE_VARS $true
         $Global:dir = Resolve-Path ./powershell/src
-        (Complete -wordToComplete 'dir').CompletionText | Should Match 'src'
+        (CompletePaths -wordToComplete 'dir').CompletionText | Should Match 'src'
       }
     }
 

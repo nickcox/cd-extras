@@ -1,4 +1,4 @@
-function Complete {
+function CompletePaths {
   param($commandName, $parameterName, $wordToComplete, $commandAst, $boundParameters)
 
   # logic:
