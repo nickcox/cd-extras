@@ -8,10 +8,11 @@ function SetLocationEx {
   [CmdletBinding()]
   param([string]$Path, [switch]$PassThru)
 
-  #don't push dupes onto stack
+  #don't push consecutive dupes onto stack
   if (
     (@((Get-Location -StackName $fwd -ea Ignore )) | Select -First 1).Path -ne
-    (Get-Location).Path) {
+    (Get-Location).Path
+  ) {
     if (Get-Item $path -ea Ignore) { Push-Location -StackName $fwd }
   }
 
@@ -57,6 +58,7 @@ function GetStackIndex([array]$stack, [string]$namepart) {
 
 function PathIsDescendedFrom($maybeAncestor, $maybeDescendant) {
   (Resolve-Path $maybeAncestor) -like "$(Resolve-Path $maybeDescendant)*"
+  (Resolve-Path $maybeDescendant) -like "$(Resolve-Path $maybeAncestor)*"
 }
 
 function EmitIndexedCompletion($items) {

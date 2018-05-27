@@ -7,7 +7,7 @@ function CompletePaths {
   # for absolute paths, replace
   $resolve = {
     $friendly = $_
-    if (-not (IsRooted $wordToComplete) -and (PathIsDescendedFrom $_ .)) {
+    if (-not (IsRooted $wordToComplete) -and (PathIsDescendedFrom . $_)) {
       $friendly = Resolve-Path -Relative $_
     }
     elseif ($homeDir = (Get-Location).Provider.Home) {
