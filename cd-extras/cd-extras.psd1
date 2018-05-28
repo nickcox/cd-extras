@@ -1,6 +1,6 @@
 @{
   RootModule        = 'cd-extras.psm1'
-  ModuleVersion     = '0.6.2'
+  ModuleVersion     = '0.7.0'
   GUID              = '206fccbd-dc96-4b23-908c-5ac821372e16'
 
   Author            = 'Nick Cox'
@@ -14,7 +14,7 @@
 
   PrivateData       = @{
     PSData = @{
-      Tags       = @('AUTO_CD', 'CD_PATH', 'bash')
+      Tags       = @('cd+', 'cd-', 'AUTO_CD', 'CD_PATH', 'CDABLE_VARS', 'bash', 'zsh')
       LicenseUri = 'https://github.com/nickcox/cd-extras/blob/master/LICENSE'
       ProjectUri = 'https://github.com/nickcox/cd-extras'
     }

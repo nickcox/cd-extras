@@ -6,7 +6,7 @@ cd-extras
   * [AUTO_CD](#auto_cd)
   * [CD_PATH](#cd_path)
   * [CDABLE_VARS](#cdable_vars)
-  * [Path expansion](#path-expansion)
+  * [Tab expansion](#tab-expansion)
   * [No argument cd](#no-argument-cd)
   * [Two argument cd](#two-argument-cd)
   * [Additional helpers](#additional-helpers)
@@ -19,15 +19,18 @@ What is it?
 ==========
 general conveniences for the `cd` command in PowerShell inspired by bash and zsh
 
+![Basic Navigation](./basic-navigation.gif)
+
 Navigation helpers
 ---------
 
 Provides the following aliases (and corresponding functions):
 
+* `up`, `..` (`Step-Up`)
 * `cd-` (`Undo-Location`)
 * `cd+` (`Redo-Location`)
 * `cd:` (`Switch-LocationPart`)
-* `up`, `..` (`Step-Up`)
+* `cdb` (`Step-Back`)
 
 Examples:
 
@@ -41,10 +44,11 @@ Examples:
 
 Note that the aliases are `cd-` and `cd+` *not* `cd -` and `cd +`.
 Repeated uses of `cd-` will keep moving backwards towards the beginning of the stack
-rather than toggling between the two most recent directories as in vanilla bash.
+rather than toggling between the two most recent directories as in vanilla bash. (You can
+use `Step-Back` (`cdb`) to toggle between the current and previous directories.)
 
-Each of these functions except `cd:` takes an optional parameter, `n`,
-used to specify the number of levels or locations to traverse.
+`up`, `cd+` and `cd-` each take a single optional parameter: either a number, `n`,
+used to specify the number of levels or locations to traverse...
 
 ```sh
 
@@ -55,13 +59,27 @@ used to specify the number of levels or locations to traverse.
 [C:\temp]> _
 ```
 
-The `Step-Up` (`up`, `..`) function alternatively supports passing a string parameter
-to change to the first ancestor directory which contains the given string.
+...or a string, `NamePart`, used to change to the nearest directory whose name matches
+the given argument.
 
 ```sh
 
 [C:\Windows\System32\drivers\etc]> up win # or `.. win`
 [C:\Windows]> _
+```
+
+The logic of `cd- <NamePart>` and `cd+ <NamePart>` is to search the stack, starting at
+the current location, for directories whose name contains the given string. If none is found
+then it will attempt to match against the full path instead. For example:
+
+```sh
+[C:\Windows]> cd system32
+[C:\Windows\System32]> cd drivers
+[C:\Windows\System32\drivers]> cd- sys
+[C:\Windows\System32]> cd+
+[C:\Windows\System32\drivers]> cd- win
+[C:\Windows\]> cd+ 32/dr
+[C:\Windows\System32\drivers]> _
 ```
 
 When the [AUTO_CD](#auto_cd) option is enabled, multiple dot syntax for `up` is supported
@@ -75,45 +93,55 @@ as an alternative to `up [n]` or `.. [n]`.
 [C:\Windows]> _
 ```
 
-The `Export-Up` (`xup`) function recursively expands each parent path into a global variable
-with a corresponding name. Why? It can be useful for navigating a deeply nested folder structure without
-needing to count `..`s. For example:
+The multi-dot syntax also provides tab completion into ancestor directories.
 
 ```sh
 
-[C:\projects\powershell\src\Modules\Unix]> Export-Up
+[C:\projects\powershell\docs\git]> cd .../<[Tab]>
+
+C:\projects\powershell\.git     C:\projects\powershell\.vscode
+‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+C:\projects\powershell\demos    C:\projects\powershell\docs
+
+C:\projects\powershell\test     C:\projects\powershell\.github
+
+C:\projects\powershell\assets   C:\projects\powershell\docker
+
+C:\projects\powershell\src      C:\projects\powershell\tools
+```
+
+The `Export-Up` (`xup`) function recursively expands each parent path into a global variable
+with a corresponding name. Why? In combination with [CDABLE_VARS](#cdable_vars),
+it can be useful for navigating a deeply nested folder structure without needing to count
+`..`s. For example:
+
+```sh
+
+[~\projects\powershell\src\Modules\Unix]> xup
 
 Name                           Value
 ----                           -----
-Unix                           C:\projects\powershell\src\Modules\Unix
-Modules                        C:\projects\powershell\src\Modules
-src                            C:\projects\powershell\src
-powershell                     C:\projects\powershell
-projects                       C:\projects
+Unix                           ~\projects\powershell\src\Modules\Unix
+Modules                        ~\projects\powershell\src\Modules
+src                            ~\projects\powershell\src
+powershell                     ~\projects\powershell
+projects                       ~\projects
 
-[C:\projects\powershell\src\Modules\Unix]> cd $po<[Tab]>
-[C:\projects\powershell\src\Modules\Unix]> cd $powershell/<[Tab]>
-[C:\projects\powershell\src\Modules\Unix]> cd C:\projects\powershell\
+[~\projects\powershell\src\Modules\Unix]> cd po<[Tab]>
+[~\projects\powershell\src\Modules\Unix]> cd ~\projects\powershell\<[Tab]>
+
 .git     .github  .vscode  assets   demos    docker   docs     src      test     tools
 ‾‾‾‾‾‾‾‾
 ```
 
-is likely easier than:
+might be easier than:
 
 ```sh
 
-[C:\projects\powershell\src\Modules\Unix]> cd ../../../<[Tab]>
+[C:\projects\powershell\src\Modules\Unix]> cd ....<[Tab]> # or cd ../../../<[Tab]>
 [C:\projects\powershell\src\Modules\Unix]> cd C:\projects\powershell\
 .git     .github  .vscode  assets   demos    docker   docs     src      test     tools
 ‾‾‾‾‾‾‾‾
-```
-
-When combined with the [CDABLE_VARS](#cdable_vars) option, it's even easier.
-
-```sh
-
-[C:\projects\powershell\src\Modules\Unix]> cd pr<[Tab]>
-[C:\projects\powershell\src\Modules\Unix]> cd C:\projects\
 ```
 
 AUTO_CD
@@ -136,7 +164,7 @@ Search additional locations for candidate directories.
 
 ```sh
 
-[~]> $cde.CD_PATH += '~/documents'
+[~]> $cde.CD_PATH = @('~/documents')
 [~]> cd WindowsPowerShell
 [~/documents/WindowsPowerShell]> _
 ```
@@ -145,7 +173,7 @@ Note that CD_PATHs are _not_ searched when an absolute or relative path is given
 
 ```sh
 
-[~]> $cde.CD_PATH += '~/documents'
+[~]> $cde.CD_PATH = @('~/documents')
 [~]> cd ./WindowsPowerShell
 Set-Location : Cannot find path '~\WindowsPowerShell' because it does not exist.
 ```
@@ -176,10 +204,10 @@ subdirectories you could create a corresponding variable.
 
 CDABLE_VARS is off by default. Enable it with: `Set-CdExtrasOption CDABLE_VARS $true`.
 
-Path expansion
+Tab expansion
 -----------
 
-`cd` will provide tab expansions by expanding all path segments so that
+`cd` and `ls` will provide tab expansions by expanding all path segments so that
 you don't have to individually tab through each one.
 
 ```sh
@@ -216,6 +244,29 @@ Paths within the `$cde.CD_PATH` array will be considered for expansion.
 [~]> $cde.CD_PATH += "~\Documents\"
 [~]> cd win/mod
 [~\Documents\WindowsPowerShell\Modules]> _
+```
+
+Expansions are also provided for `cd+`, `cd-` and `up` aliases. If the `MenuCompletion` option
+is set to `$true` then the completions offered will be index of the corresponding directory;
+the full path is displayed in the menu below. `cd-extras` will attempt to detect `PSReadLine`
+at start-up in order to set this option appropriately. For example:
+
+```sh
+
+[C:\Windows\System32\drivers\etc]> up <[Tab]>
+1. drivers  2. System32  3. Windows
+‾‾‾‾‾‾‾‾‾‾‾
+
+[C:\Windows\System32\drivers\etc]> up 3<[Return]>
+[C:\Windows]> _
+```
+
+It's also possible to tab through these three aliases using a partial directory name.
+
+```sh
+[~\projects\PowerShell\src\Modules\Shared]> up pr<[Tab]>
+[~\projects\PowerShell\src\Modules\Shared]> up '~\projects'<[Return]>
+[~\projects]> _
 ```
 
 No argument cd
@@ -284,6 +335,9 @@ Options provided:
   * cd into directory paths stored in variables without prefixing the variable name with `$`.
 * _NOARG_CD_: `[string] = '~'`
   * If specified, `cd` command with no arguments will change to this directory.
+* _MenuCompletion_: `[bool] = $true` (if PSReadLine available)
+  * If truthy, indexes are offered as completions for `up`, `cd+` and `cd-` with full paths
+  displayed in the menu
 * _Completable_: `[array] = @('Push-Location', 'Set-Location', 'Get-ChildItem')`
   * Commands that participate in advanced tab expansion.
 
