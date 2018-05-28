@@ -1,7 +1,14 @@
 function CompleteStack {
   param($commandName, $parameterName, $wordToComplete, $commandAst, $boundParameters)
 
-  $stack = if ($commandName -match 'Redo|\+') {Get-Stack -Redo} else {Get-Stack -Undo}
+  $stack = if (
+    $commandName -match 'Redo' -or
+    (
+      $aliased = (Get-Alias $commandName -ea Ignore).ResolvedCommandName -and
+      $aliased -match 'Redo'
+    )
+  )
+  {Get-Stack -Redo} else {Get-Stack -Undo}
   if (-not $stack) { return }
 
   $matches = @($stack) -match $wordToComplete |
