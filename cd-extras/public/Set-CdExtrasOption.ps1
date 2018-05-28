@@ -23,7 +23,7 @@ function Set-CdExtrasOption {
       'CD_PATH',
       'NOARG_CD',
       'CDABLE_VARS',
-      'CompletionStyle',
+      'MenuCompletion',
       'Completable')]
     $Option,
     $Value)
