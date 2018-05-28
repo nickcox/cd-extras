@@ -6,7 +6,7 @@ cd-extras
   * [AUTO_CD](#auto_cd)
   * [CD_PATH](#cd_path)
   * [CDABLE_VARS](#cdable_vars)
-  * [Path expansion](#path-expansion)
+  * [Tab expansion](#tab-expansion)
   * [No argument cd](#no-argument-cd)
   * [Two argument cd](#two-argument-cd)
   * [Additional helpers](#additional-helpers)
@@ -18,6 +18,8 @@ cd-extras
 What is it?
 ==========
 general conveniences for the `cd` command in PowerShell inspired by bash and zsh
+
+![Basic Navigation](./basic-navigation.gif)
 
 Navigation helpers
 ---------
@@ -43,10 +45,10 @@ Examples:
 Note that the aliases are `cd-` and `cd+` *not* `cd -` and `cd +`.
 Repeated uses of `cd-` will keep moving backwards towards the beginning of the stack
 rather than toggling between the two most recent directories as in vanilla bash. (You can
-use `Step-Back` (`cdb`) if you want to toggle between the current and previous directories.)
+use `Step-Back` (`cdb`) to toggle between the current and previous directories.)
 
-Each of these functions except `cd:` and `cdb` may take a single optional parameter:
-either a number, `n`, used to specify the number of levels or locations to traverse...
+`up`, `cd+` and `cd-` each take a single optional parameter: either a number, `n`,
+used to specify the number of levels or locations to traverse...
 
 ```sh
 
@@ -91,7 +93,7 @@ as an alternative to `up [n]` or `.. [n]`.
 [C:\Windows]> _
 ```
 
-This syntax also provides tab completion into ancestor directories.
+The multi-dot syntax also provides tab completion into ancestor directories.
 
 ```sh
 
@@ -202,10 +204,10 @@ subdirectories you could create a corresponding variable.
 
 CDABLE_VARS is off by default. Enable it with: `Set-CdExtrasOption CDABLE_VARS $true`.
 
-Path expansion
+Tab expansion
 -----------
 
-`cd` will provide tab expansions by expanding all path segments so that
+`cd` and `ls` will provide tab expansions by expanding all path segments so that
 you don't have to individually tab through each one.
 
 ```sh
@@ -242,6 +244,29 @@ Paths within the `$cde.CD_PATH` array will be considered for expansion.
 [~]> $cde.CD_PATH += "~\Documents\"
 [~]> cd win/mod
 [~\Documents\WindowsPowerShell\Modules]> _
+```
+
+Expansions are also provided for `cd+`, `cd-` and `up` aliases. If the `MenuCompletion` option
+is set to `$true` then the completions offered will be index of the corresponding directory;
+the full path is displayed in the menu below. `cd-extras` will attempt to detect `PSReadLine`
+at start-up in order to set this option appropriately. For example:
+
+```sh
+
+[C:\Windows\System32\drivers\etc]> up <[Tab]>
+1. drivers  2. System32  3. Windows
+‾‾‾‾‾‾‾‾‾‾‾
+
+[C:\Windows\System32\drivers\etc]> up 3<[Return]>
+[C:\Windows]> _
+```
+
+It's also possible to tab through these three aliases using a partial directory name.
+
+```sh
+[~\projects\PowerShell\src\Modules\Shared]> up pr<[Tab]>
+[~\projects\PowerShell\src\Modules\Shared]> up '~\projects'<[Return]>
+[~\projects]> _
 ```
 
 No argument cd
@@ -310,6 +335,9 @@ Options provided:
   * cd into directory paths stored in variables without prefixing the variable name with `$`.
 * _NOARG_CD_: `[string] = '~'`
   * If specified, `cd` command with no arguments will change to this directory.
+* _MenuCompletion_: `[bool] = $true` (if PSReadLine available)
+  * If truthy, indexes are offered as completions for `up`, `cd+` and `cd-` with full paths
+  displayed in the menu
 * _Completable_: `[array] = @('Push-Location', 'Set-Location', 'Get-ChildItem')`
   * Commands that participate in advanced tab expansion.
 
