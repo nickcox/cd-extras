@@ -39,9 +39,9 @@ function Undo-Location {
 
   if ($PSCmdlet.ParameterSetName -eq 'number' -and $n -ge 1) {
     1..$n | % {
-      if ($null -ne (Get-Location -StackName $fwd -ea Ignore)) {
-        Push-Location -StackName $back
-        Pop-Location -StackName $fwd -ea Ignore
+      if ($null -ne (Get-Location -StackName $back -ea Ignore)) {
+        Push-Location -StackName $fwd
+        Pop-Location -StackName $back -ea Ignore
       }
     }
   }

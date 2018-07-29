@@ -18,8 +18,8 @@ function Get-Stack {
     [switch] $Redo
   )
 
-  $getUndo = { (Get-Location -StackName $fwd -ea Ignore) }
-  $getRedo = { (Get-Location -StackName $back -ea Ignore) }
+  $getUndo = { (Get-Location -StackName $back -ea Ignore) }
+  $getRedo = { (Get-Location -StackName $fwd -ea Ignore) }
 
   if ($Undo -and -not $Redo) { return &$getUndo }
   if ($Redo -and -not $Undo) { return &$getRedo }

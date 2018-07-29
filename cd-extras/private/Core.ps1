@@ -9,15 +9,15 @@ function SetLocationEx {
   [CmdletBinding()]
   param([string]$Path, [switch]$PassThru)
 
-  # discard any existing backward (redo) stack
-  $Script:back = 'fwd' + [Guid]::NewGuid()
+  # discard any existing forward (redo) stack
+  $Script:fwd = 'fwd' + [Guid]::NewGuid()
 
   # don't push consecutive dupes onto stack
   if (
-    (@((Get-Location -StackName $fwd -ea Ignore )) | Select -First 1).Path -ne
+    (@((Get-Location -StackName $back -ea Ignore )) | Select -First 1).Path -ne
     (Get-Location).Path
   ) {
-    if (Get-Item $path -ea Ignore) { Push-Location -StackName $fwd }
+    if (Get-Item $path -ea Ignore) { Push-Location -StackName $back }
   }
 
   $Script:OLDPWD = $PWD
