@@ -446,6 +446,13 @@ Describe 'cd-extras' {
         $actual.Count | Should BeGreaterThan 5
       }
 
+      It 'uses index completion when menu completion is on' {
+        Set-Location ./powershell/demos/Apache
+        $cde.MenuCompletion = $true
+        $actual = CompleteAncestors -wordToComplete ''
+        $actual[0].CompletionText | Should Be 1
+      }
+
       It 'uses the full path when menu completion is off' {
         Set-Location ./powershell/demos/Apache
         $cde.MenuCompletion = $false

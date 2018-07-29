@@ -13,8 +13,7 @@ function CompleteAncestors {
     }
   }
 
-  $ups.GetEnumerator() |
-    Where Key -Match (NormaliseAndEscape $wordToComplete) |
-    Completions |
-    IndexedCompletion
+  IndexedComplete ($ups.GetEnumerator() |
+      Where Key -Match (NormaliseAndEscape $wordToComplete) |
+      Completions)
 }

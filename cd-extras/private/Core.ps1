@@ -63,16 +63,20 @@ function PathIsDescendedFrom($maybeAncestor, $maybeDescendant) {
   (Resolve-Path $maybeDescendant) -like "$(Resolve-Path $maybeAncestor)*"
 }
 
-filter IndexedCompletion {
-  $itemText = if ($cde.MenuCompletion -and $items.Count -gt 1) {"$($_.index)"}
-  else {"'$($_.long)'"}
+function IndexedComplete($items) {
+  filter IndexedCompletion {
+    $itemText = if ($cde.MenuCompletion -and $items.Count -gt 1) {"$($_.index)"}
+    else {"'$($_.long)'"}
 
-  [Management.Automation.CompletionResult]::new(
-    $itemText,
-    "$($_.index). $($_.short)" ,
-    "ParameterValue",
-    "$($_.index). $($_.long)"
-  )
+    [Management.Automation.CompletionResult]::new(
+      $itemText,
+      "$($_.index). $($_.short)" ,
+      "ParameterValue",
+      "$($_.index). $($_.long)"
+    )
+  }
+
+  $items | IndexedCompletion
 }
 
 function RegisterCompletions([array] $commands, $param, $target) {

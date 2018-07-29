@@ -20,7 +20,5 @@ function CompleteStack {
     }
   }
 
-  @($stack) -match $wordToComplete |
-    Completions |
-    IndexedCompletion
+  IndexedComplete (@($stack) -match $wordToComplete | Completions)
 }
