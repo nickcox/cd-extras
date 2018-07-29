@@ -20,11 +20,12 @@ function CompletePaths {
       else { "'$_${/}'" }
     }
 
-    New-Object Management.Automation.CompletionResult `
-      $completionText,
-    $friendly,
-    'ParameterValue',
-    $_
+    [Management.Automation.CompletionResult]::new(`
+        $completionText,
+      $friendly,
+      'ParameterValue',
+      $_
+    )
   }
 
   $dirs = if ($wordToComplete -match '^\.{3,}') {
@@ -49,5 +50,5 @@ function CompletePaths {
   }
   else { @() }
 
-  (@($dirs) + @($variDirs)) | Sort-Object -Unique | CompletionResult
+  @($dirs) + @($variDirs) | Sort-Object -Unique | CompletionResult
 }

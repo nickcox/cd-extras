@@ -67,11 +67,12 @@ filter IndexedCompletion {
   $itemText = if ($cde.MenuCompletion -and $items.Count -gt 1) {"$($_.index)"}
   else {"'$($_.long)'"}
 
-  New-Object Management.Automation.CompletionResult `
+  [Management.Automation.CompletionResult]::new(
     $itemText,
-  "$($_.index). $($_.short)" ,
-  "ParameterValue",
-  "$($_.index). $($_.long)"
+    "$($_.index). $($_.short)" ,
+    "ParameterValue",
+    "$($_.index). $($_.long)"
+  )
 }
 
 function RegisterCompletions([array] $commands, $param, $target) {

@@ -339,12 +339,12 @@ Describe 'cd-extras' {
 
       It 'expands rooted paths' {
         Expand-Path /p/s/m/u | # TestDrive root Windows only
-        ShouldBeOnWindows (Join-Path $TestDrive powershell\src\Modules\Unix)
+          ShouldBeOnWindows (Join-Path $TestDrive powershell\src\Modules\Unix)
       }
 
       It 'can return multiple expansions' {
         (Expand-Path ./p/s/m/s/m).Length |
-        ShouldBeOnWindows 2
+          ShouldBeOnWindows 2
       }
 
       It 'considers CD_PATH for expansion' {
