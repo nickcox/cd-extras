@@ -1,42 +1,45 @@
-function AutoCd($helpers) {
+function AutoCd($setLocation) {
+
   return {
     param($CommandName, $CommandLookupEventArgs)
-    if ($args.Length -gt 0) { return }
 
-    $helpers = $helpers
+    $setLocation = $setLocation
     $scriptBlock = $null
 
-    #If the command is three or more dots
-    if ($CommandName -match $helpers.Multidot) {
+    # If the command is three or more dots
+    if ($CommandName -match $Script:Multidot) {
       $scriptBlock = {
-        &$helpers.raiseLocation ($CommandName.Length - 1)
+        Step-Up ($CommandName.Length - 1)
       }
     }
 
-    #If the command is already a valid path
+    # If the command is already a valid path
     elseif (Test-Path $CommandName) {
-      $scriptBlock = { &$helpers.setLocation $CommandName }
+      $scriptBlock = { &$setLocation $CommandName }
     }
 
-    #Try smart expansion
-    elseif ($expanded = &$helpers.expandPath $CommandName -Directory) {
+    # Try smart expansion
+    elseif ($expanded = Expand-Path $CommandName -Directory) {
       if ($expanded.Count -eq 1) {
-        $scriptBlock = { &$helpers.setLocation $expanded }
+        $scriptBlock = { &$setLocation $expanded }
       }
     }
 
     elseif ($cde.CDABLE_VARS) {
       if (
         (Test-Path variable:$CommandName) -and
-        (Test-Path ($path = Get-Variable $CommandName -ValueOnly))
+        ($path = Get-Variable $CommandName -ValueOnly) -and
+        (Test-Path $path)
       ) {
-        $scriptBlock = { &$helpers.setLocation $path }
+        $scriptBlock = { &$setLocation $path }
       }
     }
 
-    if ($scriptBlock) {
-      $CommandLookupEventArgs.CommandScriptBlock = $scriptBlock.GetNewClosure()
+    if ($scriptBlock -and ($scriptBlock = $scriptBlock.GetNewClosure())) {
+      $CommandLookupEventArgs.CommandScriptBlock = {
+        if ($args.Length -eq 0) { &$scriptBlock }
+      }.GetNewClosure()
       $CommandLookupEventArgs.StopSearch = $true
     }
-  }.GetNewClosure()
+  }
 }

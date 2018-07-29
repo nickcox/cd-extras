@@ -4,9 +4,8 @@ function CompleteAncestors {
   if (-not $ups) { return }
 
   $keys = @($ups.Keys.GetEnumerator())
-  $matches = $ups.GetEnumerator() |
-    Where Key -Match (NormaliseAndEscape $wordToComplete) |
-    % {
+
+  filter Completions {
     @{
       short = $_.Key
       long  = $_.Value
@@ -14,5 +13,8 @@ function CompleteAncestors {
     }
   }
 
-  EmitIndexedCompletion @($matches)
+  $ups.GetEnumerator() |
+    Where Key -Match (NormaliseAndEscape $wordToComplete) |
+    Completions |
+    IndexedCompletion
 }

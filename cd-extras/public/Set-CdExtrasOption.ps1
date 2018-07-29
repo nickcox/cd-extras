@@ -24,33 +24,27 @@ function Set-CdExtrasOption {
       'NOARG_CD',
       'CDABLE_VARS',
       'MenuCompletion',
-      'Completable')]
+      'DirCompletions')]
     $Option,
     $Value)
 
   $Global:cde.$option = $value
 
-  $helpers = @{
-    raiseLocation = {Step-Up @args}
-    setLocation   = {SetLocationEx @args}
-    expandPath    = {Expand-Path @args}
-    transpose     = {Switch-LocationPart @args}
-    multiDot      = $Multidot
-    isUnderTest   = {$Global:__cdeUnderTest -and !($Global:__cdeUnderTest = $false)}
-  }
+  $isUnderTest = {$Global:__cdeUnderTest -and !($Global:__cdeUnderTest = $false)}
 
   $commandsToAutoExpand = @('cd', 'Set-Location')
-  PostCommandLookup $commandsToAutoExpand $helpers
+  PostCommandLookup $commandsToAutoExpand $isUnderTest $Script:SetLocation
 
-  RegisterCompletions $cde.Completable 'Path' {CompletePaths @args}
   RegisterCompletions @('Step-Up') 'n' {CompleteAncestors @args}
   RegisterCompletions @('Undo-Location', 'Redo-Location') 'n' {CompleteStack @args}
-
+  if ($cde.DirCompletions) {
+    RegisterCompletions $cde.DirCompletions 'Path' {CompletePaths @args}
+  }
 
   if ($cde.AUTO_CD) {
-    CommandNotFound @(AutoCd $helpers) $helpers
+    CommandNotFound @(AutoCd($Script:SetLocation)) $isUnderTest
   }
   else {
-    CommandNotFound @() $helpers
+    CommandNotFound @() $isUnderTest
   }
 }

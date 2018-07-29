@@ -46,11 +46,10 @@ function Expand-Path {
     $wildcardedPaths = @($wildcardedPath) + (
       $SearchPaths | % { Join-Path $_ $wildcardedPath })
   }
-
   else { $wildcardedPaths = $wildcardedPath }
 
   $type = @{File = $File; Directory = $Directory}
 
-  Write-Verbose "Expanding $Candidate to: $wildcardedPaths"
+  Write-Verbose "`nExpanding $Candidate to: $wildcardedPaths"
   return Get-ChildItem $wildcardedPaths @type -Force -ErrorAction Ignore
 }

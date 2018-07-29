@@ -7,12 +7,12 @@ function CompleteStack {
       $aliased = (Get-Alias $commandName -ea Ignore).ResolvedCommandName -and
       $aliased -match 'Redo'
     )
-  )
-  {Get-Stack -Redo} else {Get-Stack -Undo}
+  ) {Get-Stack -Redo}
+  else {Get-Stack -Undo}
+
   if (-not $stack) { return }
 
-  $matches = @($stack) -match $wordToComplete |
-    % {
+  filter Completions {
     @{
       short = $_;
       long  = $_;
@@ -20,5 +20,7 @@ function CompleteStack {
     }
   }
 
-  EmitIndexedCompletion @($matches)
+  @($stack) -match $wordToComplete |
+    Completions |
+    IndexedCompletion
 }

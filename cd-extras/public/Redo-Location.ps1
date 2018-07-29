@@ -33,7 +33,7 @@ function Redo-Location {
 
   if ($PSCmdlet.ParameterSetName -eq 'number' -and $n -ge 1) {
     1..$n | % {
-      if ((Get-Location -StackName $back -ea Ignore) -ne $null) {
+      if ($null -ne (Get-Location -StackName $back -ea Ignore)) {
         Push-Location -StackName $fwd
         Pop-Location -StackName $back
       }
@@ -49,7 +49,7 @@ function Redo-Location {
       Redo-Location ($match + 1)
     }
     else {
-      Write-Error "Could not find $NamePart in redo stack"
+      Write-Error "Could not find $NamePart in redo stack" -ErrorAction Stop
     }
   }
 }

@@ -1,63 +1,78 @@
-function PostCommandLookup($commands, $helpers) {
+function PostCommandLookup($commands, $isUnderTest, $setLocation) {
 
   $ExecutionContext.InvokeCommand.PostCommandLookupAction = {
     param($CommandName, $CommandLookupEventArgs)
 
     if ($commands -contains $CommandName -and
-      ((&$helpers.isUnderTest) -or $CommandLookupEventArgs.CommandOrigin -eq 'Runspace')) {
+      ((&$isUnderTest) -or $CommandLookupEventArgs.CommandOrigin -eq 'Runspace')) {
 
-      $helpers = $helpers # make available to inner closure
+      $CommandName = $CommandName
+      $setLocation = $setLocation
 
       $CommandLookupEventArgs.CommandScriptBlock = {
-        $fullCommand = (@($commandname) + $args) -join ' '
+        $fullCommand = (@($CommandName) + $args) -join ' '
+
         $tokens = [System.Management.Automation.PSParser]::Tokenize($fullCommand, [ref]$null)
         $params = $tokens | Where type -eq CommandParameter
+        $arg = $tokens | Where type -eq CommandArgument
 
         # two arg: transpose
         if (
           @($args).Length -eq 2 -and
           @($params).Length -eq 0 -and
-          -not ($args -match '^(/|\\)') ) { &$helpers.transpose @args }
+          -not ($args -match '^(/|\\)') ) { Switch-LocationPart @args }
 
-        # single arg: expand if necessary
-        elseif (@($args).Length -eq 1 -and @($params).Length -eq 0) {
+        # noarg cd
+        elseif (@($arg).Length -eq 0 -and @($params).Length -eq 0) {
+          if (Test-Path $cde.NOARG_CD) {
+            &$setLocation $cde.NOARG_CD
+          }
+        }
+
+        # otherwise try to execute SetLocation
+        else {
 
           try {
-            &$helpers.setLocation @args -ErrorAction Stop
+            &$setLocation @args -ErrorAction Stop
           }
+
           catch [Management.Automation.PSArgumentException] {
             $Global:Error.Clear()
+
             if ($args -match $Multidot) {
+              # multidot throws this exception on Windows
               Step-Up ($args[0].Length - 1)
             }
           }
+
           catch [Management.Automation.ItemNotFoundException] {
             $Global:Error.Clear()
-            if (
+
+            if ($args -match $Multidot) {
+              # multidot throws this exception on Linux
+              Step-Up ($args[0].Length - 1)
+            }
+
+            elseif (
+              @($arg).Length -eq 1 -and
               $cde.CDABLE_VARS -and
-              (Test-Path variable:$args) -and
-              (Test-Path ($path = Get-Variable $args -ValueOnly))
+              (Test-Path "variable:$($arg.Content)") -and
+              ($path = Get-Variable $arg.Content -ValueOnly) -and
+              (Test-Path $path)
             ) {
-              &$helpers.setLocation $path
+              &$setLocation $path
             }
             elseif (
-              ($dirs = &$helpers.expandPath $args $cde.CD_PATH -Directory) -and
+              @($arg).Length -eq 1 -and
+              ($dirs = Expand-Path $arg.Content $cde.CD_PATH -Directory) -and
               ($dirs.Count -eq 1)) {
 
-              &$helpers.setLocation $dirs
+              &$setLocation $dirs
             }
 
             else { throw }
           }
         }
-
-        # noarg cd
-        elseif (@($args).Length -eq 0 -and @($params).Length -eq 0) {
-          if (Test-Path $cde.NOARG_CD) {
-            &$helpers.setLocation $cde.NOARG_CD
-          }
-        }
-
       }.GetNewClosure()
     }
   }.GetNewClosure()

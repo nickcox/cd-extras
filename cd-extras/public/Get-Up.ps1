@@ -49,7 +49,9 @@ function Get-Up {
     # this is only really used for completion when MenuCompletion is off
     $next = $From | Resolve-Path
     while ($next = $next | Split-Path -Parent) {
-      if (($next) -eq (Resolve-Path $NamePart)) { return $next }
+      if (($next) -eq (Resolve-Path $NamePart -ErrorAction Ignore)) { return $next }
     }
+
+    Write-Error "Could not find '$NamePart' as an ancestor of the given path." -ErrorAction Stop
   }
 }

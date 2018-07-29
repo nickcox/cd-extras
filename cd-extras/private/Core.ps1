@@ -1,14 +1,18 @@
 ${Script:/} = [System.IO.Path]::DirectorySeparatorChar
 $Script:Multidot = '^\.{3,}$'
-$Script:fwd = 'forward'
+$Script:fwd = 'fwd'
 $Script:back = 'back'
 $Script:OLDPWD # used by Step-Back
+$Script:setLocation = {SetLocationEx @args}
 
 function SetLocationEx {
   [CmdletBinding()]
   param([string]$Path, [switch]$PassThru)
 
-  #don't push consecutive dupes onto stack
+  # discard any existing backward (redo) stack
+  $Script:back = 'fwd' + [Guid]::NewGuid()
+
+  # don't push consecutive dupes onto stack
   if (
     (@((Get-Location -StackName $fwd -ea Ignore )) | Select -First 1).Path -ne
     (Get-Location).Path
@@ -21,17 +25,16 @@ function SetLocationEx {
 }
 
 function IsRootedOrRelative($path) {
-  IsRooted $path -or IsRelative $path
+  (IsRooted $path) -or (IsRelative $path)
 }
 
 function IsRooted($path) {
-  # for our purposes, we consider the path rooted if it's relative to home
-  return [System.IO.Path]::IsPathRooted($path) -or $path -match '~(/|\\)*'
+  return [System.IO.Path]::IsPathRooted($path) -or
+  $path -match '~(/|\\)*' # also consider the path rooted if it's relative to home
 }
 
 function IsRelative($path) {
-  #e.g. starts with ./, ../
-  return $path -match '^+\.(/|\\)'
+  return $path -match '^+\.(/|\\)' # e.g. starts with ./, ../
 }
 
 function NormaliseAndEscape($pathPart) {
@@ -57,22 +60,18 @@ function GetStackIndex([array]$stack, [string]$namepart) {
 }
 
 function PathIsDescendedFrom($maybeAncestor, $maybeDescendant) {
-  (Resolve-Path $maybeAncestor) -like "$(Resolve-Path $maybeDescendant)*"
   (Resolve-Path $maybeDescendant) -like "$(Resolve-Path $maybeAncestor)*"
 }
 
-function EmitIndexedCompletion($items) {
-  $items | % {
-    $itemText =
-      if ($cde.MenuCompletion -and $items.Count -gt 1) {"$($_.index)"}
-      else {"'$($_.long)'"}
+filter IndexedCompletion {
+  $itemText = if ($cde.MenuCompletion -and $items.Count -gt 1) {"$($_.index)"}
+  else {"'$($_.long)'"}
 
-    New-Object Management.Automation.CompletionResult `
-      $itemText,
-      "$($_.index). $($_.short)" ,
-      "ParameterValue",
-      "$($_.index). $($_.long)"
-  }
+  New-Object Management.Automation.CompletionResult `
+    $itemText,
+  "$($_.index). $($_.short)" ,
+  "ParameterValue",
+  "$($_.index). $($_.long)"
 }
 
 function RegisterCompletions([array] $commands, $param, $target) {

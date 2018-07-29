@@ -39,7 +39,7 @@ function Undo-Location {
 
   if ($PSCmdlet.ParameterSetName -eq 'number' -and $n -ge 1) {
     1..$n | % {
-      if ((Get-Location -StackName $fwd -ea Ignore) -ne $null) {
+      if ($null -ne (Get-Location -StackName $fwd -ea Ignore)) {
         Push-Location -StackName $back
         Pop-Location -StackName $fwd -ea Ignore
       }
@@ -55,7 +55,7 @@ function Undo-Location {
       Undo-Location ($match + 1)
     }
     else {
-      Write-Error "Could not find $NamePart in undo stack"
+      Write-Error "Could not find $NamePart in undo stack" -ErrorAction Stop
     }
   }
 }
