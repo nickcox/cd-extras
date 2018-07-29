@@ -1,19 +1,23 @@
 # cd-extras
 
-- [What is it?](#what-is-it)
+<!-- TOC -->
 
-  - [Navigation helpers](#navigation-helpers)
-  - [AUTO_CD](#auto_cd)
-  - [CD_PATH](#cd_path)
-  - [CDABLE_VARS](#cdable_vars)
-  - [Expansion](#expansion)
-  - [No argument cd](#no-argument-cd)
-  - [Two argument cd](#two-argument-cd)
-  - [Additional helpers](#additional-helpers)
+- [Navigation helpers](#navigation-helpers)
+- [AUTO_CD](#auto_cd)
+- [CD_PATH](#cd_path)
+- [CDABLE_VARS](#cdable_vars)
+- [Expansion](#expansion)
+  - [Enhanced expansion for built-ins](#enhanced-expansion-for-built-ins)
+  - [Path shortening](#path-shortening)
+  - [Navigation helper expansions](#navigation-helper-expansions)
+  - [Multi-dot and variable based expansions](#multi-dot-and-variable-based-expansions)
+- [No argument cd](#no-argument-cd)
+- [Two argument cd](#two-argument-cd)
+- [Additional helpers](#additional-helpers)
+- [Install](#install)
+- [Configure](#configure)
 
-- [Get started](#get-started)
-  - [Install](#install)
-  - [Configure](#configure)
+<!-- /TOC -->
 
 # What is it?
 
@@ -151,7 +155,7 @@ CDABLE_VARS is off by default. Enable it with: `Set-CdExtrasOption CDABLE_VARS $
 
 ### Enhanced expansion for built-ins
 
-`cd` and `ls` and `pushd` provide tab completions by expanding all path segments so that
+`cd`, `pushd` and `ls` and provide tab completions by expanding all path segments so that
 you don't have to individually tab through each one.
 
 ```sh
@@ -160,8 +164,7 @@ C:\Windows\System32\setup\  C:\Windows\SysWOW64\setup\
                             ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 ```
 
-You can opt into or out of enhanced directory completion for other commands by adding them to the
-array of commands specified in the `DirCompletions` [option](#Configure).
+You can change the list of command which participate in enhanced directory completion using the `DirCompletions` [option](#Configure):
 
 ```sh
 [~]> Set-CdExtrasOption DirCompletions ($cde.DirCompletions + 'Invoke-Item')
@@ -170,9 +173,9 @@ C:\Windows\System32\setup\  C:\Windows\SysWOW64\setup\
                             ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 ```
 
-If an unambiguous match is available then `cd` can be used directly, without first invoking tab expansion.
-
 ### Path shortening
+
+If an unambiguous match is available then `cd` can be used directly, without first invoking tab expansion.
 
 ```sh
 [~]> cd /w/s/d/et<[Return]>
@@ -201,21 +204,25 @@ Paths within the `$cde.CD_PATH` array will be considered for expansion.
 
 ### Navigation helper expansions
 
-Expansions are also provided for the `cd+`, `cd-` and `up` aliases. If the `MenuCompletion`
-option is set to `$true` then the completions offered will be index of the corresponding directory;
-the full path is displayed in the menu below. `cd-extras` will attempt to detect `PSReadLine`
-at start-up in order to set this option appropriately. For example:
+Expansions are also provided for the `cd+`, `cd-` and `up` (or `..`) aliases.
+
+When the `MenuCompletion` option is set to `$true` the completion offered is the
+index of each corresponding directory; the full path is displayed in the menu below.
+`cd-extras` will attempt to detect `PSReadLine` at start-up in order to set this
+option appropriately. For example:
 
 ```sh
 [C:\Windows\System32\drivers\etc]> up <[Tab]>
+[C:\Windows\System32\drivers\etc]> up 1
 1. drivers  2. System32  3. Windows
 ‾‾‾‾‾‾‾‾‾‾‾
-
 [C:\Windows\System32\drivers\etc]> up 3<[Return]>
+3. Windows
+‾‾‾‾‾‾‾‾‾‾‾
 [C:\Windows]> _
 ```
 
-It's also possible to tab through these three aliases using a partial directory name.
+It's also possible tab-complete these three commands given a partial directory name.
 
 ```sh
 [~\projects\PowerShell\src\Modules\Shared]> up pr<[Tab]>
@@ -258,20 +265,22 @@ powershell                     C:\projects\powershell
 projects                       C:\projects
 
 [C:\projects\powershell\src\Modules\Unix]> cd po<[Tab]>
-[C:\projects\powershell\src\Modules\Unix]> cd C:\projects\powershell\<[Tab]>
-
-.git     .github  .vscode  assets   demos    docker   docs     src      test     tools
-‾‾‾‾‾‾‾‾
+[C:\projects\powershell\src\Modules\Unix]> cd C:\projects\powershell\_
 ```
 
 might be easier than:
 
 ```sh
 [C:\projects\powershell\src\Modules\Unix]> cd ....<[Tab]> # or cd ../../../<[Tab]>
-[C:\projects\powershell\src\Modules\Unix]> cd C:\projects\powershell\
+[C:\projects\powershell\src\Modules\Unix]> cd C:\projects\powershell\_
+```
 
-.git     .github  .vscode  assets   demos    docker   docs     src      test     tools
-‾‾‾‾‾‾‾‾
+You can also combine with [AUTO_CD](#auto_cd) for great good:
+
+```sh
+[C:\projects\powershell\src\Modules\Unix]> projects
+[C:\projects]> src
+[C:\projects\powershell\src]> _
 ```
 
 ## No argument cd
@@ -334,7 +343,7 @@ Options provided:
   - If truthy, indexes are offered as completions for `up`, `cd+` and `cd-` with full paths
     displayed in the menu
 - _DirCompletions_: `[array] = @('Push-Location', 'Set-Location', 'Get-ChildItem')`
-  - Commands that participate in advanced tab expansion.
+  - Commands that participate in enhanced tab expansion for directories.
 
 Either create a global hashtable, `cde`, with one or more of these keys _before_ importing the cd-extras module:
 
