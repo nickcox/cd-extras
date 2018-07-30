@@ -33,7 +33,7 @@ function Set-CdExtrasOption {
   $isUnderTest = {$Global:__cdeUnderTest -and !($Global:__cdeUnderTest = $false)}
 
   $commandsToAutoExpand = @('cd', 'Set-Location')
-  PostCommandLookup $commandsToAutoExpand $isUnderTest $Script:SetLocation
+  PostCommandLookup $commandsToAutoExpand $isUnderTest $Script:SetLocation $Script:Multidot
 
   RegisterCompletions @('Step-Up') 'n' {CompleteAncestors @args}
   RegisterCompletions @('Undo-Location', 'Redo-Location') 'n' {CompleteStack @args}

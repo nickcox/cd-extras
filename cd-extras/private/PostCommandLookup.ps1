@@ -1,4 +1,4 @@
-function PostCommandLookup($commands, $isUnderTest, $setLocation) {
+function PostCommandLookup($commands, $isUnderTest, $setLocation, $multidot) {
 
   $ExecutionContext.InvokeCommand.PostCommandLookupAction = {
     param($CommandName, $CommandLookupEventArgs)
@@ -8,6 +8,7 @@ function PostCommandLookup($commands, $isUnderTest, $setLocation) {
 
       $CommandName = $CommandName
       $setLocation = $setLocation
+      $multidot = $multidot
 
       $CommandLookupEventArgs.CommandScriptBlock = {
         $fullCommand = (@($CommandName) + $args) -join ' '
