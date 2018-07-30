@@ -64,7 +64,7 @@ function PostCommandLookup($commands, $isUnderTest, $setLocation) {
             }
             elseif (
               @($arg).Length -eq 1 -and
-              ($dirs = Expand-Path $arg.Content $cde.CD_PATH -Directory) -and
+              ($dirs = Expand-Path $arg.Content -Directory) -and
               ($dirs.Count -eq 1)) {
 
               &$setLocation $dirs

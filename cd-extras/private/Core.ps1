@@ -10,7 +10,7 @@ function SetLocationEx {
   param([string]$Path, [switch]$PassThru)
 
   # discard any existing forward (redo) stack
-  $Script:fwd = 'fwd' + [Guid]::NewGuid()
+  Clear-Stack -Redo
 
   # don't push consecutive dupes onto stack
   if (

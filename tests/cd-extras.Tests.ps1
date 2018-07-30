@@ -13,12 +13,14 @@ Describe 'cd-extras' {
   }
 
   AfterAll {
+    Clear-Stack -Undo -Redo
     $Global:cde = $xcde
     Pop-Location
   }
 
   BeforeEach {
     Set-Location TestDrive:\
+    Clear-Stack -Undo -Redo
   }
 
   InModuleScope cd-extras {
@@ -372,6 +374,23 @@ Describe 'cd-extras' {
         DoUnderTest { cd powershell/src }
         cd-
         Get-Stack -Redo | Select -First 1 | Select Path | Should Not Be $null
+      }
+    }
+
+    Describe 'Clear-Stack' {
+      It 'clears the undo stack' {
+        DoUnderTest { cd powershell }
+        Get-Stack -Undo | Should Not BeNullOrEmpty
+        Clear-Stack -Undo
+        Get-Stack -Undo | Should BeNullOrEmpty
+      }
+
+      It 'clears the redo stack' {
+        DoUnderTest { cd powershell }
+        cd-
+        Get-Stack -Redo | Should Not BeNullOrEmpty
+        Clear-Stack -Redo
+        Get-Stack -Redo | Should BeNullOrEmpty
       }
     }
 
