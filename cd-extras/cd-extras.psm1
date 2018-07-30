@@ -2,12 +2,14 @@ Get-ChildItem $PSScriptRoot/private/*.ps1 | % { . $_.FullName}
 Get-ChildItem $PSScriptRoot/public/*.ps1 | % { . $_.FullName}
 
 $defaults = [ordered]@{
-  AUTO_CD        = $true
-  CD_PATH        = @()
-  CDABLE_VARS    = $false
-  NOARG_CD       = '~'
-  DirCompletions = @('Push-Location', 'Set-Location', 'Get-ChildItem')
-  MenuCompletion = $null -ne (Get-Module PSReadline)
+  AUTO_CD         = $true
+  CD_PATH         = @()
+  CDABLE_VARS     = $false
+  NOARG_CD        = '~'
+  MenuCompletion  = $null -ne (Get-Module PSReadline)
+  DirCompletions  = @('Push-Location', 'Set-Location', 'Get-ChildItem')
+  PathCompletions = @()
+  FileCompletions = @()
 }
 
 if ((Test-Path variable:cde) -and $cde -is [System.Collections.IDictionary]) {

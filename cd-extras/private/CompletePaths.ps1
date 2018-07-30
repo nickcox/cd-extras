@@ -1,5 +1,12 @@
 function CompletePaths {
-  param($commandName, $parameterName, $wordToComplete, $commandAst, $boundParameters)
+  param(
+    [Switch] $dirsOnly,
+    [Switch] $filesOnly,
+    $commandName,
+    $parameterName,
+    $wordToComplete,
+    $commandAst,
+    $boundParameters)
 
   # given a full path, $_, return a fully formed completion result
   # logic: use a relative path if the supplied word isn't rooted (e.g. /temp/... or ~/... C:\...)
@@ -14,41 +21,45 @@ function CompletePaths {
       $friendly = $_ -replace "^$(NormaliseAndEscape $homeDir)", "~"
     }
 
+    $trailChar = if ($_ -is [IO.DirectoryInfo]) {${/}} else {''}
+
     # add normalised trailing directory separator; quote if contains spaces
     $completionText = $friendly -replace '[/|\\]$', '' | % {
-      if ($_ -notmatch ' ') { "$_${/}" }
-      else { "'$_${/}'" }
+      if ($_ -notmatch ' ') { "$_$trailChar" }
+      else { "'$_$trailChar'" }
     }
 
     [Management.Automation.CompletionResult]::new(`
-        $completionText,
+      $completionText,
       $friendly,
       'ParameterValue',
       $_
     )
   }
 
-  $dirs = if ($wordToComplete -match '^\.{3,}') {
+  $switches = @{ File = $filesOnly; Directory = $dirsOnly }
+
+  $completions = if ($wordToComplete -match '^\.{3,}') {
     # if we're multi-dotting...
     $dots = $Matches[0].Trim()
     $up = Get-Up ($dots.Length - 1)
-    Expand-Path -Directory ($up + $wordToComplete.Replace($dots, ''))
+    Expand-Path @switches ($up + $wordToComplete.Replace($dots, ''))
   }
   else {
-    Expand-Path -Directory $wordToComplete
+    Expand-Path @switches $wordToComplete
   }
 
   #replace cdable_vars
-  $variDirs = if (
+  $variCompletions = if (
     $cde.CDABLE_VARS -and
     $wordToComplete -match '[^/|\\]+' -and
     ($maybeVar = Get-Variable "$($Matches[0])*" |
         Where {$_.Value -and (Test-Path ($_.Value) -PathType Container)} |
         Select -ExpandProperty Value)
   ) {
-    Expand-Path -Directory ($wordToComplete -replace $Matches[0], $maybeVar)
+    Expand-Path @switches ($wordToComplete -replace $Matches[0], $maybeVar)
   }
   else { @() }
 
-  @($dirs) + @($variDirs) | Sort-Object -Unique | CompletionResult
+  @($completions) + @($variCompletions) | Sort-Object -Unique | CompletionResult
 }

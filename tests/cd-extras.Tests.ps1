@@ -439,6 +439,12 @@ Describe 'cd-extras' {
         $Global:dir = Resolve-Path ./powershell/src
         (CompletePaths -wordToComplete 'dir').CompletionText | Should Match 'src'
       }
+
+      It 'completes file paths' {
+        Set-Location $PSScriptRoot
+        (CompletePaths -filesOnly -wordToComplete './samp').CompletionText |
+          Should Match "sampleStructure.txt"
+      }
     }
 
     Describe 'Stack expansion' {

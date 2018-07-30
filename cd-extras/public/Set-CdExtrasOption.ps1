@@ -24,7 +24,9 @@ function Set-CdExtrasOption {
       'NOARG_CD',
       'CDABLE_VARS',
       'MenuCompletion',
-      'DirCompletions')]
+      'DirCompletions',
+      'FileCompletions',
+      'PathCompletions')]
     $Option,
     $Value)
 
@@ -38,7 +40,13 @@ function Set-CdExtrasOption {
   RegisterCompletions @('Step-Up') 'n' {CompleteAncestors @args}
   RegisterCompletions @('Undo-Location', 'Redo-Location') 'n' {CompleteStack @args}
   if ($cde.DirCompletions) {
-    RegisterCompletions $cde.DirCompletions 'Path' {CompletePaths @args}
+    RegisterCompletions $cde.DirCompletions 'Path' {CompletePaths -dirsOnly @args}
+  }
+  if ($cde.FileCompletions) {
+    RegisterCompletions $cde.FileCompletions 'Path' {CompletePaths -filesOnly @args}
+  }
+  if ($cde.PathCompletions) {
+    RegisterCompletions $cde.PathCompletions 'Path' {CompletePaths @args}
   }
 
   if ($cde.AUTO_CD) {

@@ -170,13 +170,21 @@ You can change the list of command which participate in enhanced directory compl
 the `DirCompletions` [option](#configure):
 
 ```sh
-[~]> Set-CdExtrasOption DirCompletions ($cde.DirCompletions + 'Invoke-Item')
-[~]> ii /w/s/set<[Tab]><[Tab]>
-C:\Windows\System32\setup\  C:\Windows\SysWOW64\setup\
-                            ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+[~]> Set-CdExtrasOption DirCompletions ($cde.DirCompletions + 'mkdir')
+[~]> mkdir ~/pow/src<[Tab]>
+[~]> mkdir ~\powershell\src\_
 ```
 
-Paths within the `$cde.CD_PATH` array are considered for expansion.
+It's also possible to opt into enhanced file-only or general (file & directory) completion using the `FileCompletions` and `PathCompletions` respectively.
+
+```sh
+[~]> Set-CdExtrasOption PathCompletions ($cde.DirCompletions + 'Invoke-Item')
+[~]> ii /t/<[Tab]>
+C:\temp\subdir  C:\temp\txtFile.txt  C:\temp\txtFile2.txt
+‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+```
+
+For all three completion types, paths within the `$cde.CD_PATH` array are considered for expansion.
 
 ```sh
 [~]> $cde.CD_PATH += "~\Documents\"
