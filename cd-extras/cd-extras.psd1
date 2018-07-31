@@ -1,6 +1,6 @@
 @{
   RootModule        = 'cd-extras.psm1'
-  ModuleVersion     = '0.8.2'
+  ModuleVersion     = '0.9.0'
   GUID              = '206fccbd-dc96-4b23-908c-5ac821372e16'
 
   Author            = 'Nick Cox'
