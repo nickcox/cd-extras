@@ -9,7 +9,10 @@ The folder from which to start. $PWD by default.
 Overwrites any existing globals variables with the same names.
 
 .PARAMETER NoGlobals
-Don't copy output into global variables
+Don't copy output into global variables.
+
+.PARAMETER IncludeRoot
+Includes the root level path in the output.
 
 .EXAMPLE
 C:\projects\powershell\src\Microsoft.PowerShell.SDK > Export-Up
@@ -30,7 +33,8 @@ function Export-Up() {
   param(
     [string] $From = $PWD,
     [switch] $Force,
-    [switch] $NoGlobals
+    [switch] $NoGlobals,
+    [switch] $IncludeRoot
   )
 
   if (-not ($next = Resolve-Path $From)) { return }
@@ -40,7 +44,7 @@ function Export-Up() {
 
   while (
     ($next = $next | Split-Path -Parent) -and
-    ($next -ne (Resolve-Path $next).Drive.Root)) {
+    ($next -ne (Resolve-Path $next).Drive.Root -or $IncludeRoot)) {
 
     $output.Add((&$getPair).name, (&$getPair).path)
   }

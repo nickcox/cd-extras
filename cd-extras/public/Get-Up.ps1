@@ -47,10 +47,12 @@ function Get-Up {
 
     # if we couldn't match by leaf name then match by complete path
     # this is only really used for completion when MenuCompletion is off
-    $next = $From | Resolve-Path
-    while ($next = $next | Split-Path -Parent) {
-      if (($next) -eq (Resolve-Path $NamePart -ErrorAction Ignore)) { return $next }
-    }
+    $next = $From | Resolve-Path | select -Expand Path
+    $resolvedTarget = Resolve-Path $NamePart -ErrorAction Ignore | Select -Expand Path
+
+    do {
+      if ($next -eq $resolvedTarget) { return $next }
+    } while ($next = $next | Split-Path -Parent)
 
     Write-Error "Could not find '$NamePart' as an ancestor of the given path." -ErrorAction Stop
   }

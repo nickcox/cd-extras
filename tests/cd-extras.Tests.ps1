@@ -222,6 +222,12 @@ Describe 'cd-extras' {
         CurrentDir | Should Be Modules
       }
 
+      It 'does not choke on root directory full path' {
+        Set-Location $PSScriptRoot
+        Step-Up (Get-Location).Drive.Root
+        CurrentDir | Should Be (Get-Location).Drive.Root
+      }
+
       It 'throws if the given name part is not found' {
         Set-Location powershell\src\Modules\Shared\
         {Step-Up zrc} | Should Throw
@@ -461,6 +467,29 @@ Describe 'cd-extras' {
         cd- 2
         $actual = CompleteStack -wordToComplete '' -commandName 'Redo'
         $actual.Count | Should BeGreaterThan 1
+      }
+
+      It 'uses index completion when menu completion is on' {
+        SetLocationEx powershell
+        SetLocationEx src
+        $cde.MenuCompletion = $true
+        $actual = CompleteAncestors -wordToComplete ''
+        $actual[0].CompletionText | Should Be 1
+      }
+
+      It 'uses the full path when menu completion is off' {
+        SetLocationEx powershell
+        SetLocationEx src
+        $cde.MenuCompletion = $false
+        $actual = CompleteAncestors -wordToComplete ''
+        $actual[0].CompletionText | Should BeLike "*testdrive*"
+      }
+
+      It 'uses the full path when only one completion is available' {
+        SetLocationEx powershell
+        $cde.MenuCompletion = $true
+        $actual = CompleteAncestors -wordToComplete ''
+        $actual[0].CompletionText | Should BeLike "*testdrive*"
       }
     }
 

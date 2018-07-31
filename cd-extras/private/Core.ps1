@@ -42,6 +42,18 @@ function NormaliseAndEscape($pathPart) {
   return [regex]::Escape($normalised)
 }
 
+filter Escape {
+  [regex]::Escape($_)
+}
+
+filter RemoveSurroundingQuotes {
+  ($_ -replace "^'", '') -replace "'$", ''
+}
+
+filter RemoveTrailingSeperator {
+  $_ -replace '(/|\\)$', ''
+}
+
 function GetStackIndex([array]$stack, [string]$namepart) {
   $index = [array]::FindIndex(
     $stack,
@@ -65,7 +77,7 @@ function PathIsDescendedFrom($maybeAncestor, $maybeDescendant) {
 
 function IndexedComplete($items) {
   filter IndexedCompletion {
-    $itemText = if ($cde.MenuCompletion -and $items.Count -gt 1) {"$($_.index)"}
+    $itemText = if ($cde.MenuCompletion -and @($items).Count -gt 1) {"$($_.index)"}
     else {"'$($_.long)'"}
 
     [Management.Automation.CompletionResult]::new(

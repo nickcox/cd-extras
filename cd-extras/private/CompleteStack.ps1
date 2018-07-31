@@ -20,5 +20,8 @@ function CompleteStack {
     }
   }
 
-  IndexedComplete (@($stack) -match $wordToComplete | Completions)
+  IndexedComplete (
+    @($stack) -match
+    ($wordToComplete | RemoveSurroundingQuotes | Escape) |
+      Completions)
 }
