@@ -7,5 +7,5 @@ if ($Cover) {
   Invoke-Pester $PSScriptRoot\cd-extras.Tests.ps1 -CodeCoverage $src
 }
 else {
-  powershell -noprofile Invoke-Pester $PSScriptRoot\cd-extras.Tests.ps1
+  Invoke-Pester $PSScriptRoot\cd-extras.Tests.ps1
 }

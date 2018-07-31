@@ -11,15 +11,15 @@ Partial path name to choose from redo stack.
 .EXAMPLE
 C:\Windows\System32> # Move backward using Undo-Location, then forward using Redo-Location
 C:\Windows\System32> cd ..
-C:\Windows> Undo-Location
+C:\Windows> cd-
 C:\Windows\System32> Redo-Location # (or cd+)
 C:\Windows> _
 
 .EXAMPLE
 C:\Windows\System32> # Move backward using Undo-Location, then forward using Redo-Location
 C:\Windows\System32> cd ..
-C:\Windows> Undo-Location
-C:\Windows\System32> Redo-Location windows # (or cd+ windows)
+C:\Windows> cd-
+C:\Windows\System32> cd+ windows # (or Redo-Location windows)
 C:\Windows> _
 
 .LINK

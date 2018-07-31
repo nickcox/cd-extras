@@ -225,7 +225,7 @@ Describe 'cd-extras' {
       It 'does not choke on root directory full path' {
         Set-Location $PSScriptRoot
         Step-Up (Get-Location).Drive.Root
-        CurrentDir | Should Be (Get-Location).Drive.Root
+        $PWD | Should Be (Get-Location).Drive.Root
       }
 
       It 'throws if the given name part is not found' {
@@ -336,23 +336,23 @@ Describe 'cd-extras' {
 
     Describe 'Expand-Path' {
       It 'returns expected expansion Windows style' {
-        Expand-Path p/s/m/u |
-          ShouldBeOnWindows (Join-Path $TestDrive powershell\src\Modules\Unix)
+        Expand-Path p/s/m/U |
+          Should Be (Join-Path $TestDrive powershell\src\Modules\Unix)
       }
 
       It 'returns expected expansion relative style' {
-        Expand-Path ./p/s/M/U |
+        Expand-Path ./p/s/m/U |
           Should Be (Join-Path $TestDrive powershell\src\Modules\Unix)
       }
 
       It 'expands rooted paths' {
-        Expand-Path /p/s/m/u | # TestDrive root Windows only
+        Expand-Path /p/s/m/U | # TestDrive root Windows only
           ShouldBeOnWindows (Join-Path $TestDrive powershell\src\Modules\Unix)
       }
 
       It 'can return multiple expansions' {
-        (Expand-Path ./p/s/m/s/m).Length |
-          ShouldBeOnWindows 2
+        (Expand-Path ./p/s/m/s/M).Length |
+          Should Be 2
       }
 
       It 'considers CD_PATH for expansion' {

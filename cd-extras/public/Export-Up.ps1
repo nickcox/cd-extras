@@ -37,16 +37,22 @@ function Export-Up() {
     [switch] $IncludeRoot
   )
 
-  if (-not ($next = Resolve-Path $From)) { return }
+  if (-not ($next = Resolve-Path $From -ErrorAction Ignore).Path) { return }
 
   $getPair = { @{name = (Split-Path $next -Leaf); path = "$next" } }
   $output = [ordered]@{ (&$getPair).name = (&$getPair).path }
 
-  while (
-    ($next = $next | Split-Path -Parent) -and
-    ($next -ne (Resolve-Path $next).Drive.Root -or $IncludeRoot)) {
+  try {
+    while (
+      ($next = $next | Split-Path -Parent) -and
+      ($next -ne $next.Drive.Root -or $IncludeRoot)) {
 
-    $output.Add((&$getPair).name, (&$getPair).path)
+      $output.Add((&$getPair).name, (&$getPair).path)
+    }
+  }
+  catch [Management.Automation.PSArgumentException] {
+    Write-Verbose "$Global:Error"
+    $Global:Error.Clear()
   }
 
   if (-not $NoGlobals) {

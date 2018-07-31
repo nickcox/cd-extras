@@ -10,15 +10,15 @@ Number of levels above the starting location. (One by default.)
 Partial directory name for which to search.
 
 .EXAMPLE
-C:\Windows\System32> Step-Up
+C:\Windows\System32> up
 C:\Windows> _
 
 .EXAMPLE
-C:\Windows\System32> Step-Up 2
+C:\Windows\System32> up 2
 C:\> _
 
 .EXAMPLE
-C:\Windows\System32> Step-Up win
+C:\Windows\System32> up win
 C:\Windows> _
 #>
 function Step-Up {

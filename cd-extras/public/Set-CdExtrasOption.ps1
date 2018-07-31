@@ -9,7 +9,7 @@ The option to set
 The option value
 
 .EXAMPLE
-PS C:\> Set-CdExtrasOption -Option AUTO_CD -Value $false
+PS C:\> Set-CdExtrasOption AUTO_CD $false
 
 .EXAMPLE
 PS C:\> Set-CdExtrasOption -Option CD_PATH -Value @('/temp')

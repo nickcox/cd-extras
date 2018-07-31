@@ -14,7 +14,7 @@ function CompletePaths {
   # for absolute paths, replace home dir location with tilde
   filter CompletionResult {
     $friendly = $_
-    if (-not (IsRooted $wordToComplete) -and (PathIsDescendedFrom .. $_)) {
+    if (-not ($wordToComplete | IsRooted) -and (PathIsDescendedFrom .. $_)) {
       $friendly = Resolve-Path -Relative $_
     }
     elseif ($homeDir = (Get-Location).Provider.Home) {
@@ -29,7 +29,7 @@ function CompletePaths {
       else { "'$_$trailChar'" }
     }
 
-    [Management.Automation.CompletionResult]::new(`
+    [Management.Automation.CompletionResult]::new(
       $completionText,
       $friendly,
       'ParameterValue',

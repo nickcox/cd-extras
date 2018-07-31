@@ -13,33 +13,32 @@ function SetLocationEx {
   Clear-Stack -Redo
 
   # don't push consecutive dupes onto stack
-  if (
-    (@((Get-Location -StackName $back -ea Ignore )) | Select -First 1).Path -ne
-    (Get-Location).Path
-  ) {
-    if (Get-Item $path -ea Ignore) { Push-Location -StackName $back }
-  }
+  if ((
+      (@((Get-Location -StackName $back -ea Ignore )) | Select -First 1).Path -ne
+      (Get-Location).Path
+    ) -and (Test-Path $Path)
+  ) { Push-Location -StackName $back }
 
   $Script:OLDPWD = $PWD
   Set-Location @PSBoundParameters
 }
 
-function IsRootedOrRelative($path) {
-  (IsRooted $path) -or (IsRelative $path)
+filter IsRootedOrRelative {
+  ($_ | IsRooted) -or ($_ | IsRelative)
 }
 
-function IsRooted($path) {
-  return [System.IO.Path]::IsPathRooted($path) -or
-  $path -match '~(/|\\)*' # also consider the path rooted if it's relative to home
+filter IsRooted {
+  [System.IO.Path]::IsPathRooted($_) -or
+  $_ -match '~(/|\\)*' # also consider the path rooted if it's relative to home
 }
 
-function IsRelative($path) {
-  return $path -match '^+\.(/|\\)' # e.g. starts with ./, ../
+filter IsRelative {
+  $_ -match '^+\.(/|\\)' # e.g. starts with ./, ../
 }
 
 function NormaliseAndEscape($pathPart) {
   $normalised = $pathPart -replace '/|\\', ${/}
-  return [regex]::Escape($normalised)
+  [regex]::Escape($normalised)
 }
 
 filter Escape {
@@ -50,8 +49,8 @@ filter RemoveSurroundingQuotes {
   ($_ -replace "^'", '') -replace "'$", ''
 }
 
-filter RemoveTrailingSeperator {
-  $_ -replace '(/|\\)$', ''
+filter RemoveTrailingSeparator {
+  $_ -replace "(/|\\)$", ''
 }
 
 function GetStackIndex([array]$stack, [string]$namepart) {
