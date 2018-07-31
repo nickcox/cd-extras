@@ -21,7 +21,7 @@ function CompletePaths {
       $friendly = $_ -replace "^$(NormaliseAndEscape $homeDir)", "~"
     }
 
-    $trailChar = if ($_ -is [IO.DirectoryInfo]) {${/}} else {''}
+    $trailChar = if ($_.PSIsContainer) {${/}} else {''}
 
     # add normalised trailing directory separator; quote if contains spaces
     $completionText = $friendly -replace '[/|\\]$', '' | % {

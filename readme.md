@@ -14,6 +14,7 @@
 - [No argument cd](#no-argument-cd)
 - [Two argument cd](#two-argument-cd)
 - [Additional helpers](#additional-helpers)
+- [Note on providers](#note-on-providers)
 - [Install](#install)
 - [Configure](#configure)
 
@@ -327,6 +328,19 @@ changing to the resulting directory if it exists. Uses the `Switch-LocationPart`
   - helper used for path segment expansion
 - Set-CdExtrasOption
   - [configure](#configure) cd-extras
+
+## Note on providers
+
+All of the functionality discussed above is intended to work against the filesystem provider.
+Most things should work with other providers too though.
+
+```sh
+[~]> cd hklm:
+[HKLM:]> cd so/mic/win/cur/windowsupdate
+[HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate]> ..
+[HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion] > cd- 3
+[~]> _
+```
 
 # Get started
 

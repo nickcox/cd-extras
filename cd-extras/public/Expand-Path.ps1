@@ -48,7 +48,12 @@ function Expand-Path {
   }
   else { $wildcardedPaths = $wildcardedPath }
 
-  $type = @{File = $File; Directory = $Directory}
+  $type = if ((Get-Location).Provider.Capabilities.HasFlag(
+      [Management.Automation.Provider.ProviderCapabilities]::Filter)) {
+    @{File = $File; Directory = $Directory}
+  }
+  else { @{}
+  }
 
   Write-Verbose "`nExpanding $Candidate to: $wildcardedPaths"
   return Get-ChildItem $wildcardedPaths @type -Force -ErrorAction Ignore
