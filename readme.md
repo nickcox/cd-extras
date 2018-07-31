@@ -51,7 +51,7 @@ rather than toggling between the two most recent directories as in vanilla bash.
 `Step-Back` (`cdb`) to toggle between the current and previous directories.)
 
 `up`, `cd+` and `cd-` each take a single optional parameter: either a number, `n`,
-used to specify the number of levels or locations to traverse...
+used to specify the number of levels or locations to traverse, as in:
 
 ```sh
 [C:\Windows\System32]> .. 2 # or `up 2`
@@ -62,7 +62,7 @@ used to specify the number of levels or locations to traverse...
 ```
 
 ...or a string, `NamePart`, used to change to the nearest directory whose name matches
-the given argument. [Tab completion](#navigation-helper-expansions)is provided
+the given argument. [Tab completion](#navigation-helper-expansions) is provided
 for all of these helpers.
 
 ```sh
@@ -167,6 +167,14 @@ C:\Windows\System32\setup\  C:\Windows\SysWOW64\setup\
                             ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 ```
 
+Periods (`.`) are expanded around so, for example, a segment containing `.sdk`
+is expanded into `*.sdk*`.
+
+```sh
+[~]> cd proj/pow/s/.sdk<[Tab]><[Enter]>
+[~\projects\powershell\src\Microsoft.PowerShell.SDK]> _
+```
+
 You can change the list of command which participate in enhanced directory completion using
 the `DirCompletions` [option](#configure):
 
@@ -199,21 +207,10 @@ If an unambiguous match is available then `cd` can be used directly, without fir
 invoking tab expansion.
 
 ```sh
-[~]> cd /w/s/d/et<[Return]>
+[~]> cd /w/s/d/et
 [C:\Windows\System32\drivers\etc]> cd ~/pr/pow/src
-[~\projects\PowerShell\src]> cd .sec
-[~\projects\PowerShell\src\Microsoft.PowerShell.Security]> _
-```
-
-Periods (`.`) are expanded around so, for example, a segment containing `.sdk`
-is expanded into `*.sdk*`.
-
-```sh
-[~\projects\powershell\src]> cd .sdk
-[~\projects\powershell\src\Microsoft.PowerShell.SDK]> _
-
-[~]> cd proj/pow/s/.sdk<[Tab]><[Enter]>
-[~\projects\powershell\src\Microsoft.PowerShell.SDK]> _
+[~\projects\PowerShell\src]> cd .sdk
+[~\projects\PowerShell\src\Microsoft.PowerShell.SDK]> _
 ```
 
 ### Navigation helper expansions
@@ -230,23 +227,27 @@ option appropriately. For example:
 [C:\Windows\System32\drivers\etc]> up 1
 1. drivers  2. System32  3. Windows
 ‾‾‾‾‾‾‾‾‾‾‾
-[C:\Windows\System32\drivers\etc]> up 3<[Return]>
+[C:\Windows\System32\drivers\etc]> up 3
 3. Windows
 ‾‾‾‾‾‾‾‾‾‾‾
-[C:\Windows]> _
 ```
 
-It's also possible tab-complete these three commands given a partial directory name.
+It's also possible tab-complete these three commands using a partial directory name.
 
 ```sh
 [~\projects\PowerShell\src\Modules\Shared]> up pr<[Tab]>
-[~\projects\PowerShell\src\Modules\Shared]> up '~\projects'<[Return]>
+[~\projects\PowerShell\src\Modules\Shared]> up '~\projects'
 [~\projects]> _
 ```
 
 ### Multi-dot and variable based expansions
 
 The multi-dot syntax provides tab completion into ancestor directories.
+
+```sh
+[C:\projects\powershell\docs\git]> cd ...<[Tab]>
+[C:\projects\powershell\docs\git]> cd C:\projects\powershell\
+```
 
 ```sh
 [C:\projects\powershell\docs\git]> cd .../<[Tab]>
@@ -264,8 +265,8 @@ C:\projects\powershell\src      C:\projects\powershell\tools
 
 `Export-Up` (`xup`) recursively expands each parent path into a global variable
 with a corresponding name. Why? In combination with [CDABLE_VARS](#cdable_vars),
-it can be useful for navigating a deeply nested folder structure without needing to count
-`..`s. For example:
+it can be useful for navigating a deeply nested folder structure without needing
+to count `..`s. For example:
 
 ```sh
 [C:\projects\powershell\src\Modules\Unix]> xup
@@ -372,6 +373,10 @@ Options provided:
     displayed in the menu
 - _DirCompletions_: `[array] = @('Push-Location', 'Set-Location', 'Get-ChildItem')`
   - Commands that participate in enhanced tab expansion for directories.
+- _FileCompletions_: `[array] = @()`
+  - Commands that participate in enhanced tab expansion for files.
+- _PathCompletions_: `[array] = @()`
+  - Commands that participate in enhanced tab expansion for any type of path.
 
 Either create a global hashtable, `cde`, with one or more of these keys _before_ importing
 the cd-extras module:
