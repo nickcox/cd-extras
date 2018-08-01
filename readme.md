@@ -177,7 +177,7 @@ is expanded into `*.sdk*`.
 [~\projects\powershell\src\Microsoft.PowerShell.SDK]> _
 ```
 
-You can change the list of command which participate in enhanced directory completion using
+You can change the list of commands that participate in enhanced directory completion using
 the `DirCompletions` [option](#configure):
 
 ```sh
@@ -186,7 +186,8 @@ the `DirCompletions` [option](#configure):
 [~]> mkdir ~\powershell\src\_
 ```
 
-It's also possible to opt into enhanced file-only or general (file & directory) completion using the `FileCompletions` and `PathCompletions` respectively.
+It's also possible to opt into enhanced file-only or general (file & directory) completion using
+the `FileCompletions` and `PathCompletions` options respectively.
 
 ```sh
 [~]> Set-CdExtrasOption PathCompletions ($cde.DirCompletions + 'Invoke-Item')
@@ -195,7 +196,7 @@ C:\temp\subdir  C:\temp\txtFile.txt  C:\temp\txtFile2.txt
 ‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 ```
 
-For all three completion types, paths within the `$cde.CD_PATH` array are considered for expansion.
+Paths within the `$cde.CD_PATH` array are considered for expansion by all completion types.
 
 ```sh
 [~]> $cde.CD_PATH += "~\Documents\"
@@ -343,18 +344,19 @@ Most things should work with other providers too though.
 [~]> cd hklm:
 [HKLM:]> cd so/mic/win/cur/windowsupdate
 [HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate]> ..
-[HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion] > cd- 3
+[HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion]> cd-
+[HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate]> cd- 2
 [~]> _
 ```
 
 ### OS X & Linux
 
 Functionality is tested and _should_ work on non-Windows operating systems. It's entirely
-likely you'll encounter some rough edges though. In particular the best `$cde.MenuCompletion`
-setting may not be detected automatically; you may need to change it yourself.
-You'll also notice that cd-extras is quite permissive in how it matches the case of multi-segment
-paths so you may not be able to use path shortening in cases where multiple path abbreviations differ
-only by case. Please consider raising an issue if this is a problem for you.
+likely you'll encounter some rough edges, though. In particular the best `$cde.MenuCompletion`
+setting may not be detected automatically; you might need to change it yourself.
+You'll also notice that cd-extras is quite permissive with respect to the casing of multi-segment
+paths so path shortening won't work in cases where multiple possible path abbreviations differ
+only by case. Please consider raising any issues you encounter.
 
 # Get started
 

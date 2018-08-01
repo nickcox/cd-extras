@@ -14,7 +14,9 @@
 - [No argument cd](#no-argument-cd)
 - [Two argument cd](#two-argument-cd)
 - [Additional helpers](#additional-helpers)
-- [Note on providers](#note-on-providers)
+- [Note on compatibility](#note-on-compatibility)
+  - [Alternative providers](#alternative-providers)
+  - [OS X & Linux](#os-x--linux)
 - [Install](#install)
 - [Configure](#configure)
 
@@ -330,7 +332,9 @@ changing to the resulting directory if it exists. Uses the `Switch-LocationPart`
 - Set-CdExtrasOption
   - [configure](#configure) cd-extras
 
-## Note on providers
+## Note on compatibility
+
+### Alternative providers
 
 All of the functionality discussed above is intended to work against the filesystem provider.
 Most things should work with other providers too though.
@@ -342,6 +346,15 @@ Most things should work with other providers too though.
 [HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion] > cd- 3
 [~]> _
 ```
+
+### OS X & Linux
+
+Functionality is tested and _should_ work on non-Windows operating systems. It's entirely
+likely you'll encounter some rough edges though. In particular the best `$cde.MenuCompletion`
+setting may not be detected automatically; you may need to change it yourself.
+You'll also notice that cd-extras is quite permissive in how it matches the case of multi-segment
+paths so you may not be able to use path shortening in cases where multiple path abbreviations differ
+only by case. Please consider raising an issue if this is a problem for you.
 
 # Get started
 
