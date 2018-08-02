@@ -51,8 +51,8 @@ function Export-Up() {
     }
   }
   catch [Management.Automation.PSArgumentException] {
-    Write-Verbose "$Global:Error"
-    $Global:Error.Clear()
+    Write-Verbose "$_"
+    $Global:Error.RemoveAt(0)
   }
 
   if (-not $NoGlobals) {

@@ -235,7 +235,8 @@ option appropriately. For example:
 ‾‾‾‾‾‾‾‾‾‾‾
 ```
 
-It's also possible tab-complete these three commands using a partial directory name.
+It's also possible tab-complete these three commands (`cd+`, `cd-`, `up`) using a
+partial directory name.
 
 ```sh
 [~\projects\PowerShell\src\Modules\Shared]> up pr<[Tab]>

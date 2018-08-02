@@ -38,7 +38,7 @@ function PostCommandLookup($commands, $isUnderTest, $setLocation, $multidot) {
           }
 
           catch [Management.Automation.PSArgumentException] {
-            $Global:Error.Clear()
+            $Global:Error.RemoveAt(0)
 
             if ($args -match $Multidot) {
               # multidot throws this exception on Windows
@@ -47,7 +47,7 @@ function PostCommandLookup($commands, $isUnderTest, $setLocation, $multidot) {
           }
 
           catch [Management.Automation.ItemNotFoundException] {
-            $Global:Error.Clear()
+            $Global:Error.RemoveAt(0)
 
             if ($args -match $Multidot) {
               # multidot throws this exception on Linux

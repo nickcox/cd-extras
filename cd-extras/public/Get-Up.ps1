@@ -71,8 +71,8 @@ function Get-Up {
   }
 
   catch [Management.Automation.PSArgumentException] {
-    Write-Verbose "$Global:Error"
-    $Global:Error.Clear()
+    Write-Verbose "$_"
+    $Global:Error.RemoveAt(0)
   }
 
   Write-Error "Could not find '$NamePart' as an ancestor of the given path." -ErrorAction Stop
