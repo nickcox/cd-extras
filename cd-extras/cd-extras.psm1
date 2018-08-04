@@ -6,10 +6,13 @@ $defaults = [ordered]@{
   CD_PATH         = @()
   CDABLE_VARS     = $false
   NOARG_CD        = '~'
-  MenuCompletion  = $null -ne (Get-Module PSReadline)
   DirCompletions  = @('Push-Location', 'Set-Location', 'Get-ChildItem')
   PathCompletions = @()
   FileCompletions = @()
+  MenuCompletion  = (
+    $null -ne (Get-Module PSReadline) -and (
+      Get-PSReadLineKeyHandler -Bound |? Function -eq MenuComplete)
+  )
 }
 
 if ((Test-Path variable:cde) -and $cde -is [System.Collections.IDictionary]) {
