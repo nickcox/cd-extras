@@ -34,8 +34,8 @@ function Expand-Path {
     [switch] $File,
     [switch] $Directory)
 
-  [string]$wildcardedPath =
-  $Candidate -replace '(\w/|\w\\|\w$)', '$0*' `
+  [string]$wildcardedPath = $Candidate `
+    -replace '(\w/|\w\\|\w$)', '$0*' `
     -replace '(/\*|\\\*)', ('*' + ${/}) `
     -replace '(/$|\\$)', '$0*' `
     -replace '(\.\w|\.$)', '*$0'
@@ -48,8 +48,17 @@ function Expand-Path {
   }
   else { $wildcardedPaths = $wildcardedPath }
 
+  $targetDrive = if (
+    ($Candidate | Split-Path -IsAbsolute) -and
+    ($driveName = $Candidate | Split-Path -Qualifier -ErrorAction Ignore)) {
+    $driveName | % {Get-PSDrive $_.Replace(':', '')}
+  }
+  else {
+    (Get-Location).Drive
+  }
+
   # registry provider cannot filter by type so check provider capabilities
-  $type = if ((Get-Location).Provider.Capabilities.HasFlag(
+  $type = if ($targetDrive.Provider.Capabilities.HasFlag(
       [Management.Automation.Provider.ProviderCapabilities]::Filter)) {
     @{File = $File; Directory = $Directory}
   }
@@ -57,16 +66,5 @@ function Expand-Path {
   }
 
   Write-Verbose "`nExpanding $Candidate to: $wildcardedPaths"
-  $result = Get-ChildItem $wildcardedPaths @type -Force -ErrorAction Ignore
-
-  if ($type.Count -gt 0) {
-    # already filtered
-    return $result
-  }
-  else {
-    return $result | Where {
-      (-not $Directory -or $_.PSIsContainer) -or
-      (-not $File -or -not $_.PSIsContainer)
-    }
-  }
+  Get-ChildItem $wildcardedPaths @type -Force -ErrorAction Ignore
 }

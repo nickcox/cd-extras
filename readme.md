@@ -1,3 +1,5 @@
+[![Coverage Status](https://coveralls.io/repos/github/nickcox/cd-extras/badge.svg?branch=master)](https://coveralls.io/github/nickcox/cd-extras?branch=master)
+
 # cd-extras
 
 <!-- TOC -->

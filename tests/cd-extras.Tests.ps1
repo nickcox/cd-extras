@@ -371,6 +371,12 @@ Describe 'cd-extras' {
         Expand-Path p/s/.Con |
           Should Be (Join-Path $TestDrive powershell\src\Microsoft.PowerShell.ConsoleHost)
       }
+
+      It 'works in Windows registry' {
+        if ($IsWindows) {
+          Expand-Path HKLM:\Soft\Mic\Win | Should HaveCount 2
+        }
+      }
     }
 
     Describe 'Get-Stack' {
