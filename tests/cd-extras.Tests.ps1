@@ -133,10 +133,17 @@ Describe 'cd-extras' {
     }
 
     Describe 'Multi-dot cd' {
-      It 'can move up multiple directories' {
+      It 'can move up two directories' {
         Set-Location ./powershell/src/Modules/Shared/Microsoft.PowerShell.Utility
         DoUnderTest {cd ...}
         CurrentDir | Should Be Modules
+      }
+
+
+      It 'can move up three directories' {
+        Set-Location ./powershell/src/Modules/Shared/Microsoft.PowerShell.Utility
+        DoUnderTest {cd ....}
+        CurrentDir | Should Be src
       }
     }
 

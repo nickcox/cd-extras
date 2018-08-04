@@ -6,7 +6,7 @@ See the items in the cd-extras history stack.
 .PARAMETER Undo
 Show contents of the Undo stack
 
-.PARAMETER Value
+.PARAMETER Redo
 Show contents of the Redo stack
 #>
 

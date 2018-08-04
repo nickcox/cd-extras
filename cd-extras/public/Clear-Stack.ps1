@@ -5,7 +5,7 @@ Clear the items in the cd-extras history stack.
 .PARAMETER Undo
 Clear contents of the Undo stack
 
-.PARAMETER Value
+.PARAMETER Redo
 Clear contents of the Redo stack
 #>
 
