@@ -254,7 +254,7 @@ Describe 'cd-extras' {
 
     Describe 'AUTO_CD' {
       BeforeAll {
-        Set-CdExtrasOption -Option AUTO_CD -Value $true
+        Set-CdExtrasOption AUTO_CD $true
       }
 
       It 'can change directory' {

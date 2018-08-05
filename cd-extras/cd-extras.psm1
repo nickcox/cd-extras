@@ -9,10 +9,8 @@ $defaults = [ordered]@{
   DirCompletions  = @('Push-Location', 'Set-Location', 'Get-ChildItem')
   PathCompletions = @()
   FileCompletions = @()
-  MenuCompletion  = (
-    $null -ne (Get-Module PSReadline) -and (
-      Get-PSReadLineKeyHandler -Bound |? Function -eq MenuComplete)
-  )
+  MenuCompletion  = $null -ne (Get-Module PSReadline) -and (
+    Get-PSReadLineKeyHandler -Bound |? Function -eq MenuComplete)
 }
 
 if ((Test-Path variable:cde) -and $cde -is [System.Collections.IDictionary]) {

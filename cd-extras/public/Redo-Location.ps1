@@ -29,7 +29,8 @@ function Redo-Location {
   [CmdletBinding(DefaultParameterSetName = 'number')]
   param(
     [Parameter(ParameterSetName = 'number', Position = 0)] [byte]$n = 1,
-    [Parameter(ParameterSetName = 'named', Position = 0)] [string]$NamePart)
+    [Parameter(ParameterSetName = 'named', Position = 0)] [string]$NamePart
+  )
 
   if ($PSCmdlet.ParameterSetName -eq 'number' -and $n -ge 1) {
     1..$n | % {

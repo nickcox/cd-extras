@@ -4,10 +4,10 @@ See the items in the cd-extras history stack.
 (Wraps Get-Location -Stack in the context of the cd-extras module.)
 
 .PARAMETER Undo
-Show contents of the Undo stack
+Show contents of the Undo stack.
 
 .PARAMETER Redo
-Show contents of the Redo stack
+Show contents of the Redo stack.
 #>
 
 function Get-Stack {

@@ -1,12 +1,12 @@
 <#
 .SYNOPSIS
-Update cd-extras option ('AUTO_CD', 'CD_PATH', ...etc)
+Update cd-extras option ('AUTO_CD', 'CD_PATH', ...etc).
 
 .PARAMETER Option
-The option to set
+The option to update.
 
 .PARAMETER Value
-The option value
+The new value.
 
 .EXAMPLE
 PS C:\> Set-CdExtrasOption AUTO_CD $false
@@ -28,7 +28,8 @@ function Set-CdExtrasOption {
       'FileCompletions',
       'PathCompletions')]
     $Option,
-    $Value)
+    $Value
+  )
 
   $Global:cde.$option = $value
 

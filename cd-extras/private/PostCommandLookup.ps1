@@ -32,6 +32,11 @@ function PostCommandLookup($commands, $toggleTest, $setLocation, $multidot) {
           }
         }
 
+        # multidot
+        elseif (@($arg).Length -eq 1 -and $args -match $Multidot) {
+          Step-Up ($args[0].Length - 1)
+        }
+
         # otherwise try to execute SetLocation
         else {
 
@@ -39,24 +44,10 @@ function PostCommandLookup($commands, $toggleTest, $setLocation, $multidot) {
             &$setLocation @args -ErrorAction Stop
           }
 
-          catch [Management.Automation.PSArgumentException] {
-            $Global:Error.RemoveAt(0)
-
-            if ($args -match $Multidot) {
-              # multidot throws this exception on Windows
-              Step-Up ($args[0].Length - 1)
-            }
-          }
-
           catch [Management.Automation.ItemNotFoundException] {
             $Global:Error.RemoveAt(0)
 
-            if ($args -match $Multidot) {
-              # multidot throws this exception on Linux
-              Step-Up ($args[0].Length - 1)
-            }
-
-            elseif (
+            if (
               @($arg).Length -eq 1 -and
               $cde.CDABLE_VARS -and
               (Test-Path "variable:$($arg.Content)") -and

@@ -4,16 +4,16 @@ Attempts to expand a given candidate path by appending a wildcard character (*)
 to the end of each path segment.
 
 .PARAMETER Candidate
-Candidate search string
+Candidate search string.
 
 .PARAMETER SearchPaths
-Set of paths to search in addition to the current directory. Defaults to $cde.CD_PATH
+Set of paths to search in addition to the current directory. $cde.CD_PATH by default.
 
 .PARAMETER File
-Limits search results to leaf items
+Limits search results to leaf items.
 
 .PARAMETER Directory
-Limits search results to container items
+Limits search results to container items.
 
 .EXAMPLE
 PS> Expand-Path /win/sys/dr/et -Directory
@@ -29,10 +29,11 @@ function Expand-Path {
 
   [CmdletBinding()]
   param (
-    $Candidate,
-    [array] $SearchPaths = $cde.CD_PATH,
+    [string] $Candidate,
+    [array]  $SearchPaths = $cde.CD_PATH,
     [switch] $File,
-    [switch] $Directory)
+    [switch] $Directory
+  )
 
   [string]$wildcardedPath = $Candidate `
     -replace '(\w/|\w\\|\w$)', '$0*' `

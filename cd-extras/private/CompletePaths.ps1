@@ -6,7 +6,8 @@ function CompletePaths {
     $parameterName,
     $wordToComplete,
     $commandAst,
-    $boundParameters)
+    $boundParameters
+  )
 
   # given a full path, $_, return a fully formed completion result
   # logic: use a relative path if the supplied word isn't rooted (e.g. /temp/... or ~/... C:\...)
@@ -55,7 +56,7 @@ function CompletePaths {
     $wordToComplete -match '[^/|\\]+' -and
     ($maybeVar = Get-Variable "$($Matches[0])*" |
         Where {$_.Value -and (Test-Path ($_.Value) -PathType Container)} |
-        Select -ExpandProperty Value)
+        Select -Expand Value)
   ) {
     Expand-Path @switches ($wordToComplete -replace $Matches[0], $maybeVar)
   }

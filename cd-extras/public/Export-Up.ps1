@@ -1,12 +1,12 @@
 <#
 .SYNOPSIS
-Export each ancestor of the current or given directory to a global variable.
+Export each ancestor of the current or given directory (to a global variable by default).
 
 .PARAMETER From
 The folder from which to start. $PWD by default.
 
 .PARAMETER Force
-Overwrites any existing globals variables with the same names.
+Overwrites any existing globals variables of the same names with the new values.
 
 .PARAMETER NoGlobals
 Don't copy output into global variables.
