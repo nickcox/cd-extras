@@ -14,7 +14,7 @@ function CompletePaths {
   # *and* the resolved path is a child of the current directory or its parent
   # for absolute paths, replace home dir location with tilde
   filter CompletionResult {
-    $friendly = $_
+    $friendly = $_ | select -Expand PSPath | Convert-Path
     if (-not ($wordToComplete | IsRooted) -and (PathIsDescendedFrom .. $_)) {
       $friendly = Resolve-Path -Relative $_
     }
