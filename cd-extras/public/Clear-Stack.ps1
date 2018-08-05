@@ -3,10 +3,10 @@
 Clear the items in the cd-extras history stack.
 
 .PARAMETER Undo
-Clear contents of the Undo stack
+Clear contents of the Undo stack only.
 
 .PARAMETER Redo
-Clear contents of the Redo stack
+Clear contents of the Redo stack only.
 #>
 
 function Clear-Stack {
@@ -17,6 +17,6 @@ function Clear-Stack {
     [switch] $Redo
   )
 
-  if ($Undo) { $Script:back = 'back' + [Guid]::NewGuid() }
-  if ($Redo) { $Script:fwd = 'fwd' + [Guid]::NewGuid() }
+  if ($Undo -or !($Undo -or $Redo)) { $Script:back = 'back' + [Guid]::NewGuid() }
+  if ($Redo -or !($Undo -or $Redo)) { $Script:fwd = 'fwd' + [Guid]::NewGuid() }
 }
