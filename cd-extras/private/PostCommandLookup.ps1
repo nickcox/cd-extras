@@ -1,10 +1,12 @@
-function PostCommandLookup($commands, $isUnderTest, $setLocation, $multidot) {
+function PostCommandLookup($commands, $toggleTest, $setLocation, $multidot) {
 
   $ExecutionContext.InvokeCommand.PostCommandLookupAction = {
     param($CommandName, $CommandLookupEventArgs)
 
     if ($commands -contains $CommandName -and
-      ((&$isUnderTest) -or $CommandLookupEventArgs.CommandOrigin -eq 'Runspace')) {
+      (($CommandLookupEventArgs.CommandOrigin -eq 'Runspace') -or ($__cdeUnderTest))) {
+
+      &$toggleTest
 
       $CommandName = $CommandName
       $setLocation = $setLocation

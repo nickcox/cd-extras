@@ -5,8 +5,8 @@ function CommandNotFound($actions, $isUnderTest) {
 
     if ($CommandName -like 'get-*') { return }
 
-    if (!(&$isUnderTest) -and
-      $CommandLookupEventArgs.CommandOrigin -ne 'Runspace') { return }
+    if ($CommandLookupEventArgs.CommandOrigin -ne 'Runspace' -and
+      !(&$isUnderTest)) { return }
 
     $actions | % { &$_ $CommandName $CommandLookupEventArgs }
   }.GetNewClosure()
