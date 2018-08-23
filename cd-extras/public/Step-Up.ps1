@@ -1,7 +1,7 @@
 <#
 .SYNOPSIS
 Navigate upward by n levels (one level by default)
-or to the first parent directory matching a given search term
+or to the first parent directory matching a given search term.
 
 .PARAMETER n
 Number of levels above the starting location. (One by default.)

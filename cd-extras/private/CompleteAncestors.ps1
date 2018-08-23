@@ -15,9 +15,9 @@ function CompleteAncestors {
 
   IndexedComplete ($ups.GetEnumerator() |
       Where Value -Match (
-        $wordToComplete |
+      $wordToComplete |
         RemoveSurroundingQuotes |
         Escape
-      ) |
+    ) |
       Completions)
 }

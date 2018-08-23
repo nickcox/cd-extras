@@ -36,5 +36,4 @@ function Switch-LocationPart {
   else {
     Write-Error "No such directory: '$path'" -ErrorAction Stop
   }
-
 }

@@ -23,7 +23,7 @@ C:\Windows\System32
 C:\Windows\System32\drivers\etc> _
 
 .EXAMPLE
-C:\Windows\System32\drivers\etc> up win
+C:\Windows\System32\drivers\etc> Get-Up win
 C:\Windows
 C:\Windows\System32\drivers\etc> _
 

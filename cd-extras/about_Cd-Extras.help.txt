@@ -1,3 +1,5 @@
+[![Coverage Status](https://coveralls.io/repos/github/nickcox/cd-extras/badge.svg?branch=master)](https://coveralls.io/github/nickcox/cd-extras?branch=master)
+
 # cd-extras
 
 <!-- TOC -->
@@ -6,13 +8,13 @@
 - [AUTO_CD](#auto_cd)
 - [CD_PATH](#cd_path)
 - [CDABLE_VARS](#cdable_vars)
+- [No argument cd](#no-argument-cd)
+- [Two argument cd](#two-argument-cd)
 - [Expansion](#expansion)
   - [Enhanced expansion for built-ins](#enhanced-expansion-for-built-ins)
   - [Path shortening](#path-shortening)
   - [Navigation helper expansions](#navigation-helper-expansions)
   - [Multi-dot and variable based expansions](#multi-dot-and-variable-based-expansions)
-- [No argument cd](#no-argument-cd)
-- [Two argument cd](#two-argument-cd)
 - [Additional helpers](#additional-helpers)
 - [Note on compatibility](#note-on-compatibility)
   - [Alternative providers](#alternative-providers)
@@ -51,6 +53,18 @@ Note that the aliases are `cd-` and `cd+` _not_ `cd -` and `cd +`.
 Repeated uses of `cd-` will keep moving backwards towards the beginning of the stack
 rather than toggling between the two most recent directories as in vanilla bash. (Use
 `Step-Back` (`cdb`) to toggle between the current and previous directories.)
+
+```sh
+[C:\Windows\System32]> ..
+[C:\Windows]> ..
+[C:\]> cd-
+[C:\Windows]> cd-
+[C:\Windows\System32]> cd+
+[C:\Windows]> cd+
+[C:\]> cdb
+[C:\Windows]> cdb
+[C:\]> _
+```
 
 `up`, `cd+` and `cd-` each take a single optional parameter: either a number, `n`,
 used to specify the number of levels or locations to traverse, as in:
@@ -145,7 +159,7 @@ in your `$PROFILE` or by invoking [`Export-Up`](#multi-dot-and-variable-based-ex
 [~/projects/powershell]> _
 ```
 
-This also works with relative paths so if you find yourself frequently `cd`ing into the same
+This works with relative paths too, so if you find yourself frequently `cd`ing into the same
 subdirectories you could create a corresponding variable.
 
 ```sh
@@ -155,6 +169,26 @@ subdirectories you could create a corresponding variable.
 ```
 
 CDABLE_VARS is off by default. Enable it with: `Set-CdExtrasOption CDABLE_VARS $true`.
+
+## No argument cd
+
+If the option `$cde.NOARG_CD` is defined then `cd` with no arguments
+will change to the nominated directory. Defaults to `'~'`.
+
+```sh
+[C:\Windows\System32\]> cd
+[~]> _
+```
+
+## Two argument cd
+
+Replaces all instances of the first argument in the current path with the second argument,
+changing to the resulting directory if it exists. Uses the `Switch-LocationPart` (`cd:`) function.
+
+```sh
+[~\Modules\Unix\Microsoft.PowerShell.Utility]> cd unix shared
+[~\Modules\Shared\Microsoft.PowerShell.Utility]> _
+```
 
 ## Expansion
 
@@ -177,7 +211,7 @@ is expanded into `*.sdk*`.
 [~\projects\powershell\src\Microsoft.PowerShell.SDK]> _
 ```
 
-You can change the list of command which participate in enhanced directory completion using
+You can change the list of commands that participate in enhanced directory completion using
 the `DirCompletions` [option](#configure):
 
 ```sh
@@ -186,7 +220,8 @@ the `DirCompletions` [option](#configure):
 [~]> mkdir ~\powershell\src\_
 ```
 
-It's also possible to opt into enhanced file-only or general (file & directory) completion using the `FileCompletions` and `PathCompletions` respectively.
+It's also possible to opt into enhanced file-only or general (file & directory) completion using
+the `FileCompletions` and `PathCompletions` options respectively.
 
 ```sh
 [~]> Set-CdExtrasOption PathCompletions ($cde.DirCompletions + 'Invoke-Item')
@@ -195,7 +230,7 @@ C:\temp\subdir  C:\temp\txtFile.txt  C:\temp\txtFile2.txt
 ‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 ```
 
-For all three completion types, paths within the `$cde.CD_PATH` array are considered for expansion.
+Paths within the `$cde.CD_PATH` array are considered for expansion by all completion types.
 
 ```sh
 [~]> $cde.CD_PATH += "~\Documents\"
@@ -221,8 +256,8 @@ Expansions are provided for the `cd+`, `cd-` and `up` (or `..`) aliases.
 
 When the `MenuCompletion` option is set to `$true` the completion offered is the
 index of each corresponding directory; the full path is displayed in the menu below.
-`cd-extras` will attempt to detect `PSReadLine` at start-up in order to set this
-option appropriately. For example:
+`cd-extras` will attempt to detect `PSReadLine` in order to set this
+option appropriately at start-up. For example:
 
 ```sh
 [C:\Windows\System32\drivers\etc]> up <[Tab]>
@@ -234,7 +269,8 @@ option appropriately. For example:
 ‾‾‾‾‾‾‾‾‾‾‾
 ```
 
-It's also possible tab-complete these three commands using a partial directory name.
+It's also possible tab-complete these three commands (`cd+`, `cd-`, `up`) using a
+partial directory name.
 
 ```sh
 [~\projects\PowerShell\src\Modules\Shared]> up pr<[Tab]>
@@ -292,32 +328,12 @@ might be easier than:
 [C:\projects\powershell\src\Modules\Unix]> cd C:\projects\powershell\_
 ```
 
-You can also combine with [AUTO_CD](#auto_cd) for great good:
+You can combine this with [AUTO_CD](#auto_cd) for great good:
 
 ```sh
 [C:\projects\powershell\src\Modules\Unix]> projects
 [C:\projects]> src
 [C:\projects\powershell\src]> _
-```
-
-## No argument cd
-
-If the option `$cde.NOARG_CD` is defined then `cd` with no arguments
-will change to the nominated directory. Defaults to `'~'`.
-
-```sh
-[C:\Windows\System32\]> cd
-[~]> _
-```
-
-## Two argument cd
-
-Replaces all instances of the first argument in the current path with the second argument,
-changing to the resulting directory if it exists. Uses the `Switch-LocationPart` (`cd:`) function.
-
-```sh
-[~\Modules\Unix\Microsoft.PowerShell.Utility]> cd unix shared
-[~\Modules\Shared\Microsoft.PowerShell.Utility]> _
 ```
 
 ## Additional helpers
@@ -336,25 +352,26 @@ changing to the resulting directory if it exists. Uses the `Switch-LocationPart`
 
 ### Alternative providers
 
-All of the functionality discussed above is intended to work against the filesystem provider.
-Most things should work with other providers too though.
+The functionality discussed above is intended to work against the filesystem provider. Most things
+should work with other providers too though.
 
 ```sh
 [~]> cd hklm:
 [HKLM:]> cd so/mic/win/cur/windowsupdate
 [HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate]> ..
-[HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion] > cd- 3
+[HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion]> cd-
+[HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate]> cd- 2
 [~]> _
 ```
 
 ### OS X & Linux
 
 Functionality is tested and _should_ work on non-Windows operating systems. It's entirely
-likely you'll encounter some rough edges though. In particular the best `$cde.MenuCompletion`
-setting may not be detected automatically; you may need to change it yourself.
-You'll also notice that cd-extras is quite permissive in how it matches the case of multi-segment
-paths so you may not be able to use path shortening in cases where multiple path abbreviations differ
-only by case. Please consider raising an issue if this is a problem for you.
+likely you'll encounter some rough edges, though. In particular the best `$cde.MenuCompletion`
+setting may not be detected automatically; you might need to change it yourself.
+You'll also notice that cd-extras is quite permissive with respect to the casing of multi-segment
+paths so path shortening won't work in cases where multiple possible path abbreviations differ
+only by case. Please consider raising any issues you encounter.
 
 # Get started
 

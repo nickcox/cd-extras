@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-Move back to a location previously navigated away from using Undo-Location.
+Move forward to a location previously navigated away from using Undo-Location.
 
 .PARAMETER n
 The number of locations to redo.

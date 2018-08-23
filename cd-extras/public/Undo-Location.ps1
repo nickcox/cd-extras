@@ -1,6 +1,7 @@
 <#
 .SYNOPSIS
-Undo the previous n changes to the current location.
+Undo the previous n changes to the current location
+or go back to an earlier location matching a given partial path.
 
 .PARAMETER n
 The number of locations to undo.
@@ -9,23 +10,23 @@ The number of locations to undo.
 Partial path name to choose from undo stack.
 
 .EXAMPLE
-PS C:\Windows\System32> # Move backwards to the previous location
+PS C:\Windows\System32> # Move backward to the previous location
 PS C:\Windows\System32> cd ..
-PS C:\Windows> Undo-Location # (or cd-)
+PS C:\Windows> Undo-Location # (cd-)
 PS C:\Windows\System32> _
 
 .EXAMPLE
-PS C:\Windows\System32> # Move backwards to the 2nd last location
+PS C:\Windows\System32> # Move backward to the 2nd last location
 PS C:\Windows\System32> cd ..
 PS C:\Windows\> cd ..
-PS C:\> Undo-Location 2 # (or cd- 2)
+PS C:\> cd- 2
 PS C:\Windows\System32> _
 
 .EXAMPLE
-PS C:\Windows\System32> # Move backwards by name
+PS C:\Windows\System32> # Move backward by name
 PS C:\Windows\System32> cd ..
 PS C:\Windows\> cd ..
-PS C:\> Undo-Location system # (or cd- system)
+PS C:\> cd- system
 PS C:\Windows\System32> _
 
 .LINK

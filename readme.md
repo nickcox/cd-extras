@@ -369,9 +369,9 @@ should work with other providers too though.
 Functionality is tested and _should_ work on non-Windows operating systems. It's entirely
 likely you'll encounter some rough edges, though. In particular the best `$cde.MenuCompletion`
 setting may not be detected automatically; you might need to change it yourself.
-You'll also notice that cd-extras is quite permissive with respect to the casing of multi-segment
-paths so path shortening won't work in cases where multiple possible path abbreviations differ
-only by case. Please consider raising any issues you encounter.
+You'll also notice that cd-extras is quite permissive with respect to the casing of paths
+so path shortening won't work in cases where multiple possible path abbreviations differ
+only by case.
 
 # Get started
 

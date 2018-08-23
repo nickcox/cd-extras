@@ -13,11 +13,11 @@ $defaults = [ordered]@{
     Get-PSReadLineKeyHandler -Bound |? Function -eq MenuComplete)
 }
 
-if ((Test-Path variable:cde) -and $cde -is [System.Collections.IDictionary]) {
-  $global:cde = New-Object PSObject -Property $global:cde
+$global:cde = if ((Test-Path variable:cde) -and $cde -is [System.Collections.IDictionary]) {
+  New-Object PSObject -Property $global:cde
 }
 else {
-  $global:cde = New-Object PSObject -Property $defaults
+  New-Object PSObject -Property $defaults
 }
 
 # account for any properties missing in user supplied hash
