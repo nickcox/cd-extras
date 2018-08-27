@@ -131,10 +131,12 @@ As with the `cd` command, [abbreviated paths](#path-shortening) are supported.
 
 ## CD_PATH
 
-Search additional locations for candidate directories. [Tab-expansion](#enhanced-expansion-for-built-ins) into `CD_PATH` directories is provided.
+Search additional locations for candidate directories. [Tab-expansion](#enhanced-expansion-for-built-ins)
+into `CD_PATH` directories is provided.
 
 ```sh
 [~]> $cde.CD_PATH = @('~/documents')
+[~]> # or Set-CdExtrasOption CD_PATH @('~/documents')
 [~]> cd WindowsPowerShell
 [~/documents/WindowsPowerShell]> _
 ```
@@ -149,9 +151,11 @@ Set-Location : Cannot find path '~\WindowsPowerShell' because it does not exist.
 
 ## CDABLE_VARS
 
-Save yourself a `$` when cding into folders using a variable name and enable [completion](#multi-dot-and-variable-based-expansions)
-for child directories. Given a variable containing the path to a folder (configured, perhaps,
-in your `$PROFILE` or by invoking [`Export-Up`](#multi-dot-and-variable-based-expansions)), you can `cd` into it using the name of the variable.
+Save yourself a `$` when cding into folders using a variable name and enable
+[completion](#multi-dot-and-variable-based-expansions) for child directories.
+Given a variable containing the path to a folder (configured, perhaps, in your
+`$PROFILE` or by invoking [`Export-Up`](#multi-dot-and-variable-based-expansions)),
+you can `cd` into it using the name of the variable.
 
 ```sh
 [~]> $power = '~/projects/powershell'
@@ -172,8 +176,8 @@ CDABLE_VARS is off by default. Enable it with: `Set-CdExtrasOption CDABLE_VARS $
 
 ## No argument cd
 
-If the option `$cde.NOARG_CD` is defined then `cd` with no arguments
-will change to the nominated directory. Defaults to `'~'`.
+If the option `$cde.NOARG_CD` is defined then `cd` with no arguments will move into the
+nominated directory. Defaults to `'~'`.
 
 ```sh
 [C:\Windows\System32\]> cd
@@ -215,7 +219,8 @@ You can change the list of commands that participate in enhanced directory compl
 the `DirCompletions` [option](#configure):
 
 ```sh
-[~]> Set-CdExtrasOption DirCompletions ($cde.DirCompletions + 'mkdir')
+[~]> $cde.DirCompletions += 'mkdir'
+[~]> # or Set-CdExtrasOption DirCompletions ($cde.DirCompletions + 'mkdir')
 [~]> mkdir ~/pow/src<[Tab]>
 [~]> mkdir ~\powershell\src\_
 ```
@@ -224,7 +229,8 @@ It's also possible to opt into enhanced file-only or general (file & directory) 
 the `FileCompletions` and `PathCompletions` options respectively.
 
 ```sh
-[~]> Set-CdExtrasOption PathCompletions ($cde.DirCompletions + 'Invoke-Item')
+[~]> $cde.PathCompletions += 'Invoke-Item'
+[~]> # or Set-CdExtrasOption PathCompletions ($cde.PathCompletions + 'Invoke-Item')
 [~]> ii /t/<[Tab]>
 C:\temp\subdir  C:\temp\txtFile.txt  C:\temp\txtFile2.txt
 ‾‾‾‾‾‾‾‾‾‾‾‾‾‾
@@ -233,7 +239,7 @@ C:\temp\subdir  C:\temp\txtFile.txt  C:\temp\txtFile2.txt
 Paths within the `$cde.CD_PATH` array are considered for expansion by all completion types.
 
 ```sh
-[~]> $cde.CD_PATH += "~\Documents\"
+[~]> $cde.CD_PATH += '~\Documents\'
 [~]> cd win/mod
 [~\Documents\WindowsPowerShell\Modules]> _
 ```
@@ -247,6 +253,15 @@ invoking tab expansion.
 [~]> cd /w/s/d/et
 [C:\Windows\System32\drivers\etc]> cd ~/pr/pow/src
 [~\projects\PowerShell\src]> cd .sdk
+[~\projects\PowerShell\src\Microsoft.PowerShell.SDK]> _
+```
+
+`AUTO_CD` works the same way when enabled.
+
+```sh
+[~]> /w/s/d/et
+[C:\Windows\System32\drivers\etc]> ~/pr/pow/src
+[~\projects\PowerShell\src]> .sdk
 [~\projects\PowerShell\src\Microsoft.PowerShell.SDK]> _
 ```
 
