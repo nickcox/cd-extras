@@ -45,9 +45,14 @@ function Export-Up() {
   try {
     while (
       ($next = $next | Split-Path -Parent) -and
-      ($next -ne $next.Drive.Root -or $IncludeRoot)) {
+      ($next -ne (Resolve-Path $next).Drive.Root -or $IncludeRoot)) {
 
-      $output.Add((&$getPair).name, (&$getPair).path)
+      $pair = &$getPair
+
+      # in the case of duplicate names, first one wins
+      if (!$output.Contains($pair.name)) {
+        $output.Add($pair.name, $pair.path)
+      }
     }
   }
   catch [Management.Automation.PSArgumentException] {

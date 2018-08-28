@@ -250,6 +250,23 @@ Describe 'cd-extras' {
         $Global:formatAndOutput | Should Be (Resolve-Path ../..).Path
         # ...
       }
+
+      It 'does not choke on duplicate directory names' {
+        Set-Location powershell/powershell
+        $xup = Export-Up -NoGlobals
+        $xup[0] | should match ([Regex]::Escape($pwd.Path))
+        $xup[1] | should not match ([Regex]::Escape(($pwd.Path | Split-Path -Parent)))
+      }
+
+      It 'should not export the root directory by default' {
+        $xup = Export-Up -NoGlobals -From ~
+        $xup.Keys | Should -Not -Contain (Resolve-Path ~).Drive.Root
+      }
+
+      It 'should export the root directory when switch set' {
+        $xup = Export-Up -NoGlobals -From ~ -IncludeRoot
+        $xup.Keys | Should -Contain (Resolve-Path ~).Drive.Root
+      }
     }
 
     Describe 'AUTO_CD' {
@@ -321,9 +338,8 @@ Describe 'cd-extras' {
 
     Describe 'No arg cd' {
       It 'moves to the expected location' {
-        Set-Location TestDrive:\
-        DoUnderTest { cd }
         $cde.NOARG_CD | Should Be '~'
+        DoUnderTest { cd }
         (Get-Location).Path | Should Be (Resolve-Path ~).Path
       }
     }
