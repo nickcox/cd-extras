@@ -66,6 +66,6 @@ function Expand-Path {
   else { @{}
   }
 
-  Write-Verbose "`nExpanding $Candidate to: $wildcardedPaths"
+  WriteLog "`nExpanding $Candidate to: $wildcardedPaths"
   Get-ChildItem $wildcardedPaths @type -Force -ErrorAction Ignore
 }

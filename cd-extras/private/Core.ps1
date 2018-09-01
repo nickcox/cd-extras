@@ -97,3 +97,8 @@ function DoUnderTest($block) {
   $Global:__cdeUnderTest = $true
   &$block
 }
+
+function WriteLog($message) {
+  if ($cde | Get-Member _logger) { &$cde._logger $message }
+  else { Write-Verbose $message }
+}

@@ -71,7 +71,7 @@ function Get-Up {
   }
 
   catch [Management.Automation.PSArgumentException] {
-    Write-Verbose "$_"
+    WriteLog "$_"
     $Global:Error.RemoveAt(0)
   }
 
