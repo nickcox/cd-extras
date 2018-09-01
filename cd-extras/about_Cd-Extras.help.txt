@@ -236,12 +236,25 @@ C:\temp\subdir  C:\temp\txtFile.txt  C:\temp\txtFile2.txt
 ‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 ```
 
+In each case, expansions work against the target's `Path` parameter.
+If you want enhanced completion for a native executable or a cmdlet without
+a `Path` parameter then you'll need to provide a wrapper. Either the wrapper
+or the target itself should handle expanding `~` where necessary. e.g:
+
+```sh
+[~]> function Invoke-VSCode($path) { &"code" (Resolve-Path $path) }
+[~]> $cde.DirCompletions += 'Invoke-VSCode'
+[~]> Set-Alias co Invoke-VSCode
+[~]> co ~/pr/po<[Tab]>
+[~]> co ~\projects\powershell_
+```
+
 Paths within the `$cde.CD_PATH` array are considered for expansion by all completion types.
 
 ```sh
 [~]> $cde.CD_PATH += '~\Documents\'
-[~]> cd win/mod
-[~\Documents\WindowsPowerShell\Modules]> _
+[~]> cd win/mod<[Tab]>
+[~]> ~\Documents\WindowsPowerShell\Modules_
 ```
 
 ### Path shortening
