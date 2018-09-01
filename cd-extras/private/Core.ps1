@@ -12,11 +12,10 @@ function SetLocationEx {
   # discard any existing forward (redo) stack
   Clear-Stack -Redo
 
-  # don't push consecutive dupes onto stack
-  if ((
-      (@((Get-Location -StackName $back -ea Ignore )) | Select -First 1).Path -ne
-      (Get-Location).Path
-    ) -and (Test-Path $Path)
+  # only push to stack if location is actuall changing
+  if (
+    ($target = Resolve-Path $Path -ErrorAction Ignore) -and (
+      $target.Path -ne ((Get-Location).Path))
   ) { Push-Location -StackName $back }
 
   $Script:OLDPWD = $PWD
