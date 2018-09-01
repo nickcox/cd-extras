@@ -45,7 +45,7 @@ function Export-Up() {
   try {
     while (
       ($next = $next | Split-Path -Parent) -and
-      ($next -ne (Resolve-Path $next).Drive.Root -or $IncludeRoot)) {
+      ($next -ne (Resolve-Path $next).Drive.Root)) {
 
       $pair = &$getPair
 
@@ -53,6 +53,11 @@ function Export-Up() {
       if (!$output.Contains($pair.name)) {
         $output.Add($pair.name, $pair.path)
       }
+    }
+
+    if ($IncludeRoot -and $output.Count -gt 1) {
+      $drive = (Resolve-Path $From).Drive
+      $output.Add($drive.Name, $drive.Root)
     }
   }
   catch [Management.Automation.PSArgumentException] {

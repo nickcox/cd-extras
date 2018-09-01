@@ -265,7 +265,7 @@ Describe 'cd-extras' {
 
       It 'should export the root directory when switch set' {
         $xup = Export-Up -NoGlobals -From ~ -IncludeRoot
-        $xup.Keys | Should -Contain (Resolve-Path ~).Drive.Root
+        $xup.Keys | Should -Contain (Resolve-Path ~).Drive.Name
       }
     }
 
@@ -518,7 +518,7 @@ Describe 'cd-extras' {
         SetLocationEx powershell
         $cde.MenuCompletion = $true
         $actual = CompleteAncestors -wordToComplete ''
-        $actual[0].CompletionText | Should BeLike "*testdrive*"
+        $actual[0].CompletionText | Should BeLike "'testdrive:${/}'"
       }
     }
 
