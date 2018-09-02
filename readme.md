@@ -40,7 +40,6 @@ Provides the following aliases (and corresponding functions):
 - `cd-` (`Undo-Location`)
 - `cd+` (`Redo-Location`)
 - `cdb` (`Step-Back`)
-- `cd:` (`Switch-LocationPart`)
 
 Examples:
 
@@ -84,7 +83,7 @@ specifying how many steps to traverse...
 ### Navigate by name
 
 ...or a string, `NamePart`, used to change to the nearest directory whose name matches
-the given argument. Given a `NamePart`, cd-extras will search, starting at the current
+the given argument. Given a `NamePart`, _cd-extras_ will search, starting at the current
 location, for directories whose _leaf_ name contains the given string. If none is found
 then it will attempt to match against the full path instead.
 [Tab completion](#navigation-helper-expansions) is available for these three helpers.
@@ -189,7 +188,7 @@ nominated directory. Defaults to `'~'`.
 ## Two argument cd
 
 Replaces all instances of the first argument in the current path with the second argument,
-changing to the resulting directory if it exists. Uses the `Switch-LocationPart` (`cd:`) function.
+changing to the resulting directory if it exists. Uses the `Switch-LocationPart` function.
 
 ```sh
 [~\Modules\Unix\Microsoft.PowerShell.Utility]> cd unix shared
@@ -205,6 +204,7 @@ segments so that you don't have to individually tab through each one.
 
 ```sh
 [~]> cd /w/s/set<[Tab]><[Tab]>
+[~]> cd C:\Windows\SysWOW64\setup\_
 C:\Windows\System32\setup\  C:\Windows\SysWOW64\setup\
                             ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 ```
@@ -213,8 +213,8 @@ Periods (`.`) are expanded around so, for example, a segment containing `.sdk`
 is expanded into `*.sdk*`.
 
 ```sh
-[~]> cd proj/pow/s/.sdk<[Tab]><[Enter]>
-[~\projects\powershell\src\Microsoft.PowerShell.SDK]> _
+[~]> cd proj/pow/s/.sdk<[Tab]>
+[~]> cd ~\projects\powershell\src\Microsoft.PowerShell.SDK_
 ```
 
 You can change the list of commands that participate in enhanced directory completion using
@@ -234,6 +234,7 @@ the `FileCompletions` and `PathCompletions` options respectively.
 [~]> $cde.PathCompletions += 'Invoke-Item'
 [~]> # or Set-CdExtrasOption PathCompletions ($cde.PathCompletions + 'Invoke-Item')
 [~]> ii /t/<[Tab]>
+[~]> C:\temp\subdir_
 C:\temp\subdir  C:\temp\txtFile.txt  C:\temp\txtFile2.txt
 ‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 ```
@@ -251,7 +252,7 @@ or the target itself should handle expanding `~` where necessary. e.g:
 [~]> co ~\projects\powershell_
 ```
 
-Paths within the `$cde.CD_PATH` array are considered for expansion by all completion types.
+Paths within the `$cde.CD_PATH` array are included for all completion types.
 
 ```sh
 [~]> $cde.CD_PATH += '~\Documents\'
@@ -265,7 +266,7 @@ Expansions are provided for the `cd+`, `cd-` and `up` (_aka_ `..`) aliases.
 
 When the `MenuCompletion` option is set to `$true` the completion offered is the
 index of each corresponding directory; the full path is displayed in the menu below.
-`cd-extras` will attempt to detect `PSReadLine` in order to set this option
+_cd-extras_ will attempt to detect `PSReadLine` in order to set this option
 appropriately at start-up. For example:
 
 ```sh
@@ -279,7 +280,7 @@ appropriately at start-up. For example:
 ```
 
 It's also possible tab-complete these three commands (`cd+`, `cd-`, `up`) using a
-partial directory name (i.e. the [`NamePart` parameter](#navigate-by-name)).
+partial directory name (the [`NamePart` parameter](#navigate-by-name)).
 
 ```sh
 [~\projects\PowerShell\src\Modules\Shared]> up pr<[Tab]>
@@ -293,7 +294,7 @@ The multi-dot syntax provides tab completion into ancestor directories.
 
 ```sh
 [C:\projects\powershell\docs\git]> cd ...<[Tab]>
-[C:\projects\powershell\docs\git]> cd C:\projects\powershell\
+[C:\projects\powershell\docs\git]> cd C:\projects\powershell\_
 ```
 
 ```sh
@@ -382,7 +383,7 @@ invoking tab expansion.
 
 ### Alternative providers
 
-cd-extras is primarily intended to work against the filesystem provider. Most things
+_cd-extras_ is primarily intended to work against the filesystem provider. Most things
 should work with other providers too though.
 
 ```sh
@@ -397,8 +398,8 @@ should work with other providers too though.
 ### OS X & Linux
 
 Functionality is tested and _should_ work on non-Windows operating systems. It's entirely
-likely you'll encounter some rough edges, though. In particular you'll also notice that
-cd-extras is quite permissive with respect to the casing of paths so path shortening won't work
+likely you'll encounter some rough edges, though. In particular you'll notice that _cd-extras_
+is quite permissive with respect to the casing of paths; this means path shortening won't work
 in cases where multiple possible path abbreviations differ only by case.
 
 # Get started
@@ -437,7 +438,7 @@ Options provided:
   - Commands that participate in enhanced tab expansion for any type of path (files & directories).
 
 Either create a hashtable, `cde`, with one or more of these keys _before_ importing
-the cd-extras module:
+the `cd-extras` module:
 
 ```sh
 $global:cde = @{

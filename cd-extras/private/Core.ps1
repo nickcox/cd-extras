@@ -22,6 +22,12 @@ function SetLocationEx {
   Set-Location @PSBoundParameters
 }
 
+function DefaultIfEmpty($default) {
+  Begin { $any = $false }
+  Process { if ($_) {$any = $true; $_} }
+  End { if (!$any) {&$default} }
+}
+
 filter IsRootedOrRelative {
   ($_ | IsRooted) -or ($_ | IsRelative)
 }
@@ -108,12 +114,6 @@ function DoUnderTest($block) {
 }
 
 function WriteLog($message) {
-  if ($cde | Get-Member _logger) { &$cde._logger $message }
+  if (Get-Variable cde -and ($cde | Get-Member _logger)) { &$cde._logger $message }
   else { Write-Verbose $message }
-}
-
-function DefaultIfEmpty($default) {
-  Begin { $any = $false }
-  Process { if ($_) {$any = $true; $_} }
-  End { if (!$any) {&$default} }
 }

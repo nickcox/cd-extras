@@ -126,9 +126,9 @@ Describe 'cd-extras' {
         DoUndertest { cd ./powershell/src/Modules }
         DoUndertest { cd ../../demos/Apache }
         cdb
-        Get-Location | Select -Expand Path | Should BeLike "*src${/}Modules"
+        CurrentDir | Should Be Modules
         cdb
-        Get-Location | Select -Expand Path | Should BeLike "*demos${/}Apache"
+        CurrentDir | Should Be Apache
       }
     }
 
@@ -169,6 +169,7 @@ Describe 'cd-extras' {
       It 'can replace more than one path segment' {
         Set-Location .\powershell\demos\Apache\Apache
         cd: Apache/Apache crontab/CronTab
+        CurrentDir | Should Be CronTab
       }
 
       It 'works with two arg cd' {
@@ -483,8 +484,8 @@ Describe 'cd-extras' {
 
       It 'provides usable registry paths' {
         if ($IsWindows) {
-        (CompletePaths -dirsOnly -wordToComplete 'HKLM:\Soft\Mic').CompletionText |
-          Should Match "HKLM:\\Software\\Microsoft"
+          (CompletePaths -dirsOnly -wordToComplete 'HKLM:\Soft\Mic').CompletionText |
+            Should Match "HKLM:\\Software\\Microsoft"
         }
       }
     }
