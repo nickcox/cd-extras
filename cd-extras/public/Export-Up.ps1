@@ -37,7 +37,8 @@ function Export-Up() {
     [switch] $IncludeRoot
   )
 
-  if (-not ($next = Resolve-Path $From -ErrorAction Ignore).Path) { return }
+  $start = Resolve-Path $From -ErrorAction Ignore
+  if (!$start -or !($next = $start.Path)) {return}
 
   $getPair = { @{name = (Split-Path $next -Leaf); path = "$next" } }
   $output = [ordered]@{ (&$getPair).name = (&$getPair).path }
@@ -45,7 +46,7 @@ function Export-Up() {
   try {
     while (
       ($next = $next | Split-Path -Parent) -and
-      ($next -ne (Resolve-Path $next).Drive.Root)) {
+      ($next -ne $start.Drive.Root)) {
 
       $pair = &$getPair
 
@@ -55,9 +56,13 @@ function Export-Up() {
       }
     }
 
-    if ($IncludeRoot -and $output.Count -gt 1) {
-      $drive = (Resolve-Path $From).Drive
-      $output.Add($drive.Name, $drive.Root)
+    # on Unix there's a weird empty path returned for the root directory
+    # so we add it explicitly here instead of inside the loop
+    if (
+      $IncludeRoot -and
+      $output.Values -notcontains $start.Drive.Root
+    ) {
+      $output.Add($start.Drive.Name, $start.Drive.Root)
     }
   }
   catch [Management.Automation.PSArgumentException] {

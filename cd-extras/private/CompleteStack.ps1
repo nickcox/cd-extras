@@ -2,6 +2,7 @@ function CompleteStack {
   param($commandName, $parameterName, $wordToComplete, $commandAst, $boundParameters)
 
   $stack = if (
+    $commandName -and
     $commandName -match 'Redo' -or
     (
       $aliased = (Get-Alias $commandName -ea Ignore).ResolvedCommandName -and
@@ -20,8 +21,7 @@ function CompleteStack {
     }
   }
 
-  IndexedComplete (
-    @($stack) -match
-    ($wordToComplete | RemoveSurroundingQuotes | RemoveTrailingSeparator | Escape) |
-      Completions)
+  @($stack) -match ($wordToComplete | RemoveSurroundingQuotes | RemoveTrailingSeparator | Escape) |
+    Completions |
+    IndexedComplete
 }

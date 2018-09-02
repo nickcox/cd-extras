@@ -14,8 +14,9 @@ function CompletePaths {
   # *and* the resolved path is a child of the current directory or its parent
   # for absolute paths, replace home dir location with tilde
   filter CompletionResult {
-    $friendly = $_ | select -Expand PSPath | Convert-Path
-    if (-not ($wordToComplete | IsRooted) -and (PathIsDescendedFrom .. $_)) {
+    $friendly = $_ | Select -Expand PSPath | Convert-Path
+
+    if (!($wordToComplete | IsRooted) -and ($_ | IsDescendedFrom ..)) {
       $friendly = Resolve-Path -Relative $_
     }
     elseif ($homeDir = (Get-Location).Provider.Home) {
@@ -25,9 +26,11 @@ function CompletePaths {
     $trailChar = if ($_.PSIsContainer) {${/}} else {''}
 
     # add normalised trailing directory separator; quote if contains spaces
-    $completionText = $friendly -replace '[/|\\]$', '' | % {
-      if ($_ -notmatch ' ') { "$_$trailChar" }
-      else { "'$_$trailChar'" }
+    $completionText = $friendly -replace '[/|\\]$', '' | SurroundAndTerminate $trailChar
+
+    # hack to support registry provider
+    if ($_.PSProvider.Name -eq 'Registry') {
+      $completionText = $completionText -replace $_.PSDrive.Root, "$($_.PSDrive.Name):"
     }
 
     [Management.Automation.CompletionResult]::new(

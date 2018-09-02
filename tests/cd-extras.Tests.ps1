@@ -1,5 +1,5 @@
 if (-not (Test-Path variable:IsWindows)) {
-  $IsWindows = $env:OS -like "windows*"
+  $Global:IsWindows = $env:OS -like "windows*"
 }
 
 Describe 'cd-extras' {
@@ -390,7 +390,7 @@ Describe 'cd-extras' {
 
       It 'works in Windows registry' {
         if ($IsWindows) {
-          Expand-Path HKLM:\Soft\Mic\Win | Should HaveCount 2
+          (Expand-Path HKLM:\Soft\Mic\).Count | Should BeGreaterOrEqual 1
         }
       }
     }
@@ -480,6 +480,13 @@ Describe 'cd-extras' {
         (CompletePaths -filesOnly -wordToComplete './samp').CompletionText |
           Should Match "sampleStructure.txt"
       }
+
+      It 'provides usable registry paths' {
+        if ($IsWindows) {
+        (CompletePaths -dirsOnly -wordToComplete 'HKLM:\Soft\Mic').CompletionText |
+          Should Match "HKLM:\\Software\\Microsoft"
+        }
+      }
     }
 
     Describe 'Stack expansion' {
@@ -502,7 +509,7 @@ Describe 'cd-extras' {
         SetLocationEx powershell
         SetLocationEx src
         $cde.MenuCompletion = $true
-        $actual = CompleteAncestors -wordToComplete ''
+        $actual = CompleteStack -wordToComplete '' -commandName 'Undo'
         $actual[0].CompletionText | Should Be 1
       }
 
@@ -510,15 +517,15 @@ Describe 'cd-extras' {
         SetLocationEx powershell
         SetLocationEx src
         $cde.MenuCompletion = $false
-        $actual = CompleteAncestors -wordToComplete ''
+        $actual = CompleteStack -wordToComplete '' -commandName 'Undo'
         $actual[0].CompletionText | Should BeLike "*testdrive*"
       }
 
       It 'uses the full path when only one completion is available' {
         SetLocationEx powershell
         $cde.MenuCompletion = $true
-        $actual = CompleteAncestors -wordToComplete ''
-        $actual[0].CompletionText | Should BeLike "'testdrive:${/}'"
+        $actual = CompleteStack -wordToComplete '' -commandName 'Undo'
+        $actual[0].CompletionText | Should BeLike "testdrive:${/}"
       }
     }
 
@@ -540,7 +547,21 @@ Describe 'cd-extras' {
         Set-Location ./powershell/demos/Apache
         $cde.MenuCompletion = $false
         $actual = CompleteAncestors -wordToComplete ''
-        $actual[0].CompletionText | Should BeLike "*powershell${/}demos'"
+        $actual[0].CompletionText | Should BeLike "*powershell${/}demos"
+      }
+
+      It 'can complete against a more than one path segment' {
+        Set-Location ./powershell/demos/Apache
+        $actual = CompleteAncestors -wordToComplete 'll/de'
+        $actual | Should -HaveCount 1
+        $actual[0].CompletionText | Should BeLike "*powershell${/}demos"
+      }
+
+      It 'can match against a previously completed full path' {
+        Set-Location ./powershell/demos/Apache
+        $target = CompleteAncestors -wordToComplete 'demos'
+        $actual = CompleteAncestors -wordToComplete $target[0].CompletionText
+        $actual[0].CompletionText | Should BeLike $target[0].CompletionText
       }
     }
   }

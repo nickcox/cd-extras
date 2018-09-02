@@ -35,9 +35,16 @@ filter IsRelative {
   $_ -match '^+\.(/|\\)' # e.g. starts with ./, ../
 }
 
+filter IsDescendedFrom($maybeAncestor) {
+  (Resolve-Path $_ -ErrorAction Ignore) -like "$(Resolve-Path $maybeAncestor)*"
+}
+
 function NormaliseAndEscape($pathPart) {
-  $normalised = $pathPart -replace '/|\\', ${/}
-  [regex]::Escape($normalised)
+  $pathPart | Normalise | Escape
+}
+
+filter Normalise {
+  $_ -replace '/|\\', ${/}
 }
 
 filter Escape {
@@ -46,6 +53,11 @@ filter Escape {
 
 filter RemoveSurroundingQuotes {
   ($_ -replace "^'", '') -replace "'$", ''
+}
+
+filter SurroundAndTerminate($trailChar) {
+  if ($_ -notmatch ' ') { "$_$trailChar" }
+  else { "'$_$trailChar'" }
 }
 
 filter RemoveTrailingSeparator {
@@ -69,14 +81,13 @@ function GetStackIndex([array]$stack, [string]$namepart) {
     })
 }
 
-function PathIsDescendedFrom($maybeAncestor, $maybeDescendant) {
-  (Resolve-Path $maybeDescendant) -like "$(Resolve-Path $maybeAncestor)*"
-}
-
 function IndexedComplete($items) {
-  filter IndexedCompletion {
+  # accept input from parameter or from pipeline
+  if (!$items) {$items = @(); $input | % {$items += $_}}
+
+  $items | % {
     $itemText = if ($cde.MenuCompletion -and @($items).Count -gt 1) {"$($_.index)"}
-    else {"'$($_.long)'"}
+    else {$_.long | SurroundAndTerminate}
 
     [Management.Automation.CompletionResult]::new(
       $itemText,
@@ -85,8 +96,6 @@ function IndexedComplete($items) {
       "$($_.index). $($_.long)"
     )
   }
-
-  $items | IndexedCompletion
 }
 
 function RegisterCompletions([array] $commands, $param, $target) {
@@ -101,4 +110,10 @@ function DoUnderTest($block) {
 function WriteLog($message) {
   if ($cde | Get-Member _logger) { &$cde._logger $message }
   else { Write-Verbose $message }
+}
+
+function DefaultIfEmpty($default) {
+  Begin { $any = $false }
+  Process { if ($_) {$any = $true; $_} }
+  End { if (!$any) {&$default} }
 }

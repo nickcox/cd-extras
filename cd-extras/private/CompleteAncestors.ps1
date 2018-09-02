@@ -13,11 +13,12 @@ function CompleteAncestors {
     }
   }
 
-  IndexedComplete ($ups.GetEnumerator() |
-      Where Value -Match (
-      $wordToComplete |
-        RemoveSurroundingQuotes |
-        Escape
-    ) |
-      Completions)
+  $valueToMatch = $wordToComplete | RemoveSurroundingQuotes
+  $escapedValue = $valueToMatch | Normalise | Escape
+
+  $ups.GetEnumerator() |  Where Value -eq $valueToMatch |
+    DefaultIfEmpty {$ups.GetEnumerator() | Where Key -match $escapedValue} |
+    DefaultIfEmpty {$ups.GetEnumerator() | Where Value -match $escapedValue} |
+    Completions |
+    IndexedComplete
 }

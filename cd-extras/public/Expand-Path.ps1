@@ -63,7 +63,8 @@ function Expand-Path {
       [Management.Automation.Provider.ProviderCapabilities]::Filter)) {
     @{File = $File; Directory = $Directory}
   }
-  else { @{}
+  else {
+    @{}
   }
 
   WriteLog "`nExpanding $Candidate to: $wildcardedPaths"
