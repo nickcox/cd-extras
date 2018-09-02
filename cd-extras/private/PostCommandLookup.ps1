@@ -13,11 +13,11 @@ function PostCommandLookup($commands, $toggleTest, $setLocation, $multidot) {
       $multidot = $multidot
 
       $CommandLookupEventArgs.CommandScriptBlock = {
-        $fullCommand = (@($CommandName) + $args) -join ' '
 
-        $tokens = [System.Management.Automation.PSParser]::Tokenize($fullCommand, [ref]$null)
+        $tokens = [System.Management.Automation.PSParser]::Tokenize($MyInvocation.Line, [ref]$null)
         $params = $tokens | Where type -eq CommandParameter
-        $arg = $tokens | Where type -eq CommandArgument
+        $arg = $tokens | Where {$_.type -eq 'CommandArgument' -or $_.type -eq 'String'}
+        $pipe = $tokens | Where {$_.type -eq 'Operator' -and $_.content -eq '|'}
 
         # two arg: transpose
         if (
@@ -41,7 +41,13 @@ function PostCommandLookup($commands, $toggleTest, $setLocation, $multidot) {
         else {
 
           try {
-            &$setLocation @args -ErrorAction Stop
+            # basic support for piping
+            if (@($pipe).Count -gt 0 -and @($arg).Length -eq 1) {
+              &$setLocation $arg.Content
+            }
+            else {
+              &$setLocation @args -ErrorAction Stop
+            }
           }
 
           catch [Management.Automation.ItemNotFoundException] {
