@@ -1,4 +1,4 @@
-function PostCommandLookup($commands, $toggleTest, $setLocation, $multidot) {
+function PostCommandLookup($commands, $toggleTest, $setLocation) {
 
   $ExecutionContext.InvokeCommand.PostCommandLookupAction = {
     param($CommandName, $CommandLookupEventArgs)
@@ -10,7 +10,6 @@ function PostCommandLookup($commands, $toggleTest, $setLocation, $multidot) {
 
       $CommandName = $CommandName
       $setLocation = $setLocation
-      $multidot = $multidot
 
       $CommandLookupEventArgs.CommandScriptBlock = {
 
@@ -32,11 +31,6 @@ function PostCommandLookup($commands, $toggleTest, $setLocation, $multidot) {
           }
         }
 
-        # multidot
-        elseif (@($arg).Length -eq 1 -and $args -match $Multidot) {
-          Step-Up ($args[0].Length - 1)
-        }
-
         # otherwise try to execute SetLocation
         else {
 
@@ -50,7 +44,7 @@ function PostCommandLookup($commands, $toggleTest, $setLocation, $multidot) {
             }
           }
 
-          catch [Management.Automation.ItemNotFoundException] {
+          catch [Management.Automation.ItemNotFoundException], [Management.Automation.PSArgumentException] {
             $Global:Error.RemoveAt(0)
 
             if (

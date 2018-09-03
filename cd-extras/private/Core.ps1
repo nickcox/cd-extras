@@ -1,5 +1,4 @@
 ${Script:/} = [System.IO.Path]::DirectorySeparatorChar
-$Script:Multidot = '^\.{3,}$'
 $Script:fwd = 'fwd'
 $Script:back = 'back'
 $Script:OLDPWD # used by Step-Back
@@ -22,7 +21,7 @@ function SetLocationEx {
   Set-Location @PSBoundParameters
 }
 
-function DefaultIfEmpty($default) {
+function DefaultIfEmpty([scriptblock] $default) {
   Begin { $any = $false }
   Process { if ($_) {$any = $true; $_} }
   End { if (!$any) {&$default} }
@@ -114,6 +113,6 @@ function DoUnderTest($block) {
 }
 
 function WriteLog($message) {
-  if (Get-Variable cde -and ($cde | Get-Member _logger)) { &$cde._logger $message }
+  if ((Get-Variable cde) -and ($cde | Get-Member _logger)) { &$cde._logger $message }
   else { Write-Verbose $message }
 }

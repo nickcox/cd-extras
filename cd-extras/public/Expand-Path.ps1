@@ -35,11 +35,15 @@ function Expand-Path {
     [switch] $Directory
   )
 
+  $multidot = [regex]::Match($Candidate, '^\.{3,}')
+  $replacement = ('../' * [Math]::Max(0, $multidot.Value.LastIndexOf('.'))) -replace '.$'
+
   [string]$wildcardedPath = $Candidate `
+    -replace '^\.{3,}(/|\\|$)', $replacement `
     -replace '(\w/|\w\\|\w$)', '$0*' `
     -replace '(/\*|\\\*)', ('*' + ${/}) `
     -replace '(/$|\\$)', '$0*' `
-    -replace '(\.\w|\.$)', '*$0'
+    -replace '(\.\w)', '*$0'
 
   if ($SearchPaths -and -not ($Candidate | IsRootedOrRelative)) {
     # always include the local path, regardeless of whether it was passed
@@ -49,24 +53,7 @@ function Expand-Path {
   }
   else { $wildcardedPaths = $wildcardedPath }
 
-  $targetDrive = if (
-    ($Candidate | Split-Path -IsAbsolute) -and
-    ($driveName = $Candidate | Split-Path -Qualifier -ErrorAction Ignore)) {
-    $driveName | % {Get-PSDrive $_.Replace(':', '')}
-  }
-  else {
-    (Get-Location).Drive
-  }
-
-  # registry provider cannot filter by type so check provider capabilities
-  $type = if ($targetDrive.Provider.Capabilities.HasFlag(
-      [Management.Automation.Provider.ProviderCapabilities]::Filter)) {
-    @{File = $File; Directory = $Directory}
-  }
-  else {
-    @{}
-  }
-
   WriteLog "`nExpanding $Candidate to: $wildcardedPaths"
-  Get-ChildItem $wildcardedPaths @type -Force -ErrorAction Ignore
+  Get-Item $wildcardedPaths -Force |
+    Where {(!$File -or !$_.PSIsContainer) -and (!$Directory -or $_.PSIsContainer)}
 }

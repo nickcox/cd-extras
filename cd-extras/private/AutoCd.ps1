@@ -6,15 +6,8 @@ function AutoCd($setLocation) {
     $setLocation = $setLocation
     $scriptBlock = $null
 
-    # If the command is three or more dots
-    if ($CommandName -match $Script:Multidot) {
-      $scriptBlock = {
-        Step-Up ($CommandName.Length - 1)
-      }
-    }
-
     # If the command is already a valid path
-    elseif (Test-Path $CommandName) {
+    if ((Test-Path $CommandName) -and ($CommandName -notmatch '^\.{3,}')) {
       $scriptBlock = { &$setLocation $CommandName }
     }
 
