@@ -31,7 +31,7 @@ function Switch-LocationPart {
       $path = $PWD.Path -replace [regex]::Escape($normalised), $With
     ) -PathType Container) {
 
-    SetLocationEx $path
+    Set-LocationEx $path
   }
   else {
     Write-Error "No such directory: '$path'" -ErrorAction Stop

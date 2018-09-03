@@ -2,24 +2,6 @@ ${Script:/} = [System.IO.Path]::DirectorySeparatorChar
 $Script:fwd = 'fwd'
 $Script:back = 'back'
 $Script:OLDPWD # used by Step-Back
-$Script:setLocation = {SetLocationEx @args}
-
-function SetLocationEx {
-  [CmdletBinding()]
-  param([string]$Path, [switch]$PassThru)
-
-  # discard any existing forward (redo) stack
-  Clear-Stack -Redo
-
-  # only push to stack if location is actuall changing
-  if (
-    ($target = Resolve-Path $Path -ErrorAction Ignore) -and (
-      $target.Path -ne ((Get-Location).Path))
-  ) { Push-Location -StackName $back }
-
-  $Script:OLDPWD = $PWD
-  Set-Location @PSBoundParameters
-}
 
 function DefaultIfEmpty([scriptblock] $default) {
   Begin { $any = $false }
@@ -105,11 +87,6 @@ function IndexedComplete($items) {
 
 function RegisterCompletions([array] $commands, $param, $target) {
   Register-ArgumentCompleter -CommandName $commands -ParameterName $param -ScriptBlock $target
-}
-
-function DoUnderTest($block) {
-  $Global:__cdeUnderTest = $true
-  &$block
 }
 
 function WriteLog($message) {

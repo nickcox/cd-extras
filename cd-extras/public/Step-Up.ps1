@@ -30,6 +30,6 @@ function Step-Up {
   )
 
   if ($target = Get-Up @PSBoundParameters) {
-    SetLocationEx $target
+    Set-LocationEx $target
   }
 }

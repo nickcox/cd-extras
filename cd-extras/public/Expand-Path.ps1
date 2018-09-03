@@ -36,14 +36,15 @@ function Expand-Path {
   )
 
   $multidot = [regex]::Match($Candidate, '^\.{3,}')
-  $replacement = ('../' * [Math]::Max(0, $multidot.Value.LastIndexOf('.'))) -replace '.$'
+  $match = $multidot.Value
+  $replacement = ('../' * [Math]::Max(0, $match.LastIndexOf('.'))) -replace '.$'
 
   [string]$wildcardedPath = $Candidate `
-    -replace '^\.{3,}(/|\\|$)', $replacement `
+    -replace $match, $replacement `
     -replace '(\w/|\w\\|\w$)', '$0*' `
     -replace '(/\*|\\\*)', ('*' + ${/}) `
     -replace '(/$|\\$)', '$0*' `
-    -replace '(\.\w)', '*$0'
+    -replace '(\.\w|\w\.$)', '*$0'
 
   if ($SearchPaths -and -not ($Candidate | IsRootedOrRelative)) {
     # always include the local path, regardeless of whether it was passed
@@ -54,6 +55,6 @@ function Expand-Path {
   else { $wildcardedPaths = $wildcardedPath }
 
   WriteLog "`nExpanding $Candidate to: $wildcardedPaths"
-  Get-Item $wildcardedPaths -Force |
+  Get-Item $wildcardedPaths -Force -ErrorAction Ignore |
     Where {(!$File -or !$_.PSIsContainer) -and (!$Directory -or $_.PSIsContainer)}
 }

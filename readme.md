@@ -22,7 +22,8 @@
   - [Alternative providers](#alternative-providers)
   - [OS X & Linux](#os-x--linux)
 - [Install](#install)
-- [Configure](#configure)
+- [_cd-extras_ options](#_cd-extras_-options)
+- [Using a different alias](#using-a-different-alias)
 
 <!-- /TOC -->
 
@@ -206,7 +207,7 @@ segments so that you don't have to individually tab through each one.
 [~]> cd /w/s/set<[Tab]><[Tab]>
 [~]> cd C:\Windows\SysWOW64\setup\_
 C:\Windows\System32\setup\  C:\Windows\SysWOW64\setup\
-                            ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+                            ──────────────────────────
 ```
 
 Periods (`.`) are expanded around so, for example, a segment containing `.sdk`
@@ -236,7 +237,7 @@ the `FileCompletions` and `PathCompletions` options respectively.
 [~]> ii /t/<[Tab]>
 [~]> C:\temp\subdir_
 C:\temp\subdir  C:\temp\txtFile.txt  C:\temp\txtFile2.txt
-‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+──────────────
 ```
 
 In each case, expansions work against the target's `Path` parameter.
@@ -264,19 +265,20 @@ Paths within the `$cde.CD_PATH` array are included for all completion types.
 
 Expansions are provided for the `cd+`, `cd-` and `up` (_aka_ `..`) aliases.
 
-When the `MenuCompletion` option is set to `$true` the completion offered is the
-index of each corresponding directory; the full path is displayed in the menu below.
-_cd-extras_ will attempt to detect `PSReadLine` in order to set this option
-appropriately at start-up. For example:
+When the `MenuCompletion` option is set to `$true` and more than one completion is available,
+the completions offered are the indexes of each corresponding directory; the full path is
+displayed in the menu below. _cd-extras_ will attempt to detect `PSReadLine` in order to set
+this option appropriately at start-up. For example:
 
 ```sh
 [C:\Windows\System32\drivers\etc]> up <[Tab]>
 [C:\Windows\System32\drivers\etc]> up 1
 1. drivers  2. System32  3. Windows
-‾‾‾‾‾‾‾‾‾‾‾
+──────────
+
 [C:\Windows\System32\drivers\etc]> up 3
 3. Windows
-‾‾‾‾‾‾‾‾‾‾‾
+──────────
 ```
 
 It's also possible tab-complete these three commands (`cd+`, `cd-`, `up`) using a
@@ -301,7 +303,7 @@ The multi-dot syntax provides tab completion into ancestor directories.
 [C:\projects\powershell\docs\git]> cd .../<[Tab]>
 
 C:\projects\powershell\.git     C:\projects\powershell\.vscode
-‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+───────────────────────────
 C:\projects\powershell\demos    C:\projects\powershell\docs
 
 C:\projects\powershell\test     C:\projects\powershell\.github
@@ -397,7 +399,7 @@ should work with other providers too though.
 
 ### OS X & Linux
 
-Functionality is tested and _should_ work on non-Windows operating systems. It's entirely
+Functionality is tested and should work on non-Windows operating systems. It's entirely
 likely you'll encounter some rough edges, though. In particular you'll notice that _cd-extras_
 is quite permissive with respect to the casing of paths; this means path shortening won't work
 in cases where multiple possible path abbreviations differ only by case.
@@ -414,9 +416,9 @@ Import-Module cd-extras
 Add-Content $PROFILE @("`n", "Import-Module cd-extras")
 ```
 
-## Configure
+# Configure
 
-Options provided:
+## _cd-extras_ options
 
 - _AUTO_CD_: `[bool] = $true`
   - Any truthy value enables auto_cd.
@@ -457,3 +459,21 @@ Import-Module cd-extras
 Set-CdExtrasOption AUTO_CD $false
 Set-CdExtrasOption NOARG_CD '/'
 ```
+
+Note: if you want to opt out of the default `DirCompletions` then you should do it before _cd-extras_
+is loaded since PowerShell doesn't provide any way of unregistering argument completers.
+
+## Using a different alias
+
+_cd-extras_ aliases `cd` to its proxy command, `Set-LocationEx`, by default. If you want to use a
+different alias then you'll probably want to restore the default `cd` alias at the same time.
+
+```sh
+[~]> set-alias cd set-location -Option AllScope
+[~]> set-alias cde set-locationex
+[~]> cde /w/s/d/et
+[C:\Windows\System32\drivers\etc]> cd- # note: still cd-, not cde-
+[~]> _
+```
+
+Note that `cd-extras` will only remember locations visited via `Set-LocationEx` or its alias.

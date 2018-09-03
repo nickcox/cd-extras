@@ -6,7 +6,7 @@ $defaults = [ordered]@{
   CD_PATH         = @()
   CDABLE_VARS     = $false
   NOARG_CD        = '~'
-  DirCompletions  = @('Push-Location', 'Set-Location', 'Get-ChildItem')
+  DirCompletions  = @('Push-Location', 'Set-Location', 'Set-LocationEx', 'Get-ChildItem')
   PathCompletions = @()
   FileCompletions = @()
   MenuCompletion  = $null -ne (Get-Module PSReadline) -and (
@@ -31,7 +31,6 @@ $defaults.GetEnumerator() | % {
 Set-CdExtrasOption -Option 'AUTO_CD' -Value $global:cde.AUTO_CD
 
 $MyInvocation.MyCommand.ScriptBlock.Module.OnRemove = {
-  $ExecutionContext.InvokeCommand.PostCommandLookupAction = $null
   $ExecutionContext.SessionState.InvokeCommand.CommandNotFoundAction = $null
   Remove-Variable cde -Scope Global -ErrorAction Ignore
 }

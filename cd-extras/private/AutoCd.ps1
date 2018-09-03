@@ -1,20 +1,19 @@
-function AutoCd($setLocation) {
+function AutoCd() {
 
   return {
     param($CommandName, $CommandLookupEventArgs)
 
-    $setLocation = $setLocation
     $scriptBlock = $null
 
     # If the command is already a valid path
     if ((Test-Path $CommandName) -and ($CommandName -notmatch '^\.{3,}')) {
-      $scriptBlock = { &$setLocation $CommandName }
+      $scriptBlock = { Set-LocationEx $CommandName }
     }
 
     # Try smart expansion
     elseif ($expanded = Expand-Path $CommandName -Directory) {
       if ($expanded.Count -eq 1) {
-        $scriptBlock = { &$setLocation $expanded }
+        $scriptBlock = { Set-LocationEx $expanded }
       }
     }
 
@@ -24,7 +23,7 @@ function AutoCd($setLocation) {
         ($path = Get-Variable $CommandName -ValueOnly) -and
         (Test-Path $path)
       ) {
-        $scriptBlock = { &$setLocation $path }
+        $scriptBlock = { Set-LocationEx $path }
       }
     }
 
