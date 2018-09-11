@@ -15,7 +15,10 @@ Function Set-LocationEx {
 	Returns a System.Management.Automation.PathInfo object that represents the location. By default, this cmdlet does not generate any output.
 
 .PARAMETER Path
-	Specify the path of a new working location.
+  Specify the path of a new working location.
+
+.PARAMETER ReplaceWith
+	Replaces the path part given in the 'Path' parameter with this value.
 
 .PARAMETER StackName
 	Specifies the location stack name that this cmdlet makes the current location stack. Enter a location stack name. To indicate the unnamed default location stack, type $Null" or an empty string ("").
