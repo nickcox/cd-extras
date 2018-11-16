@@ -233,7 +233,8 @@ the `DirCompletions` [option](#configure):
 ```
 
 It's also possible to opt into enhanced file-only or general (file & directory) completion using
-the `FileCompletions` and `PathCompletions` options respectively.
+the `FileCompletions` and `PathCompletions` options respectively. Note that the `FileCompletions` option is often less useful than the others as you won't be able to tab through directories to
+get to the file you're looking for.
 
 ```sh
 [~]> $cde.PathCompletions += 'Invoke-Item'
@@ -404,7 +405,7 @@ should work with other providers too though.
 ### OS X & Linux
 
 Functionality is tested and should work on non-Windows operating systems. It's entirely
-likely you'll encounter some rough edges, though. In particular you'll notice that _cd-extras_
+possible you'll encounter some rough edges, though. In particular you'll notice that _cd-extras_
 is quite permissive with respect to the casing of paths; this means path shortening won't work
 in cases where multiple possible path abbreviations differ only by case.
 
@@ -480,4 +481,4 @@ different alias then you'll probably want to restore the default `cd` alias at t
 [~]> _
 ```
 
-Note that `cd-extras` will only remember locations visited via `Set-LocationEx` or its alias.
+`cd-extras` will only remember locations visited via `Set-LocationEx` or its alias.
