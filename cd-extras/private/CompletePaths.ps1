@@ -16,7 +16,10 @@ function CompletePaths {
   filter CompletionResult {
     $friendly = $_ | Select -Expand PSPath | Convert-Path
 
-    if (!($wordToComplete | IsRooted) -and ($_ | IsDescendedFrom ..)) {
+    if ($wordToComplete -match '^\.{1,2}$') {
+      $friendly = $wordToComplete
+    }
+    elseif (!($wordToComplete | IsRooted) -and ($_ | IsDescendedFrom ..)) {
       $friendly = Resolve-Path -Relative $_
     }
     elseif ($homeDir = (Get-Location).Provider.Home) {
