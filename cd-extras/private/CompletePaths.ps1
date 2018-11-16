@@ -26,7 +26,9 @@ function CompletePaths {
     $trailChar = if ($_.PSIsContainer) {${/}} else {''}
 
     # add normalised trailing directory separator; quote if contains spaces
-    $completionText = $friendly -replace '[/|\\]$', '' | SurroundAndTerminate $trailChar
+    $completionText = $friendly -replace '[/\\]$', '' |
+      EscapeSquareBrackets |
+      SurroundAndTerminate $trailChar
 
     # hack to support registry provider
     if ($_.PSProvider.Name -eq 'Registry') {
@@ -56,7 +58,7 @@ function CompletePaths {
   #replace cdable_vars
   $variCompletions = if (
     $cde.CDABLE_VARS -and
-    $wordToComplete -match '[^/|\\]+' -and
+    $wordToComplete -match '[^/\\]+' -and
     ($maybeVar = Get-Variable "$($Matches[0])*" |
         Where {$_.Value -and (Test-Path ($_.Value) -PathType Container)} |
         Select -Expand Value)

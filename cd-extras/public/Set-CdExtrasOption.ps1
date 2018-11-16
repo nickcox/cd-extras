@@ -37,6 +37,7 @@ function Set-CdExtrasOption {
 
   RegisterCompletions @('Step-Up') 'n' {CompleteAncestors @args}
   RegisterCompletions @('Undo-Location', 'Redo-Location') 'n' {CompleteStack @args}
+
   if ($cde.DirCompletions) {
     RegisterCompletions $cde.DirCompletions 'Path' {CompletePaths -dirsOnly @args}
   }

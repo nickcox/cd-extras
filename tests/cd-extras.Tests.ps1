@@ -507,6 +507,11 @@ Describe 'cd-extras' {
             Should Match "HKLM:\\Software\\Microsoft"
         }
       }
+
+      It 'escapes square brackets' {
+        $actual = CompletePaths  -wordToComplete 'pow/directory[with]sqaurebrackets/o'
+        $actual.CompletionText | Should BeLike "*directory``[with``]sqaurebrackets${/}one"
+      }
     }
 
     Describe 'Stack expansion' {

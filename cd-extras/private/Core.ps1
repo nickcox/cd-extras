@@ -43,12 +43,16 @@ filter RemoveSurroundingQuotes {
 }
 
 filter SurroundAndTerminate($trailChar) {
-  if ($_ -notmatch ' ') { "$_$trailChar" }
+  if ($_ -notmatch ' |\[|\]') { "$_$trailChar" }
   else { "'$_$trailChar'" }
 }
 
 filter RemoveTrailingSeparator {
-  $_ -replace "(/|\\)$", ''
+  $_ -replace "[/\\]$", ''
+}
+
+filter EscapeSquareBrackets {
+  $_ -replace '\[', '`[' -replace ']', '`]'
 }
 
 function GetStackIndex([array]$stack, [string]$namepart) {
