@@ -1,8 +1,9 @@
 # Changes
 
-## [1.1.1] 2018-11-09
+## [1.2] 2018-11-09
 
 Fix issue where square brackets not escaped in path completions.
+Fix issue where square brackets break Expand-Path.
 Improve completion on single or double dots.
 
 ## [1.1] 2018-11-09

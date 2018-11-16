@@ -509,8 +509,13 @@ Describe 'cd-extras' {
       }
 
       It 'escapes square brackets' {
-        $actual = CompletePaths  -wordToComplete 'pow/directory[with]sqaurebrackets/o'
-        $actual.CompletionText | Should BeLike "*directory``[with``]sqaurebrackets${/}one"
+        $actual = CompletePaths -wordToComplete 'pow/directory[with]squarebrackets/o'
+        $actual.CompletionText | Should BeLike "'*directory*squarebrackets${/}one${/}'"
+      }
+
+      It 'appends a directory seperator given a single dot' {
+        $actual = CompletePaths -wordToComplete '.'
+        @($actual)[0].CompletionText | Should Be ".${/}"
       }
     }
 
