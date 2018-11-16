@@ -1,3 +1,5 @@
+$cdAlias = if ($x = (Get-Alias -Name 'cd' -ErrorAction ignore)) { $x.Definition }
+
 Get-ChildItem $PSScriptRoot/private/*.ps1 | % { . $_.FullName}
 Get-ChildItem $PSScriptRoot/public/*.ps1 | % { . $_.FullName}
 
@@ -32,5 +34,6 @@ Set-CdExtrasOption -Option 'AUTO_CD' -Value $global:cde.AUTO_CD
 
 $MyInvocation.MyCommand.ScriptBlock.Module.OnRemove = {
   $ExecutionContext.SessionState.InvokeCommand.CommandNotFoundAction = $null
+  Set-Item Alias:cd $cdAlias
   Remove-Variable cde -Scope Global -ErrorAction Ignore
 }
