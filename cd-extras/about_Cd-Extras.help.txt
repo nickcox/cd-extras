@@ -22,8 +22,9 @@
   - [Alternative providers](#alternative-providers)
   - [OS X & Linux](#os-x--linux)
 - [Install](#install)
-- [_cd-extras_ options](#_cd-extras_-options)
-- [Using a different alias](#using-a-different-alias)
+- [Configure](#configure)
+  - [_cd-extras_ options](#_cd-extras_-options)
+  - [Using a different alias](#using-a-different-alias)
 
 <!-- /TOC -->
 
@@ -190,10 +191,13 @@ nominated directory. Defaults to `'~'`.
 
 Replaces all instances of the first argument in the current path with the second argument,
 changing to the resulting directory if it exists. Uses the `Switch-LocationPart` function.
+You can also use the alias `cd:` or the explicit `ReplaceWith` parameter.
 
 ```sh
 [~\Modules\Unix\Microsoft.PowerShell.Utility]> cd unix shared
-[~\Modules\Shared\Microsoft.PowerShell.Utility]> _
+[~\Modules\Shared\Microsoft.PowerShell.Utility]> cd: shared unix
+[~\Modules\Unix\Microsoft.PowerShell.Utility]> cd unix -ReplaceWith shared
+[~\Modules\Shared\Microsoft.PowerShell.Utility]>_
 ```
 
 ## Expansion
@@ -416,9 +420,9 @@ Import-Module cd-extras
 Add-Content $PROFILE @("`n", "Import-Module cd-extras")
 ```
 
-# Configure
+## Configure
 
-## _cd-extras_ options
+### _cd-extras_ options
 
 - _AUTO_CD_: `[bool] = $true`
   - Any truthy value enables auto_cd.
@@ -463,7 +467,7 @@ Set-CdExtrasOption NOARG_CD '/'
 Note: if you want to opt out of the default `DirCompletions` then you should do it before _cd-extras_
 is loaded since PowerShell doesn't provide any way of unregistering argument completers.
 
-## Using a different alias
+### Using a different alias
 
 _cd-extras_ aliases `cd` to its proxy command, `Set-LocationEx`, by default. If you want to use a
 different alias then you'll probably want to restore the default `cd` alias at the same time.
