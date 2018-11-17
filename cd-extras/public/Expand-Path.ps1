@@ -47,13 +47,13 @@ function Expand-Path {
     -replace '(\.\w|\w\.$)', '*$0' `
     -replace '\[|\]', '*'
 
-  if ($SearchPaths -and -not ($Candidate | IsRootedOrRelative)) {
+  $wildcardedPaths = if ($SearchPaths -and -not ($Candidate | IsRootedOrRelative)) {
     # always include the local path, regardeless of whether it was passed
     # in the searchPaths parameter (this differs from the behaviour in bash)
-    $wildcardedPaths = @($wildcardedPath) + (
+    @($wildcardedPath) + (
       $SearchPaths | % { Join-Path $_ $wildcardedPath })
   }
-  else { $wildcardedPaths = $wildcardedPath }
+  else { $wildcardedPath }
 
   WriteLog "`nExpanding $Candidate to: $wildcardedPaths"
   Get-Item $wildcardedPaths -Force -ErrorAction Ignore |

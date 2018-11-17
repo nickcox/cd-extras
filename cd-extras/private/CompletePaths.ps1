@@ -29,7 +29,8 @@ function CompletePaths {
     $trailChar = if ($_.PSIsContainer) {${/}} else {''}
 
     # add normalised trailing directory separator; quote if contains spaces
-    $completionText = $friendly -replace '[/\\]$', '' |
+    $completionText = $friendly |
+      RemoveTrailingSeparator |
       EscapeSquareBrackets |
       SurroundAndTerminate $trailChar
 
@@ -70,5 +71,7 @@ function CompletePaths {
   }
   else { @() }
 
-  @($completions) + @($variCompletions) | Sort-Object -Unique | CompletionResult
+  @($completions) + @($variCompletions) |
+    Select -Unique |
+    CompletionResult
 }
