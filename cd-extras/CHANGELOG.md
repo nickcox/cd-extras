@@ -1,5 +1,8 @@
 # Changes
 
+## [1.3.1] 2018-12-13
+Fix issue where cding into expanded directory fails when one exact match and several partial matches are available.
+
 ## [1.3] 2018-11-29
 
 Play nice and restore the cd alias when module is removed
