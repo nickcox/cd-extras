@@ -140,7 +140,7 @@ Function Set-LocationEx {
         ) {$Path = $vpath}
         elseif (
           ($dirs = Expand-Path $Path -Directory) -and
-          (@($dirs).Count -eq 1)) {
+          (@($dirs).Count -eq 1 -or ($dirs = $dirs |? Name -eq $Path).Count -eq 1)) {
           $Path = $dirs
         }
       }

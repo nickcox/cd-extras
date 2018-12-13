@@ -369,6 +369,12 @@ Describe 'cd-extras' {
       CurrentDir | Should Be resgen
     }
 
+    It 'works when there is one exact match and several partial matches' {
+      Set-CdExtrasOption -Option CD_PATH -Value @('powershell\src\Modules\')
+      cd windows
+      CurrentDir | Should Be windows
+    }
+
     It 'does not search CD_PATH when given directory is rooted or relative' {
       Set-CdExtrasOption -Option CD_PATH -Value @('TestDrive:\powershell\src\')
       {cd ./resgen -ErrorAction Stop} | Should Throw "Cannot find path"
