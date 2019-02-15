@@ -30,7 +30,7 @@
 
 # What is it?
 
-general conveniences for the `cd` command in PowerShell stolen from bash and zsh
+general conveniences for the `cd` command in PowerShell, mostly stolen from bash and zsh.
 
 ![Basic Navigation](./basic-navigation.gif)
 
@@ -49,7 +49,7 @@ Examples:
 [C:\Windows\System32]> up # or ..
 [C:\Windows]> cd-
 [C:\Windows\System32]> cd+
-[C:\Windows]> _
+[C:\Windows]> █
 ```
 
 Note that the aliases are `cd-` and `cd+` _not_ `cd -` and `cd +`.
@@ -66,7 +66,7 @@ Use `Step-Back` (`cdb`) if you want to toggle between two directories.
 [C:\Windows]> cd+
 [C:\]> cdb
 [C:\Windows]> cdb
-[C:\]> _
+[C:\]> █
 ```
 
 ### Navigate by `n` steps
@@ -79,7 +79,7 @@ specifying how many steps to traverse...
 [C:\]> cd temp
 [C:\temp]> cd- 2
 [C:\Windows\System32]> cd+ 2
-[C:\temp]> _
+[C:\temp]> █
 ```
 
 ### Navigate by name
@@ -98,7 +98,7 @@ then it will attempt to match against the full path instead.
 [C:\Windows\System32\drivers]> cd- win
 [C:\Windows\]> cd+ 32/dr
 [C:\Windows\System32\drivers]> up win
-[C:\Windows\]> _
+[C:\Windows\]> █
 ```
 
 When the [AUTO_CD](#auto_cd) option is enabled, multiple dot syntax is supported as an
@@ -109,7 +109,7 @@ available.
 [C:\Windows\System32\drivers\etc]> ... # same as `up 2` or `.. 2`
 [C:\Windows\System32]> cd-
 [C:\Windows\System32\drivers\etc>] .... # same as `up 3` or `.. 3`
-[C:\Windows]> _
+[C:\Windows]> █
 ```
 
 ## AUTO_CD
@@ -119,7 +119,7 @@ Change directory without typing `cd`.
 ```sh
 [~]> projects
 [~/projects]> cd-extras
-[~/projects/cd-extras]> _
+[~/projects/cd-extras]> █
 ```
 
 As with the `cd` command, [abbreviated paths](#path-shortening) are supported.
@@ -127,7 +127,7 @@ As with the `cd` command, [abbreviated paths](#path-shortening) are supported.
 ```sh
 [~]> pr
 [~/projects]> cd-e
-[~/projects/cd-extras]> _
+[~/projects/cd-extras]> █
 ```
 
 ## CD_PATH
@@ -139,7 +139,7 @@ into `CD_PATH` directories is provided.
 [~]> $cde.CD_PATH = @('~/documents')
 [~]> # or Set-CdExtrasOption CD_PATH @('~/documents')
 [~]> cd WindowsPowerShell
-[~/documents/WindowsPowerShell]> _
+[~/documents/WindowsPowerShell]> █
 ```
 
 Note that `CD_PATH`s are _not_ searched when an absolute or relative path is given.
@@ -161,16 +161,16 @@ you can `cd` into it using the name of the variable.
 ```sh
 [~]> $power = '~/projects/powershell'
 [~]> cd power
-[~/projects/powershell]> _
+[~/projects/powershell]> █
 ```
 
-This works with relative paths too, so if you find yourself frequently `cd`ing into the same
-subdirectories you could create a corresponding variable.
+This works with relative paths too, so if you find yourself frequently `cd`ing into the
+same subdirectories you could create a corresponding variable.
 
 ```sh
 [~/projects/powershell]> $gh = './.git/hooks'
 [~/projects/powershell]> cd gh
-[~/projects/powershell/.git/hooks]> _
+[~/projects/powershell/.git/hooks]> █
 ```
 
 CDABLE_VARS is off by default. Enable it with: `Set-CdExtrasOption CDABLE_VARS $true`.
@@ -197,7 +197,7 @@ You can also use the alias `cd:` or the explicit `ReplaceWith` parameter.
 [~\Modules\Unix\Microsoft.PowerShell.Utility]> cd unix shared
 [~\Modules\Shared\Microsoft.PowerShell.Utility]> cd: shared unix
 [~\Modules\Unix\Microsoft.PowerShell.Utility]> cd unix -ReplaceWith shared
-[~\Modules\Shared\Microsoft.PowerShell.Utility]>_
+[~\Modules\Shared\Microsoft.PowerShell.Utility]> █
 ```
 
 ## Expansion
@@ -205,11 +205,11 @@ You can also use the alias `cd:` or the explicit `ReplaceWith` parameter.
 ### Enhanced expansion for built-ins
 
 `cd`, `pushd` and `ls` (by default) provide enhanced tab completions, expanding all path
-segments so that you don't have to individually tab through each one.
+segments so that you don't have to individually tab (⇥) through each one.
 
 ```sh
-[~]> cd /w/s/set<[Tab]><[Tab]>
-[~]> cd C:\Windows\SysWOW64\setup\_
+[~]> cd /w/s/set⇥⇥
+[~]> cd C:\Windows\SysWOW64\setup\█
 C:\Windows\System32\setup\  C:\Windows\SysWOW64\setup\
                             ──────────────────────────
 ```
@@ -218,29 +218,30 @@ Periods (`.`) are expanded around so, for example, a segment containing `.sdk`
 is expanded into `*.sdk*`.
 
 ```sh
-[~]> cd proj/pow/s/.sdk<[Tab]>
-[~]> cd ~\projects\powershell\src\Microsoft.PowerShell.SDK_
+[~]> cd proj/pow/s/.sdk⇥
+[~]> cd ~\projects\powershell\src\Microsoft.PowerShell.SDK\█
 ```
 
-You can change the list of commands that participate in enhanced directory completion using
-the `DirCompletions` [option](#configure):
+You can change the list of commands that participate in enhanced directory completion
+using the `DirCompletions` [option](#configure):
 
 ```sh
 [~]> $cde.DirCompletions += 'mkdir'
 [~]> # or Set-CdExtrasOption DirCompletions ($cde.DirCompletions + 'mkdir')
-[~]> mkdir ~/pow/src<[Tab]>
-[~]> mkdir ~\powershell\src\_
+[~]> mkdir ~/pow/src⇥
+[~]> mkdir ~\powershell\src\█
 ```
 
-It's also possible to opt into enhanced file-only or general (file & directory) completion using
-the `FileCompletions` and `PathCompletions` options respectively. Note that the `FileCompletions` option is often less useful than the others as you won't be able to tab through directories to
-get to the file you're looking for.
+It's also possible to opt into enhanced file-only or general (file & directory)
+completion using the `FileCompletions` and `PathCompletions` options respectively.
+Note that the `FileCompletions` option is often less useful than the others as you
+won't be able to tab through directories to get to the file you're looking for.
 
 ```sh
 [~]> $cde.PathCompletions += 'Invoke-Item'
 [~]> # or Set-CdExtrasOption PathCompletions ($cde.PathCompletions + 'Invoke-Item')
-[~]> ii /t/<[Tab]>
-[~]> C:\temp\subdir_
+[~]> ii /t/⇥
+[~]> C:\temp\subdir\█
 C:\temp\subdir  C:\temp\txtFile.txt  C:\temp\txtFile2.txt
 ──────────────
 ```
@@ -254,16 +255,16 @@ or the target itself should handle expanding `~` where necessary. e.g:
 [~]> function Invoke-VSCode($path) { &code (Resolve-Path $path) }
 [~]> $cde.DirCompletions += 'Invoke-VSCode'
 [~]> Set-Alias co Invoke-VSCode
-[~]> co ~/pr/po<[Tab]>
-[~]> co ~\projects\powershell_
+[~]> co ~/pr/po⇥
+[~]> co ~\projects\powershell\█
 ```
 
 Paths within the `$cde.CD_PATH` array are included for all completion types.
 
 ```sh
 [~]> $cde.CD_PATH += '~\Documents\'
-[~]> cd win/mod<[Tab]>
-[~]> ~\Documents\WindowsPowerShell\Modules_
+[~]> cd win/mod⇥
+[~]> ~\Documents\WindowsPowerShell\Modules\█
 ```
 
 ### Navigation helper expansions
@@ -276,7 +277,7 @@ displayed in the menu below. _cd-extras_ will attempt to detect `PSReadLine` in 
 this option appropriately at start-up. For example:
 
 ```sh
-[C:\Windows\System32\drivers\etc]> up <[Tab]>
+[C:\Windows\System32\drivers\etc]> up ⇥
 [C:\Windows\System32\drivers\etc]> up 1
 1. drivers  2. System32  3. Windows
 ──────────
@@ -290,9 +291,9 @@ It's also possible tab-complete these three commands (`cd+`, `cd-`, `up`) using 
 partial directory name (the [`NamePart` parameter](#navigate-by-name)).
 
 ```sh
-[~\projects\PowerShell\src\Modules\Shared]> up pr<[Tab]>
+[~\projects\PowerShell\src\Modules\Shared]> up pr⇥
 [~\projects\PowerShell\src\Modules\Shared]> up '~\projects'
-[~\projects]> _
+[~\projects]> █
 ```
 
 ### Multi-dot and variable based expansions
@@ -300,12 +301,12 @@ partial directory name (the [`NamePart` parameter](#navigate-by-name)).
 The multi-dot syntax provides tab completion into ancestor directories.
 
 ```sh
-[C:\projects\powershell\docs\git]> cd ...<[Tab]>
-[C:\projects\powershell\docs\git]> cd C:\projects\powershell\_
+[C:\projects\powershell\docs\git]> cd ...⇥
+[C:\projects\powershell\docs\git]> cd C:\projects\powershell\█
 ```
 
 ```sh
-[C:\projects\powershell\docs\git]> cd .../<[Tab]>
+[C:\projects\powershell\docs\git]> cd .../⇥
 
 C:\projects\powershell\.git     C:\projects\powershell\.vscode
 ───────────────────────────
@@ -334,15 +335,15 @@ src                            C:\projects\powershell\src
 powershell                     C:\projects\powershell
 projects                       C:\projects
 
-[C:\projects\powershell\src\Modules\Unix]> cd po<[Tab]>
-[C:\projects\powershell\src\Modules\Unix]> cd C:\projects\powershell\_
+[C:\projects\powershell\src\Modules\Unix]> cd po⇥
+[C:\projects\powershell\src\Modules\Unix]> cd C:\projects\powershell\█
 ```
 
 might be easier than:
 
 ```sh
-[C:\projects\powershell\src\Modules\Unix]> cd ....<[Tab]> # or cd ../../../<[Tab]>
-[C:\projects\powershell\src\Modules\Unix]> cd C:\projects\powershell\_
+[C:\projects\powershell\src\Modules\Unix]> cd ....⇥ # or cd ../../../⇥
+[C:\projects\powershell\src\Modules\Unix]> cd C:\projects\powershell\█
 ```
 
 You can combine `CDABLE_VARS` with [AUTO_CD](#auto_cd) for great good:
@@ -350,7 +351,7 @@ You can combine `CDABLE_VARS` with [AUTO_CD](#auto_cd) for great good:
 ```sh
 [C:\projects\powershell\src\Modules\Unix]> projects
 [C:\projects]> src
-[C:\projects\powershell\src]> _
+[C:\projects\powershell\src]> █
 ```
 
 ## Path shortening
@@ -362,7 +363,7 @@ invoking tab expansion.
 [~]> cd /w/s/d/et
 [C:\Windows\System32\drivers\etc]> cd ~/pr/pow/src
 [~\projects\PowerShell\src]> cd .sdk
-[~\projects\PowerShell\src\Microsoft.PowerShell.SDK]> _
+[~\projects\PowerShell\src\Microsoft.PowerShell.SDK]> █
 ```
 
 `AUTO_CD` works the same way if enabled.
@@ -371,7 +372,7 @@ invoking tab expansion.
 [~]> /w/s/d/et
 [C:\Windows\System32\drivers\etc]> ~/pr/pow/src
 [~\projects\PowerShell\src]> .sdk
-[~\projects\PowerShell\src\Microsoft.PowerShell.SDK]> _
+[~\projects\PowerShell\src\Microsoft.PowerShell.SDK]> █
 ```
 
 ## Additional helpers
@@ -399,7 +400,7 @@ should work with other providers too though.
 [HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate]> ..
 [HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion]> cd-
 [HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate]> cd- 2
-[~]> _
+[~]> █
 ```
 
 ### OS X & Linux
@@ -478,7 +479,7 @@ different alias then you'll probably want to restore the default `cd` alias at t
 [~]> set-alias cde set-locationex
 [~]> cde /w/s/d/et
 [C:\Windows\System32\drivers\etc]> cd- # note: still cd-, not cde-
-[~]> _
+[~]> █
 ```
 
 `cd-extras` will only remember locations visited via `Set-LocationEx` or its alias.
