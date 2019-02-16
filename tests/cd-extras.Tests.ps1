@@ -421,7 +421,7 @@ Describe 'cd-extras' {
 
   Describe 'Get-Stack' {
     It 'shows the redo and undo stacks' {
-      Get-Stack | Select -Expand Count | Should Be 2
+      (Get-Stack).Count | Should Be 2
     }
 
     It 'shows the undo stack' {
