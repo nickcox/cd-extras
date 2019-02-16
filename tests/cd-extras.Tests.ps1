@@ -266,6 +266,17 @@ Describe 'cd-extras' {
     }
   }
 
+  Describe 'Get-Up' {
+    It 'returns the parent directory by default' {
+      Set-Location pow*/docs/git
+      Get-Up | should be (Resolve-Path ..).Path
+    }
+
+    It 'can take an arbitrary path' {
+      Get-Up -From powershell\docs\git | should be (Resolve-Path powershell\docs).Path
+    }
+  }
+
   Describe 'Export-Up' {
     It 'exports parents up to but not including the root' {
       Set-Location p*\src\Sys*\Format*\common\Utilities
