@@ -1,7 +1,8 @@
 ${Script:/} = [System.IO.Path]::DirectorySeparatorChar
 $Script:fwd = 'fwd'
 $Script:back = 'back'
-$Script:OLDPWD # used by Step-Back
+enum CycleDirection { Undo; Redo }
+$Script:cycleDirection = [CycleDirection]::Undo # used by Step-Back
 
 function DefaultIfEmpty([scriptblock] $default) {
   Begin { $any = $false }

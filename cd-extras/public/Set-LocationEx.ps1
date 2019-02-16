@@ -146,8 +146,8 @@ Function Set-LocationEx {
     if (($target = Resolve-Path $Path -ErrorAction Ignore) -and (
         ($target.Path | RemoveTrailingSeparator) -ne ((Get-Location).Path))) {
 
-      $Script:OLDPWD = $PWD
       Clear-Stack -Redo
+      $Script:cycleDirection = [CycleDirection]::Undo
       Push-Location -StackName $back
     }
 

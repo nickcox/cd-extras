@@ -1,7 +1,6 @@
 <#
 .SYNOPSIS
-Toggle between the current location and the previous location on the stack
-without affecting the state of the stack.
+Toggle between undo and redo of the last location on the stack.
 
 .EXAMPLE
 PS C:\Windows\> cd system32
@@ -11,5 +10,12 @@ PS C:\Windows\System32> _
 #>
 
 function Step-Back() {
-  $Script:OLDPWD, $null = $PWD, (Set-Location $OLDPWD)
+  if ($Script:cycleDirection -eq [CycleDirection]::Undo) {
+    Undo-Location
+    $Script:cycleDirection = [CycleDirection]::Redo
+  }
+  else {
+    Redo-Location
+    $Script:cycleDirection = [CycleDirection]::Undo
+  }
 }
