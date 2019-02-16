@@ -7,5 +7,7 @@ Set-Alias xpa Expand-Path
 Set-Alias cd- Undo-Location
 Set-Alias cd+ Redo-Location
 Set-Alias cd: Switch-LocationPart
+Set-Alias dirs Get-Stack
+Set-Alias setocd Set-CdExtrasOption
 
 Set-Item Alias:cd Set-LocationEx

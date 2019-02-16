@@ -23,7 +23,7 @@
   - [OS X & Linux](#os-x--linux)
 - [Install](#install)
 - [Configure](#configure)
-  - [_cd-extras_ options](#_cd-extras_-options)
+  - [_cd-extras_ options](#cd-extras-options)
   - [Using a different alias](#using-a-different-alias)
 
 <!-- /TOC -->
@@ -52,10 +52,10 @@ Examples:
 [C:\Windows]> █
 ```
 
-Note that the aliases are `cd-` and `cd+` _not_ `cd -` and `cd +`.
+Note that the aliases are `cd-` and `cd+` - without a space - _not_ `cd -` and `cd +`.
 Repeated uses of `cd-` will keep moving backwards towards the beginning of the stack
 rather than toggling between the two most recent directories as in vanilla bash.
-Use `Step-Back` (`cdb`) if you want to toggle between two directories.
+Use `Step-Back` (`cdb`) if you want to toggle between undo and redo.
 
 ```sh
 [C:\Windows\System32]> ..
@@ -373,22 +373,22 @@ invoking tab expansion.
 
 ## Additional helpers
 
-- Get-Stack
+- Get-Stack (_dirs_)
   - view contents of undo (`cd-`) and redo (`cd+`) stacks;
     limit output with the `-Undo` or `-Redo` switches
-- Get-Up
+- Get-Up (_gup_)
   - get the path of an ancestor directory, either by name or by traversing upwards `n` levels
-- Expand-Path
+- Expand-Path (_xpa_)
   - expand a candidate path by inserting wildcards between each segment
-- Set-CdExtrasOption
+- Set-CdExtrasOption (_setocd_)
   - [configure](#configure) cd-extras
 
 ## Note on compatibility
 
 ### Alternative providers
 
-_cd-extras_ is primarily intended to work against the filesystem provider. Most things
-should work with other providers too though.
+_cd-extras_ is primarily intended to work against the filesystem provider. Most things should work
+with other providers too though.
 
 ```sh
 [~]> cd hklm:\
@@ -409,13 +409,19 @@ in cases where multiple possible path abbreviations differ only by case.
 # Get started
 
 ## Install
-
-```sh
+From the [gallery](https://www.powershellgallery.com/packages/cd-extras/1.3.1)
+```
 Install-Module cd-extras
 Import-Module cd-extras
 
 # add to profile. e.g:
 Add-Content $PROFILE @("`n", "Import-Module cd-extras")
+```
+
+or from get the latest from github
+```
+git clone git@github.com:nickcox/cd-extras.git
+Import-Module cd-extras\cd-extras\cd-extras.psd1 # for reals
 ```
 
 ## Configure
@@ -441,8 +447,8 @@ Add-Content $PROFILE @("`n", "Import-Module cd-extras")
 - _PathCompletions_: `[array] = @()`
   - Commands that participate in enhanced tab expansion for any type of path (files & directories).
 
-Either create a hashtable, `cde`, with one or more of these keys _before_ importing
-the `cd-extras` module:
+To configure _cd-extras_ create a hashtable, `cde`, with one or more of these keys _before_ importing
+it:
 
 ```sh
 $global:cde = @{
@@ -453,24 +459,26 @@ $global:cde = @{
 Import-Module cd-extras
 ```
 
-or call the `Set-CdExtrasOption` function after importing the module:
+or call the `Set-CdExtrasOption` (`setocd`) function after importing the module:
 
 ```sh
 Import-Module cd-extras
 
+Set-CdExtrasOption CDABLE_VARS
 Set-CdExtrasOption AUTO_CD $false
 Set-CdExtrasOption NOARG_CD '/'
 ```
 
-Note: if you want to opt out of the default `DirCompletions` then you should do it before _cd-extras_
-is loaded since PowerShell doesn't provide any way of unregistering argument completers.
+Note: if you want to opt out of the default [`DirCompletions`](#Enhanced-expansion-for-built-ins) 
+then you should do it before _cd-extras_ is loaded (since PowerShell doesn't provide any way of
+unregistering argument completers.
 
 ### Using a different alias
 
 _cd-extras_ aliases `cd` to its proxy command, `Set-LocationEx`, by default. If you want to use a
 different alias then you'll probably want to restore the default `cd` alias at the same time.
 
-```sh
+```ps
 [~]> set-alias cd set-location -Option AllScope
 [~]> set-alias cde set-locationex
 [~]> cde /w/s/d/et
