@@ -3,6 +3,7 @@
 Toggle between undo and redo of the last location on the stack.
 
 .EXAMPLE
+# toggles between the two most recent directories
 PS C:\Windows\> cd system32
 PS C:\Windows\System32> cdb
 PS C:\Windows\> cdb

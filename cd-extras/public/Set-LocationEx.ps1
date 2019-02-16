@@ -29,12 +29,12 @@ Function Set-LocationEx {
 	Includes the command in the active transaction. This parameter is valid only when a transaction is in progress. For more information, see Includes the command in the active transaction. This parameter is valid only when a transaction is in progress. For more information, see
 
 .EXAMPLE
-	PS C:\>Set-Location -Path "HKLM:"
+	PS C:\>cd -Path "HKLM:"
 	PS HKLM:\>
 	This command sets the current location to the root of the HKLM: drive.
 
 .EXAMPLE
-	PS C:\>Set-Location -Path "Env:" -PassThru
+	PS C:\>cd -Path "Env:" -PassThru
 
 	Path
 	----
@@ -43,16 +43,19 @@ Function Set-LocationEx {
 	This command sets the current location to the root of the Env: drive. It uses the PassThru parameter to direct Windows PowerShell to return a PathInfo object that represents the Env: location.
 
 .EXAMPLE
-	PS C:\>Set-Location C:
-	This command sets the current location C: drive in the file system provider.
-
+	PS C:\>cd C:
+  This command sets the current location C: drive in the file system provider.
+  
 .EXAMPLE
-	PS C:\>Set-Location -StackName "WSManPaths"
-	This command makes the WSManPaths location stack the current location stack.
-	The location cmdlets use the current location stack unless a different location stack is specified in the command. For information about location stacks, see the Notes.
+	PS C:\>cd
+  This command sets the current location to `$cde.NOARG_CD`. (The home directory by default.)
+  
+.EXAMPLE
+  PS C:\Users\Bob\Documents>cd bob sue
+	This command attempts to replace 'bob' in the current location with sue so that the working directory is changed to C:\Users\Sue\Documents.
 
 .NOTES
-	The Set-Location cmdlet is designed to work with the data exposed by any provider. To list the providers available in your session, type `Get-PSProvider`. For more information, see about_Providers.
+	The Set-LocationEx cmdlet is designed to work with the data exposed by any provider. To list the providers available in your session, type `Get-PSProvider`. For more information, see about_Providers.
 
 	A stack is a last-in, first-out list in which only the most recently added item can be accessed. You add items to a stack in the order that you use them, and then retrieve them for use in the reverse order. Windows PowerShell lets you store provider locations in location stacks. Windows PowerShell creates an unnamed default location stack. You can create multiple named location stacks. If you do not specify a stack name, Windows PowerShell uses the current location stack. By default, the unnamed default location is the current location stack, but you can use the Set-Location cmdlet to change the current location stack.
 

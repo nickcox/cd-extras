@@ -8,11 +8,20 @@ The option to update.
 .PARAMETER Value
 The new value.
 
+.Aliases
+setocd
+
+.EXAMPLE
+PS C:\> Set-CdExtrasOption AUTO_CD
+Enables flag AUTO_CD
+
 .EXAMPLE
 PS C:\> Set-CdExtrasOption AUTO_CD $false
+Disables flag AUTO_CD
 
 .EXAMPLE
 PS C:\> Set-CdExtrasOption -Option CD_PATH -Value @('/temp')
+Set the search paths to the single directory '/temp'
 #>
 function Set-CdExtrasOption {
 
@@ -30,6 +39,17 @@ function Set-CdExtrasOption {
     $Option,
     $Value
   )
+
+  $flags = @(
+    'AUTO_CD',
+    'NOARG_CD',
+    'CDABLE_VARS'
+    'MenuCompletion'
+  )
+
+  if ($Value -eq $null -and $Option -in $flags) {
+    $Value = $true
+  }
 
   $Global:cde.$option = $value
 

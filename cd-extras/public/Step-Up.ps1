@@ -10,14 +10,17 @@ Number of levels above the starting location. (One by default.)
 Partial directory name for which to search.
 
 .EXAMPLE
+# Set location to the parent of the current directory
 C:\Windows\System32> up
 C:\Windows> _
 
 .EXAMPLE
+# Set location to the grandparent of the current directory
 C:\Windows\System32> up 2
 C:\> _
 
 .EXAMPLE
+# Set location to the first ancestor of the current directory where the name contains 'win'
 C:\Windows\System32> up win
 C:\Windows> _
 #>

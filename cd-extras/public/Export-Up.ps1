@@ -15,7 +15,8 @@ Don't copy output into global variables.
 Includes the root level path in the output.
 
 .EXAMPLE
-C:\projects\powershell\src\Microsoft.PowerShell.SDK > Export-Up
+# Expand all ancestors of the given path (except the root) into global variables
+C:\> Export-Up -From C:\projects\powershell\src\Microsoft.PowerShell.SDK
 
 Name                           Value
 ----                           -----

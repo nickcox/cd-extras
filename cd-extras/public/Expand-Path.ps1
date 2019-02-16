@@ -16,7 +16,8 @@ Limits search results to leaf items.
 Limits search results to container items.
 
 .EXAMPLE
-PS> Expand-Path /win/sys/dr/et -Directory
+# Expand a well-known Windows path by abbreviating each segment
+PS C:\> Expand-Path /win/sys/dr/et -Directory
 
     Directory: C:\Windows\System32\drivers
 

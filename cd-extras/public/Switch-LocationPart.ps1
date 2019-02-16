@@ -11,7 +11,7 @@ Text with which to replace.
 
 .EXAMPLE
 ~\Modules\Unix\Microsoft.PowerShell.Utility> Switch-LocationPart unix shared
-~\Modules\Shared\Microsoft.PowerShell.Utility> _
+Sets the current directory to ~\Modules\Shared\Microsoft.PowerShell.Utility, if it exists
 #>
 function Switch-LocationPart {
 

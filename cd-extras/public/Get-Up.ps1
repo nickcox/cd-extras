@@ -13,16 +13,19 @@ Partial directory name for which to search.
 The directory from which to start. $PWD by default.
 
 .EXAMPLE
+# Get the parent of the current location
 C:\Windows\System32> Get-Up
 C:\Windows
 C:\Windows\System32> _
 
 .EXAMPLE
+# Get the grandparent of the current location
 C:\Windows\System32\drivers\etc> Get-Up 2
 C:\Windows\System32
 C:\Windows\System32\drivers\etc> _
 
 .EXAMPLE
+# Get the first ancestor containing the term 'win'
 C:\Windows\System32\drivers\etc> Get-Up win
 C:\Windows
 C:\Windows\System32\drivers\etc> _

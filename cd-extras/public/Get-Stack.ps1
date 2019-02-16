@@ -8,6 +8,32 @@ Show contents of the Undo stack.
 
 .PARAMETER Redo
 Show contents of the Redo stack.
+
+.ALIASES
+dirs
+
+.EXAMPLE
+# Get contents of both stacks (default)
+C:\> cd windows
+C:\Windows> cd system32
+C:\Windows\System32> cd-
+C:\Windows> Get-Stack
+
+Name                           Value
+----                           -----
+Redo                           C:\windows\System32
+Undo                           C:\
+
+.EXAMPLE
+# Get contents of undo stack
+C:\> cd windows
+C:\Windows> cd system32
+C:\Windows\system32> Get-Stack -Undo
+
+Path       
+----       
+C:\Windows 
+C:\
 #>
 
 function Get-Stack {
