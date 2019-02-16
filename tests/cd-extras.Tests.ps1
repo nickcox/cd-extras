@@ -371,7 +371,7 @@ Describe 'cd-extras' {
 
     It 'works when there is one exact match and several partial matches' {
       Set-CdExtrasOption -Option CD_PATH -Value @('powershell\src\Modules\')
-      cd windows
+      cd Windows
       CurrentDir | Should Be windows
     }
 
