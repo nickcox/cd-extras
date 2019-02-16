@@ -273,7 +273,7 @@ Describe 'cd-extras' {
 
     It 'should export the root directory when switch set' {
       $xup = Export-Up -NoGlobals -From ~ -IncludeRoot
-      $xup.Keys | Should -Contain (Resolve-Path ~).Drive.Name
+      $xup.Keys | Should -Contain (Resolve-Path ~).Drive.Root
     }
   }
 

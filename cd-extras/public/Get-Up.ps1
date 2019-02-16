@@ -46,6 +46,7 @@ function Get-Up {
 
       1..$n | % {
         if ($parent = $next | Split-Path -Parent) { $next = $parent }
+        else { $next = ($From | Resolve-Path).Drive.Root } # fixes issue on Linux
       }
 
       return $next
@@ -75,5 +76,5 @@ function Get-Up {
     $Global:Error.RemoveAt(0)
   }
 
-  Write-Error "Could not find '$NamePart' as an ancestor of the given path." -ErrorAction Stop
+  Write-Error "Could not find '$NamePart' as an ancestor of '$From'." -ErrorAction Stop
 }

@@ -50,7 +50,7 @@ function Export-Up() {
 
       $pair = &$getPair
 
-      # in the case of duplicate names, first one wins
+      # first one wins in the case of duplicate names
       if (!$output.Contains($pair.name)) {
         $output.Add($pair.name, $pair.path)
       }
@@ -62,7 +62,7 @@ function Export-Up() {
       $IncludeRoot -and
       $output.Values -notcontains $start.Drive.Root
     ) {
-      $output.Add($start.Drive.Name, $start.Drive.Root)
+      $output.Add($start.Drive.Root, $start.Drive.Root)
     }
   }
   catch [Management.Automation.PSArgumentException] {

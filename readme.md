@@ -279,11 +279,7 @@ this option appropriately at start-up. For example:
 ```sh
 [C:\Windows\System32\drivers\etc]> up ⇥
 [C:\Windows\System32\drivers\etc]> up 1
-1. drivers  2. System32  3. Windows
-──────────
-
-[C:\Windows\System32\drivers\etc]> up 3
-3. Windows
+1. drivers  2. System32  3. Windows  4. C:\
 ──────────
 ```
 
