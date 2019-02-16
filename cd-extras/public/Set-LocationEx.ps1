@@ -1,7 +1,7 @@
 Function Set-LocationEx {
   <#
 .SYNOPSIS
-	Sets the current working location to a specified location.
+	Sets the current working location to a specified location and adds an entry to the undo stack.
 
 .DESCRIPTION
 	The Set-Location cmdlet sets the working location to a specified location. That location could be a directory, a sub-directory, a registry location, or any provider path.
@@ -79,16 +79,13 @@ Function Set-LocationEx {
 	Get-Location
 
 .LINK
-	Pop-Location
-
-.LINK
-  Push-Location
-
-.LINK
   Undo-Location
 
 .LINK
   Redo-Location
+
+.LINK
+  Get-Stack
 #>
 
   [CmdletBinding(DefaultParameterSetName = 'Path', SupportsTransactions = $true, HelpUri = 'https://go.microsoft.com/fwlink/?LinkID=113397')]
@@ -147,9 +144,10 @@ Function Set-LocationEx {
     }
 
     if (($target = Resolve-Path $Path -ErrorAction Ignore) -and (
-        $target.Path -ne ((Get-Location).Path))) {
+        ($target.Path | RemoveTrailingSeparator) -ne ((Get-Location).Path))) {
 
-      $Global:OLDPWD = $PWD
+      $Script:OLDPWD = $PWD
+      Clear-Stack -Redo
       Push-Location -StackName $back
     }
 
@@ -169,10 +167,6 @@ Function Set-LocationEx {
  	end {
     if ($steppablePipeline) {
       $steppablePipeline.End()
-    }
-
-    if ($PWD -ne $Script:OLDPWD) {
-      Clear-Stack -Redo
     }
  	}
 }

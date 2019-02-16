@@ -40,6 +40,23 @@ Describe 'cd-extras' {
       cd 'powershell/directory with spaces'
       CurrentDir | Should Be 'directory with spaces'
     }
+
+    It 'pushes to the undo stack' {
+      (Get-Stack -Undo) | should be $null
+      cd powershell
+      cd src
+      (Get-Stack -Undo).Count | should be 2
+      (Get-Stack -Undo) | select -First 1 | should -Match 'powershell$'
+    }
+
+    It 'does not push duplicates' {
+      (Get-Stack -Undo) | should be $null
+      cd powershell
+      cd src
+      cd ../src
+      (Get-Stack -Undo).Count | should be 2
+      (Get-Stack -Undo) | select -First 1 | should -Match 'powershell$'
+    }
   }
 
   Describe 'Undo-Location' {
