@@ -173,7 +173,7 @@ same subdirectories you could create a corresponding variable.
 [~/projects/powershell/.git/hooks]> █
 ```
 
-CDABLE_VARS is off by default. Enable it with: `Set-CdExtrasOption CDABLE_VARS $true`.
+CDABLE_VARS is off by default. Enable it with: `Set-CdExtrasOption CDABLE_VARS`.
 
 ## No argument cd
 
@@ -464,13 +464,13 @@ or call the `Set-CdExtrasOption` (`setocd`) function after importing the module:
 ```sh
 Import-Module cd-extras
 
-Set-CdExtrasOption CDABLE_VARS
-Set-CdExtrasOption AUTO_CD $false
-Set-CdExtrasOption NOARG_CD '/'
+setocd CDABLE_VARS
+setocd AUTO_CD $false
+setocd NOARG_CD '/'
 ```
 
-Note: if you want to opt out of the default [`DirCompletions`](#Enhanced-expansion-for-built-ins) 
-then you should do it before _cd-extras_ is loaded (since PowerShell doesn't provide any way of
+Note: if you want to opt out of the default [`DirCompletions`](#Enhanced-expansion-for-built-ins)
+then you should do it before _cd-extras_ is loaded since PowerShell doesn't provide any way of
 unregistering argument completers.
 
 ### Using a different alias
