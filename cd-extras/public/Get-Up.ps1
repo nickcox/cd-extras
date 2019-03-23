@@ -48,7 +48,7 @@ function Get-Up {
     if ($PSCmdlet.ParameterSetName -eq 'levels' -and $n -ge 1) {
 
       1..$n | % {
-        if ($parent = $next | Split-Path -Parent) { $next = $parent }
+        if ($parent = $next | Split-Path) { $next = $parent }
         else { $next = ($From | Resolve-Path).Drive.Root } # fixes issue on Linux
       }
 
@@ -59,7 +59,7 @@ function Get-Up {
 
       if ($next.Drive.Root -eq $NamePart) { return $NamePart }
 
-      while ($next = $next | Split-Path -Parent) {
+      while ($next = $next | Split-Path) {
         if (($next | Split-Path -Leaf) -match (NormaliseAndEscape $NamePart)) { return $next }
       }
 
@@ -70,7 +70,7 @@ function Get-Up {
 
       do {
         if ($next -eq $resolvedTarget) { return $next }
-      } while ($next = $next | Split-Path -Parent)
+      } while ($next = $next | Split-Path)
     }
   }
 

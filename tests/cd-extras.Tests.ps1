@@ -7,7 +7,7 @@ if (-not (Test-Path variable:IsWindows)) {
 Describe 'cd-extras' {
 
   BeforeAll {
-    $Script:xcde = if (Test-Path variable:cde) {$cde} else {$null}
+    $Script:xcde = if (Test-Path variable:cde) {$cde}
     $Global:cde = $null
     Push-Location $PSScriptRoot
     Import-Module ../cd-extras/cd-extras.psd1 -Force
@@ -180,7 +180,7 @@ Describe 'cd-extras' {
     It 'can be called explicitly' {
       Set-Location .\powershell\src\Modules\Shared\Microsoft.PowerShell.Utility
       cd: shared Unix
-      Get-Location | Split-Path -parent | Should Be TestDrive:${/}powershell${/}src${/}Modules${/}Unix
+      Get-Location | Split-Path | Should Be TestDrive:${/}powershell${/}src${/}Modules${/}Unix
     }
 
     It 'can replace more than one path segment' {
@@ -192,7 +192,7 @@ Describe 'cd-extras' {
     It 'works with two arg cd' {
       Set-Location .\powershell\src\Modules\Shared\Microsoft.PowerShell.Utility
       cd Shared Unix
-      Get-Location | Split-Path -parent | Should Be TestDrive:${/}powershell${/}src${/}Modules${/}Unix
+      Get-Location | Split-Path | Should Be TestDrive:${/}powershell${/}src${/}Modules${/}Unix
     }
 
     It 'leaves an entry on the undo stack' {
@@ -291,7 +291,7 @@ Describe 'cd-extras' {
       Set-Location powershell/powershell
       $xup = Export-Up -NoGlobals
       $xup[0] | should match ([Regex]::Escape($pwd.Path))
-      $xup[1] | should not match ([Regex]::Escape(($pwd.Path | Split-Path -Parent)))
+      $xup[1] | should not match ([Regex]::Escape(($pwd.Path | Split-Path)))
     }
 
     It 'should not export the root directory by default' {

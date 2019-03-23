@@ -409,7 +409,9 @@ in cases where multiple possible path abbreviations differ only by case.
 # Get started
 
 ## Install
+
 From the [gallery](https://www.powershellgallery.com/packages/cd-extras/1.3.1)
+
 ```
 Install-Module cd-extras
 Import-Module cd-extras
@@ -419,6 +421,7 @@ Add-Content $PROFILE @("`n", "Import-Module cd-extras")
 ```
 
 or from get the latest from github
+
 ```
 git clone git@github.com:nickcox/cd-extras.git
 Import-Module cd-extras\cd-extras\cd-extras.psd1 # for reals

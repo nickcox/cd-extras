@@ -10,7 +10,7 @@ function CompletePaths {
   )
 
   # given a full path, $_, return a fully formed completion result
-  # logic: use a relative path if the supplied word isn't rooted (e.g. /temp/... or ~/... C:\...)
+  # logic: use a relative path if the supplied word isn't rooted (like /temp/... or ~/... C:\...)
   # *and* the resolved path is a child of the current directory or its parent
   # for absolute paths, replace home dir location with tilde
   filter CompletionResult {
@@ -26,7 +26,7 @@ function CompletePaths {
       $friendly = $_ -replace "^$(NormaliseAndEscape $homeDir)", "~"
     }
 
-    $trailChar = if ($_.PSIsContainer) {${/}} else {''}
+    $trailChar = if ($_.PSIsContainer) {${/}}
 
     # add normalised trailing directory separator; quote if contains spaces
     $completionText = $friendly |
@@ -69,7 +69,6 @@ function CompletePaths {
   ) {
     Expand-Path @switches ($wordToComplete -replace $Matches[0], $maybeVar)
   }
-  else { @() }
 
   @($completions) + @($variCompletions) |
     Select -Unique |

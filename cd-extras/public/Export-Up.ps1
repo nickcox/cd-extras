@@ -46,7 +46,7 @@ function Export-Up() {
 
   try {
     while (
-      ($next = $next | Split-Path -Parent) -and
+      ($next = $next | Split-Path) -and
       ($next -ne $start.Drive.Root)) {
 
       $pair = &$getPair
