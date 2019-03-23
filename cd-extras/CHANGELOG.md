@@ -1,5 +1,9 @@
 # Changes
 
+## [1.5] 2019-03-23
+
+Implement MaxCompletions to limit to number of directory/path/file completions returned.
+
 ## [1.4] 2019-02-21
 
 Use drive root path instead of name in ancestor menu completion.
