@@ -445,10 +445,12 @@ Import-Module cd-extras\cd-extras\cd-extras.psd1 # for reals
     displayed in the menu
 - _DirCompletions_: `[array] = @('Push-Location', 'Set-Location', 'Get-ChildItem')`
   - Commands that participate in enhanced tab expansion for directories.
-- _FileCompletions_: `[array] = @()`
-  - Commands that participate in enhanced tab expansion for files.
 - _PathCompletions_: `[array] = @()`
   - Commands that participate in enhanced tab expansion for any type of path (files & directories).
+- _FileCompletions_: `[array] = @()`
+  - Commands that participate in enhanced tab expansion for files.
+- _MaxCompletions_ : `[int] = 80`
+  - Limit the number of Dir/Path/File completions offered
 
 To configure _cd-extras_ create a hashtable, `cde`, with one or more of these keys _before_ importing
 it:

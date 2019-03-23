@@ -49,15 +49,15 @@ function CompletePaths {
 
   $switches = @{ File = $filesOnly; Directory = $dirsOnly }
 
-  $completions = if ($wordToComplete -match '^\.{3,}') {
+  $dotted = if ($wordToComplete -match '^\.{3,}') {
     # if we're multi-dotting...
     $dots = $Matches[0].Trim()
     $up = Get-Up ($dots.Length - 1)
-    Expand-Path @switches ($up + $wordToComplete.Replace($dots, ''))
+    $up + $wordToComplete.Replace($dots, '')
   }
-  else {
-    Expand-Path @switches $wordToComplete
-  }
+  else { $wordToComplete }
+
+  $completions = Expand-Path @switches $dotted -MaxResults $cde.MaxCompletions
 
   #replace cdable_vars
   $variCompletions = if (
@@ -67,10 +67,11 @@ function CompletePaths {
         Where {$_.Value -and (Test-Path ($_.Value) -PathType Container)} |
         Select -Expand Value)
   ) {
-    Expand-Path @switches ($wordToComplete -replace $Matches[0], $maybeVar)
+    Expand-Path @switches ($wordToComplete -replace $Matches[0], $maybeVar) -MaxResults $cde.MaxCompletions
   }
 
   @($completions) + @($variCompletions) |
     Select -Unique |
+    Select -First $cde.MaxCompletions |
     CompletionResult
 }

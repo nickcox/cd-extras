@@ -35,7 +35,8 @@ function Set-CdExtrasOption {
       'MenuCompletion',
       'DirCompletions',
       'FileCompletions',
-      'PathCompletions')]
+      'PathCompletions',
+      'MaxCompletions')]
     $Option,
     $Value
   )

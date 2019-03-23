@@ -6,6 +6,9 @@ to the end of each path segment.
 .PARAMETER Candidate
 Candidate search string.
 
+.PARAMETER MaxResults
+Maximum number of results to return.
+
 .PARAMETER SearchPaths
 Set of paths to search in addition to the current directory. $cde.CD_PATH by default.
 
@@ -31,11 +34,13 @@ function Expand-Path {
   [CmdletBinding()]
   param (
     [string] $Candidate,
+    [int]    $MaxResults = 0,    
     [array]  $SearchPaths = $cde.CD_PATH,
     [switch] $File,
     [switch] $Directory
   )
 
+  $MaxResults = $MaxResults |??? {[int]::MaxValue}
   $multidot = [regex]::Match($Candidate, '^\.{3,}')
   $match = $multidot.Value
   $replacement = ('../' * [Math]::Max(0, $match.LastIndexOf('.'))) -replace '.$'
@@ -49,7 +54,7 @@ function Expand-Path {
     -replace '\[|\]', '*'
 
   $wildcardedPaths = if ($SearchPaths -and -not ($Candidate | IsRootedOrRelative)) {
-    # always include the local path, regardeless of whether it was passed
+    # always include the local path, regardless of whether it was passed
     # in the searchPaths parameter (this differs from the behaviour in bash)
     @($wildcardedPath) + (
       $SearchPaths | % { Join-Path $_ $wildcardedPath })
@@ -58,5 +63,6 @@ function Expand-Path {
 
   WriteLog "`nExpanding $Candidate to: $wildcardedPaths"
   Get-Item $wildcardedPaths -Force -ErrorAction Ignore |
-    Where {(!$File -or !$_.PSIsContainer) -and (!$Directory -or $_.PSIsContainer)}
+    Where {(!$File -or !$_.PSIsContainer) -and (!$Directory -or $_.PSIsContainer)} |
+    Select -First $MaxResults
 }

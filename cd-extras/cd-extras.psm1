@@ -1,15 +1,16 @@
 $cdAlias = if ($x = (Get-Alias -Name 'cd' -ErrorAction ignore)) { $x.Definition }
 
-Get-ChildItem $PSScriptRoot/private/*.ps1 | % { . $_.FullName}
-Get-ChildItem $PSScriptRoot/public/*.ps1 | % { . $_.FullName}
+Get-ChildItem $PSScriptRoot/private/*.ps1 | % { . $_.FullName }
+Get-ChildItem $PSScriptRoot/public/*.ps1 | % { . $_.FullName }
 
 $defaults = [ordered]@{
   AUTO_CD         = $true
   CD_PATH         = @()
   CDABLE_VARS     = $false
   NOARG_CD        = '~'
-  DirCompletions  = @('Push-Location', 'Set-Location', 'Set-LocationEx', 'Get-ChildItem')
-  PathCompletions = @()
+  MaxCompletions  = 80
+  DirCompletions  = @('Push-Location', 'Set-Location', 'Set-LocationEx')
+  PathCompletions = @('Get-ChildItem')
   FileCompletions = @()
   MenuCompletion  = $null -ne (Get-Module PSReadline) -and (
     Get-PSReadLineKeyHandler -Bound |? Function -eq MenuComplete)
