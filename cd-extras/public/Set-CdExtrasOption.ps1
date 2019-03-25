@@ -43,7 +43,6 @@ function Set-CdExtrasOption {
 
   $flags = @(
     'AUTO_CD',
-    'NOARG_CD',
     'CDABLE_VARS'
     'MenuCompletion'
   )
