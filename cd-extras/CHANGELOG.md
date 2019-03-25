@@ -1,5 +1,11 @@
 # Changes
 
+## [1.5.3] 2019-03-25
+
+Fix issue on Linux where attempting to move upwards past the root threw an error.
+Fix issue where NOARG_CD with a null target threw an error.
+Fix issue where NOARG_CD incorrectly listed as a flag.
+
 ## [1.5.2] 2019-03-25
 
 Fix potential conflict between function name and common alias.
