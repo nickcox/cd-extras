@@ -1,8 +1,13 @@
 # Changes
 
+## [1.5.2] 2019-03-25
+
+Fix potential conflict between function name and common alias.
+
 ## [1.5] 2019-03-23
 
 Implement MaxCompletions to limit to number of directory/path/file completions returned.
+Change completion type for 'Get-ChildItems' to path completion per default PowerShell behaviour.
 
 ## [1.4] 2019-02-21
 

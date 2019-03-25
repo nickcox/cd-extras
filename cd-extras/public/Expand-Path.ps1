@@ -40,7 +40,7 @@ function Expand-Path {
     [switch] $Directory
   )
 
-  $MaxResults = $MaxResults |??? {[int]::MaxValue}
+  $MaxResults = $MaxResults |OrDefault ([int]::MaxValue)
   $multidot = [regex]::Match($Candidate, '^\.{3,}')
   $match = $multidot.Value
   $replacement = ('../' * [Math]::Max(0, $match.LastIndexOf('.'))) -replace '.$'

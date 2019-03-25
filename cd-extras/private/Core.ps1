@@ -100,7 +100,7 @@ function WriteLog($message) {
 }
 
 # earlier versions of posh-git export '??' as a public alias, so we use ??? here
-function ??? ($default) {
+function OrDefault ($default) {
   Begin { $any = $false } 
   Process { if ($_) {$any = $true; $_} } 
   End { if (!$any) {$default} } 
