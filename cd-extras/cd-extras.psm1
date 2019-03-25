@@ -13,7 +13,8 @@ $defaults = [ordered]@{
   PathCompletions = @('Get-ChildItem')
   FileCompletions = @()
   MenuCompletion  = $null -ne (Get-Module PSReadline) -and (
-    Get-PSReadLineKeyHandler -Bound |? Function -eq MenuComplete)
+    Get-PSReadLineKeyHandler -Bound |? Function -eq MenuComplete
+  )
 }
 
 $global:cde = if ((Test-Path variable:cde) -and $cde -is [System.Collections.IDictionary]) {

@@ -42,14 +42,17 @@ function Get-Up {
   )
 
   $next = $From | Resolve-Path
+  $root = $next.Drive.Root
 
   try {
 
     if ($PSCmdlet.ParameterSetName -eq 'levels' -and $n -ge 1) {
 
       1..$n | % {
-        if ($parent = $next | Split-Path) { $next = $parent }
-        else { $next = ($From | Resolve-Path).Drive.Root } # fixes issue on Linux
+        if ($next -ne $root -and ($parent = $next | Split-Path)) { 
+          $next = $parent
+        }
+        else { $next = $root } # fixes issue on Linux
       }
 
       return $next

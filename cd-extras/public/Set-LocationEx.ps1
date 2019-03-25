@@ -125,13 +125,11 @@ Function Set-LocationEx {
     }
 
     elseif ($PSBoundParameters.Count -eq 0) {
-      if (Test-Path $cde.NOARG_CD) {
-        $Path = $cde.NOARG_CD
-      }
+      $Path = $cde.NOARG_CD |OrDefault $PWD
     }
 
     elseif ($PSCmdlet.ParameterSetName -eq 'Path') {
-      if (!(Test-Path $Path) -or ($Path -match '^\.{3,}')) {
+      if ($Path -and !(Test-Path $Path) -or ($Path -match '^\.{3,}')) {
         if (
           $cde.CDABLE_VARS -and
           (Test-Path "variable:$Path") -and
@@ -146,7 +144,7 @@ Function Set-LocationEx {
       }
     }
 
-    if (($target = Resolve-Path $Path -ErrorAction Ignore) -and (
+    if ($Path -and ($target = Resolve-Path $Path -ErrorAction Ignore) -and (
         ($target.Path | RemoveTrailingSeparator) -ne ((Get-Location).Path))) {
 
       Clear-Stack -Redo

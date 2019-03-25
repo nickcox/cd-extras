@@ -275,6 +275,11 @@ Describe 'cd-extras' {
     It 'can take an arbitrary path' {
       Get-Up -From powershell\docs\git | should be (Resolve-Path powershell\docs).Path
     }
+
+    It 'stops at the root' {
+      Set-Location pow*/docs/git
+      Get-Up 255 | should be $PWD.Drive.Root
+    }
   }
 
   Describe 'Export-Up' {
@@ -387,6 +392,13 @@ Describe 'cd-extras' {
       $cde.NOARG_CD | Should Be '~'
       cd
       (Get-Stack -Undo | select -First 1).Path | Should Be $startLocation
+    }
+
+    It 'does not change location when null' {
+      $startLocation = (Get-Location).Path
+      $cde.NOARG_CD = $null
+      cd
+      $pwd | Should Be $startLocation
     }
   }
 
