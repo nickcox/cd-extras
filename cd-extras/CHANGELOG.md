@@ -1,5 +1,9 @@
 # Changes
 
+## [1.5.3] 2019-03-27
+
+Fix issue where multi-dotting didn't work when CD_PATH had been set.
+
 ## [1.5.3] 2019-03-25
 
 Fix issue on Linux where attempting to move upwards past the root threw an error.
