@@ -156,11 +156,17 @@ Describe 'cd-extras' {
       CurrentDir | Should Be Modules
     }
 
-
     It 'can move up three directories' {
       Set-Location ./powershell/src/Modules/Shared/Microsoft.PowerShell.Utility
       cd ....
       CurrentDir | Should Be src
+    }
+
+    It 'works even when CD_PATH is set' {
+      setocd CD_PATH @('TestDrive:\powershell\src\')
+      Set-Location ./powershell/src/Modules/Shared/Microsoft.PowerShell.Utility
+      cd ...
+      CurrentDir | Should Be Modules
     }
   }
 

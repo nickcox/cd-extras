@@ -20,7 +20,7 @@ filter IsRooted {
 }
 
 filter IsRelative {
-  $_ -match '^+\.(/|\\)' # e.g. starts with ./, ../
+  $_ -match '^+\.' # e.g. starts with ./, ../, ...
 }
 
 filter IsDescendedFrom($maybeAncestor) {
