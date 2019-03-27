@@ -21,14 +21,14 @@ function Switch-LocationPart {
     [Parameter(Mandatory)][string]$With
   )
 
-  $normalised = $Replace -replace '/|\\', ${/}
+  $normalised = NormaliseAndEscape $Replace
 
-  if (-not ($PWD.Path -match [regex]::Escape($normalised))) {
+  if (!($PWD.Path -match $normalised)) {
     Write-Error "String '$normalised' isn't in '$PWD'" -ErrorAction Stop
   }
 
   if (Test-Path (
-      $path = $PWD.Path -replace [regex]::Escape($normalised), $With
+      $path = $PWD.Path -replace $normalised, $With
     ) -PathType Container) {
 
     Set-LocationEx $path

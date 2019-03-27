@@ -91,7 +91,7 @@ Describe 'cd-extras' {
       cd libpsl-native
       cd test
       cd googletest
-      cd- TestDrive:\powershell\src
+      cd- TestDrive:${/}powershell${/}src
       CurrentDir | Should Be src
     }
 
@@ -248,20 +248,16 @@ Describe 'cd-extras' {
       CurrentDir | Should Be common
     }
 
-    It 'can navigate within the registry on Windows' {
-      if ($IsWindows) {
-        Set-Location HKLM:\Software\Microsoft\Windows\CurrentVersion
-        Step-Up 2
-        CurrentDir | Should Be Microsoft
-      }
+    It 'can navigate within the registry on Windows' -Skip:(!$IsWindows) {
+      Set-Location HKLM:\Software\Microsoft\Windows\CurrentVersion
+      Step-Up 2
+      CurrentDir | Should Be Microsoft
     }
 
-    It 'can navigate within the registry on Windows by name' {
-      if ($IsWindows) {
-        Set-Location HKLM:\Software\Microsoft\Windows\CurrentVersion
-        Step-Up mic
-        CurrentDir | Should Be Microsoft
-      }
+    It 'can navigate within the registry on Windows by name' -Skip:(!$IsWindows) {
+      Set-Location HKLM:\Software\Microsoft\Windows\CurrentVersion
+      Step-Up mic
+      CurrentDir | Should Be Microsoft
     }
 
     It 'can navigate by full name if no matching leaf name' {
@@ -311,8 +307,8 @@ Describe 'cd-extras' {
     It 'does not choke on duplicate directory names' {
       Set-Location powershell/powershell
       $xup = Export-Up -NoGlobals
-      $xup[0] | should match ([Regex]::Escape($pwd.Path))
-      $xup[1] | should not match ([Regex]::Escape(($pwd.Path | Split-Path)))
+      $xup[0] | should BeLike $pwd.Path
+      $xup[1] | should not BeLike ($pwd.Path | Split-Path)
     }
 
     It 'should not export the root directory by default' {
@@ -468,10 +464,8 @@ Describe 'cd-extras' {
         Should Be (Join-Path $TestDrive powershell\src\Microsoft.PowerShell.ConsoleHost)
     }
 
-    It 'works in Windows registry' {
-      if ($IsWindows) {
-        (Expand-Path HKLM:\Soft\Mic\).Count | Should BeGreaterOrEqual 1
-      }
+    It 'works in Windows registry' -Skip:(!$IsWindows) {
+      (Expand-Path HKLM:\Soft\Mic\).Count | Should BeGreaterOrEqual 1
     }
   }
 
@@ -563,11 +557,9 @@ Describe 'cd-extras' {
           Should Match "sampleStructure.txt"
       }
 
-      It 'provides usable registry paths' {
-        if ($IsWindows) {
-          (CompletePaths -dirsOnly -wordToComplete 'HKLM:\Soft\Mic').CompletionText |
+      It 'provides usable registry paths' -Skip:(!$IsWindows) {
+        (CompletePaths -dirsOnly -wordToComplete 'HKLM:\Soft\Mic').CompletionText |
             Should Match "HKLM:\\Software\\Microsoft"
-        }
       }
 
       It 'escapes square brackets' {

@@ -95,10 +95,3 @@ function WriteLog($message) {
   if ((Get-Variable cde) -and ($cde | Get-Member _logger)) { &$cde._logger $message }
   else { Write-Verbose $message }
 }
-
-# earlier versions of posh-git export '??' as a public alias, so we use ??? here
-function OrDefault ($default) {
-  Begin { $any = $false } 
-  Process { if ($_) {$any = $true; $_} } 
-  End { if (!$any) {$default} } 
-}

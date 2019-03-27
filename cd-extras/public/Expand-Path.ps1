@@ -34,15 +34,14 @@ function Expand-Path {
   [CmdletBinding()]
   param (
     [string] $Candidate,
-    [int]    $MaxResults = 0,    
+    [int]    $MaxResults = [int]::MaxValue,    
     [array]  $SearchPaths = $cde.CD_PATH,
     [switch] $File,
     [switch] $Directory
   )
 
-  $MaxResults = $MaxResults |OrDefault ([int]::MaxValue)
-  $multidot = [regex]::Match($Candidate, '^\.{3,}')
-  $match = $multidot.Value
+  $multiDot = [regex]::Match($Candidate, '^\.{3,}')
+  $match = $multiDot.Value
   $replacement = ('../' * [Math]::Max(0, $match.LastIndexOf('.'))) -replace '.$'
 
   [string]$wildcardedPath = $Candidate `

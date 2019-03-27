@@ -91,7 +91,11 @@ Function Set-LocationEx {
   Get-Stack
 #>
 
-  [CmdletBinding(DefaultParameterSetName = 'Path', SupportsTransactions = $true, HelpUri = 'https://go.microsoft.com/fwlink/?LinkID=113397')]
+  [CmdletBinding(
+    DefaultParameterSetName = 'Path',
+    SupportsTransactions = $true,
+    HelpUri = 'https://go.microsoft.com/fwlink/?LinkID=113397')
+  ]
  	param(
     [Parameter(ParameterSetName = 'Path', Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
     [string]
@@ -125,7 +129,7 @@ Function Set-LocationEx {
     }
 
     elseif ($PSBoundParameters.Count -eq 0) {
-      $Path = $cde.NOARG_CD |OrDefault $PWD
+      $Path = $cde.NOARG_CD |DefaultIfEmpty {$PWD}
     }
 
     elseif ($PSCmdlet.ParameterSetName -eq 'Path') {
@@ -153,7 +157,10 @@ Function Set-LocationEx {
     }
 
     $PSBoundParameters['Path'] = $Path
-    $wrappedCmd = $ExecutionContext.InvokeCommand.GetCommand('Microsoft.PowerShell.Management\Set-Location', [System.Management.Automation.CommandTypes]::Cmdlet)
+    $wrappedCmd = $ExecutionContext.InvokeCommand.GetCommand(
+      'Microsoft.PowerShell.Management\Set-Location',
+      [System.Management.Automation.CommandTypes]::Cmdlet
+    )
     $scriptCmd = {& $wrappedCmd @PSBoundParameters }
     $steppablePipeline = $scriptCmd.GetSteppablePipeline($myInvocation.CommandOrigin)
     $steppablePipeline.Begin($PSCmdlet)

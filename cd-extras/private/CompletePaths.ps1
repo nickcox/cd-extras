@@ -50,7 +50,7 @@ function CompletePaths {
   $switches = @{ File = $filesOnly; Directory = $dirsOnly }
 
   $dotted = if ($wordToComplete -match '^\.{3,}') {
-    # if we're multi-dotting...
+    # if we're multi-dotting then first replace dots with the correct ancestor
     $dots = $Matches[0].Trim()
     $up = Get-Up ($dots.Length - 1)
     $up + $wordToComplete.Replace($dots, '')
