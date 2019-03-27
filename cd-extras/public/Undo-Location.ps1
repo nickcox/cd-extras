@@ -26,7 +26,7 @@ PS C:\Windows\System32> _
 PS C:\Windows\System32> # Move backward by name
 PS C:\Windows\System32> cd ..
 PS C:\Windows\> cd ..
-PS C:\> cd- system
+PS C:\> cd- sys
 PS C:\Windows\System32> _
 
 .LINK

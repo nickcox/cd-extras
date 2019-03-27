@@ -470,7 +470,7 @@ To configure _cd-extras_ create a hashtable, `cde`, with one or more of these ke
 it:
 
 ```sh
-$global:cde = @{
+$cde = @{
   AUTO_CD = $false
   CD_PATH = @('~\Documents\', '~\Downloads')
 }
@@ -488,9 +488,17 @@ setocd AUTO_CD $false
 setocd NOARG_CD '/'
 ```
 
-Note: if you want to opt out of the default [`DirCompletions`](#Enhanced-expansion-for-built-ins)
+Note: if you want to opt out of the default [path completions](#Enhanced-expansion-for-built-ins)
 then you should do it before _cd-extras_ is loaded since PowerShell doesn't provide any way of
 unregistering argument completers.
+
+```sh
+$cde = @{
+  DirCompletions = @()
+}
+
+Import-Module cd-extras
+```
 
 ### Using a different alias
 
