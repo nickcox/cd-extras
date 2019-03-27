@@ -401,10 +401,19 @@ with other providers too though.
 
 ### OS X & Linux
 
-Functionality is tested and should work on non-Windows operating systems. It's entirely
-possible you'll encounter some rough edges, though. In particular you'll notice that _cd-extras_
-is quite permissive with respect to the casing of paths; this means path shortening won't work
-in cases where multiple possible path abbreviations differ only by case.
+Functionality is tested and should work on non-Windows operating systems. Note that the
+`MenuCompletion` option will likely be off be default unless you configure PSReadLine with
+a `MenuComplete` handler _before_ importing `cd-extras`.
+
+```sh
+Set-PSReadLineKeyHandler -Key Tab -Function MenuComplete
+```
+
+Otherwise you can enable `cd-extras` menu completions manually with:
+
+```sh
+setocd MenuCompletion
+```
 
 # Get started
 
@@ -413,18 +422,23 @@ in cases where multiple possible path abbreviations differ only by case.
 From the [gallery](https://www.powershellgallery.com/packages/cd-extras/1.3.1)
 
 ```
+
 Install-Module cd-extras
 Import-Module cd-extras
 
 # add to profile. e.g:
-Add-Content $PROFILE @("`n", "Import-Module cd-extras")
+
+Add-Content \$PROFILE @("`n", "Import-Module cd-extras")
+
 ```
 
 or from get the latest from github
 
 ```
+
 git clone git@github.com:nickcox/cd-extras.git
 Import-Module cd-extras\cd-extras\cd-extras.psd1 # for reals
+
 ```
 
 ## Configure
