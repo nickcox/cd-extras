@@ -85,6 +85,16 @@ Describe 'cd-extras' {
       CurrentDir | Should Be src
     }
 
+    It 'prefers an exact match if available' {
+      cd powershell
+      cd src
+      cd libpsl-native
+      cd test
+      cd googletest
+      cd- TestDrive:\powershell\src
+      CurrentDir | Should Be src
+    }
+
     It 'throws if the named location cannot be found' {
       cd powershell/src
       {Undo-Location doesnotexist} | Should Throw "Could not find"

@@ -50,7 +50,7 @@ function Redo-Location {
       Redo-Location ($match + 1)
     }
     else {
-      Write-Error "Could not find $NamePart in redo stack" -ErrorAction Stop
+      Write-Error "Could not find '$NamePart' in redo stack" -ErrorAction Stop
     }
   }
 }

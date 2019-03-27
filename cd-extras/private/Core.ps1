@@ -57,20 +57,17 @@ filter EscapeSquareBrackets {
 }
 
 function GetStackIndex([array]$stack, [string]$namepart) {
-  $index = [array]::FindIndex(
-    $stack,
-    [Predicate[System.Management.Automation.PathInfo]] {
-      ($leafName = $args[0] | Split-Path -Leaf) -and
-      $leafName -match [regex]::Escape($namePart)
-    })
+  $null = (
+    $items = $stack |? Path -eq $namepart # full path match
+  ) -or (
+    $items = $stack |? {($_ | Split-Path -Leaf) -eq $namepart} # full leaf match
+  ) -or (
+    $items = $stack |? {($_ | Split-Path -Leaf).StartsWith($namepart)} # leaf starts with
+  ) -or (
+    $items = $stack |? Path -match (NormaliseAndEscape $namepart) # anything...
+  )
 
-  if ($index -ge 0) { return $index }
-
-  return [array]::FindIndex(
-    $stack,
-    [Predicate[System.Management.Automation.PathInfo]] {
-      $args[0] -match (NormaliseAndEscape $namepart)
-    })
+  [array]::indexOf($stack, ($items | Select -First 1))
 }
 
 function IndexedComplete($items) {

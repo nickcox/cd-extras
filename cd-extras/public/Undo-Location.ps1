@@ -56,7 +56,7 @@ function Undo-Location {
       Undo-Location ($match + 1)
     }
     else {
-      Write-Error "Could not find $NamePart in undo stack" -ErrorAction Stop
+      Write-Error "Could not find '$NamePart' in undo stack" -ErrorAction Stop
     }
   }
 }
