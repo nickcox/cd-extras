@@ -27,6 +27,7 @@ function Set-CdExtrasOption {
 
   [CmdletBinding()]
   param (
+    [Parameter(Mandatory)]
     [ValidateSet(
       'AUTO_CD',
       'CD_PATH',
@@ -47,7 +48,7 @@ function Set-CdExtrasOption {
     'MenuCompletion'
   )
 
-  if ($Value -eq $null -and $Option -in $flags) {
+  if ($null -eq $Value -and $Option -in $flags) {
     $Value = $true
   }
 
