@@ -186,9 +186,15 @@ Describe 'cd-extras' {
       CurrentDir | Should Be Modules
     }
 
-    It 'work with explicit Path parameter' {
+    It 'works with explicit Path parameter' {
       cd -Path ./pow/src/Mod
       CurrentDir | Should Be Modules
+    }
+
+    It 'works in the registry provider' -Skip:(!$IsWindows) {
+      cd HKLM:
+      cd so/mic
+      CurrentDir | Should Be Microsoft
     }
   }
 
@@ -370,6 +376,12 @@ Describe 'cd-extras' {
       Set-Location powershell
       { src } | Should Throw
       CurrentDir | Should Be powershell
+    }
+
+    It 'works in the registry provider' -Skip:(!$IsWindows) {
+      cd HKLM:
+      so/mic
+      CurrentDir | Should Be Microsoft
     }
   }
 
@@ -559,7 +571,7 @@ Describe 'cd-extras' {
 
       It 'provides usable registry paths' -Skip:(!$IsWindows) {
         (CompletePaths -dirsOnly -wordToComplete 'HKLM:\Soft\Mic').CompletionText |
-            Should Match "HKLM:\\Software\\Microsoft"
+          Should Match "HKLM:\\Software\\Microsoft"
       }
 
       It 'escapes square brackets' {

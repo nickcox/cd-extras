@@ -13,7 +13,7 @@ function AutoCd() {
     # Try smart expansion
     elseif ($expanded = Expand-Path $CommandName -Directory) {
       if ($expanded.Count -eq 1) {
-        $scriptBlock = { Set-LocationEx $expanded }
+        $scriptBlock = { Set-LocationEx ($expanded | Resolve-Path -Relative) }
       }
     }
 
