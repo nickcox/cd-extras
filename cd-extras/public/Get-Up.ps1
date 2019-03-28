@@ -41,7 +41,7 @@ function Get-Up {
     [string] $From = $PWD
   )
 
-  $next = $From | Resolve-Path
+  $next = $From | EscapeSquareBrackets | Resolve-Path
   $root = $next.Drive.Root
 
   try {

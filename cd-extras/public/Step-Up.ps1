@@ -33,6 +33,6 @@ function Step-Up {
   )
 
   if ($target = Get-Up @PSBoundParameters) {
-    Set-LocationEx $target
+    Set-LocationEx -LiteralPath $target
   }
 }
