@@ -33,12 +33,16 @@ function Expand-Path {
 
   [CmdletBinding()]
   param (
-    [string] $Candidate,
+    [string] $Candidate = './',
     [int]    $MaxResults = [int]::MaxValue,    
     [array]  $SearchPaths = $cde.CD_PATH,
     [switch] $File,
-    [switch] $Directory
+    [switch] $Directory,
+    [switch] $Force
   )
+
+  # if we've been given an empty string then expand everything below $PWD
+  if (!$Candidate) { $Candidate = './' }
 
   $multiDot = [regex]::Match($Candidate, '^\.{3,}')
   $match = $multiDot.Value
@@ -62,7 +66,7 @@ function Expand-Path {
   else { $wildcardedPath }
 
   WriteLog "`nExpanding $Candidate to: $wildcardedPaths"
-  Get-Item $wildcardedPaths -Force -ErrorAction Ignore |
+  Get-Item $wildcardedPaths -Force:$Force -ErrorAction Ignore |
     Where {(!$File -or !$_.PSIsContainer) -and (!$Directory -or $_.PSIsContainer)} |
     Select -First $MaxResults
 }

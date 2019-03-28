@@ -9,6 +9,8 @@ function CompletePaths {
     $boundParameters
   )
 
+  $force = $boundParameters -and [bool]$boundParameters['Force']
+
   # given a full path, $_, return a fully formed completion result
   # logic: use a relative path if the supplied word isn't rooted (like /temp/... or ~/... C:\...)
   # *and* the resolved path is a child of the current directory or its parent
@@ -47,7 +49,7 @@ function CompletePaths {
     )
   }
 
-  $switches = @{ File = $filesOnly; Directory = $dirsOnly }
+  $switches = @{ File = $filesOnly; Directory = $dirsOnly; Force = $force }
 
   $dotted = if ($wordToComplete -match '^\.{3,}') {
     # if we're multi-dotting then first replace dots with the correct ancestor
