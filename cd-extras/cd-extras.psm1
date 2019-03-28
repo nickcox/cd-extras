@@ -12,6 +12,7 @@ $defaults = [ordered]@{
   DirCompletions  = @('Push-Location', 'Set-Location', 'Set-LocationEx')
   PathCompletions = @('Get-ChildItem')
   FileCompletions = @()
+  ColorCompletion = $false
   MenuCompletion  = $null -ne (Get-Module PSReadline) -and (
     Get-PSReadLineKeyHandler -Bound |? Function -eq MenuComplete
   )

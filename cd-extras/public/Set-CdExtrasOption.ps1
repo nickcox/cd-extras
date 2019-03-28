@@ -37,6 +37,7 @@ function Set-CdExtrasOption {
       'DirCompletions',
       'FileCompletions',
       'PathCompletions',
+      'ColorCompletion',
       'MaxCompletions')]
     $Option,
     $Value
@@ -45,6 +46,7 @@ function Set-CdExtrasOption {
   $flags = @(
     'AUTO_CD',
     'CDABLE_VARS'
+    'ColorCompletion'
     'MenuCompletion'
   )
 

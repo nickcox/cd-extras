@@ -16,36 +16,59 @@ function CompletePaths {
   # *and* the resolved path is a child of the current directory or its parent
   # for absolute paths, replace home dir location with tilde
   filter CompletionResult {
-    $friendly = $_ | Select -Expand PSPath | Convert-Path
-
-    if ($wordToComplete -match '^\.{1,2}$') {
-      $friendly = $wordToComplete
-    }
-    elseif (!($wordToComplete | IsRooted) -and ($_ | IsDescendedFrom ..)) {
-      $friendly = Resolve-Path -Relative $_
-    }
-    elseif ($homeDir = (Get-Location).Provider.Home) {
-      $friendly = $_ -replace "^$(NormaliseAndEscape $homeDir)", "~"
-    }
-
-    $trailChar = if ($_.PSIsContainer) {${/}}
 
     # add normalised trailing directory separator; quote if contains spaces
-    $completionText = $friendly |
-      RemoveTrailingSeparator |
+    $trailChar = if ($_.PSIsContainer) {${/}}
+    $fullPath = $_ | 
+      Select -Expand PSPath | 
       EscapeSquareBrackets |
+      Convert-Path | 
+      EscapeSquareBrackets # that's right... twice :D
+
+    $completionText = if ($wordToComplete -match '^\.{1,2}$') {
+      $wordToComplete
+    }
+    elseif (!($wordToComplete | IsRooted) -and ($fullPath | IsDescendedFrom ..)) {
+      $_ | Resolve-Path -Relative
+    }
+    elseif ($homeDir = (Get-Location).Provider.Home) {
+      $_ -replace "^$(NormaliseAndEscape $homeDir)", "~"
+    }
+    else {
+      $fullPath
+    }
+
+    $completionText = $completionText |
+      RemoveTrailingSeparator |
       SurroundAndTerminate $trailChar
+
+    # there seems to be a weird bug in PowerShell where square brackets must be escaped
+    # by every/many(?) command(s) _except_ Get-ChildItem, where they must *not* be escaped
+    if ($commandName -ne 'Get-ChildItem') {
+      $completionText = $completionText | EscapeSquareBrackets
+    }
 
     # hack to support registry provider
     if ($_.PSProvider.Name -eq 'Registry') {
       $completionText = $completionText -replace $_.PSDrive.Root, "$($_.PSDrive.Name):"
     }
 
+    # dirColors support
+    $listItemText = if (
+      ($cde.ColorCompletion) -and
+      ($_.PSProvider.Name -eq 'FileSystem') -and 
+      (test-path Function:\Format-ColorizedFilename)) {
+      Format-ColorizedFilename $_
+    }
+    else {
+      $_.PSChildName
+    }
+
     [Management.Automation.CompletionResult]::new(
       $completionText,
-      $friendly,
+      $listItemText,
       'ParameterValue',
-      $_
+      ($fullPath |DefaultIfEmpty {$_})
     )
   }
 
