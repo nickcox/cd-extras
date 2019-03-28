@@ -49,6 +49,7 @@ function Expand-Path {
     -replace '(\w/|\w\\|\w$)', '$0*' `
     -replace '(/\*|\\\*)', ('*' + ${/}) `
     -replace '(/$|\\$)', '$0*' `
+    -replace '(\w)\.\.', '$1*' `
     -replace '(\.\w|\w\.$)', '*$0' `
     -replace '\[|\]', '*'
 
