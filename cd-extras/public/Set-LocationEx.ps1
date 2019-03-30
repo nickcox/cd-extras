@@ -148,7 +148,8 @@ Function Set-LocationEx {
       }
     }
 
-    if ($Path -and ($target = Resolve-Path $Path -ErrorAction Ignore) -and (
+    $target = $Path |DefaultIfEmpty {$LiteralPath}
+    if ($target -and ($target = $target | EscapeSquareBrackets | Resolve-Path -ErrorAction Ignore) -and (
         ($target.Path | RemoveTrailingSeparator) -ne ((Get-Location).Path))) {
 
       Clear-Stack -Redo
@@ -156,7 +157,9 @@ Function Set-LocationEx {
       Push-Location -StackName $back
     }
 
-    $PSBoundParameters['Path'] = $Path
+    if ($Path) {
+      $PSBoundParameters['Path'] = $Path
+    }
     $wrappedCmd = $ExecutionContext.InvokeCommand.GetCommand(
       'Microsoft.PowerShell.Management\Set-Location',
       [System.Management.Automation.CommandTypes]::Cmdlet
