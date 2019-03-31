@@ -74,15 +74,7 @@ function CompletePaths {
 
   $switches = @{ File = $filesOnly; Directory = $dirsOnly; Force = $force }
 
-  $dotted = if ($wordToComplete -match '^\.{3,}') {
-    # if we're multi-dotting then first replace dots with the correct ancestor
-    $dots = $Matches[0].Trim()
-    $up = Get-Up ($dots.Length - 1)
-    $up + $wordToComplete.Replace($dots, '')
-  }
-  else { $wordToComplete }
-
-  $completions = Expand-Path @switches $dotted -MaxResults $cde.MaxCompletions
+  $completions = Expand-Path @switches $wordToComplete -MaxResults $cde.MaxCompletions
 
   #replace cdable_vars
   $variCompletions = if (

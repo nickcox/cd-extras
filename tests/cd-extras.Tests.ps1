@@ -7,11 +7,11 @@ if (-not (Test-Path variable:IsWindows)) {
 Describe 'cd-extras' {
 
   BeforeAll {
-    $Script:xcde = if (Test-Path variable:cde) {$cde}
+    $Script:xcde = if (Test-Path variable:cde) { $cde }
     $Global:cde = $null
     Push-Location $PSScriptRoot
     Import-Module ../cd-extras/cd-extras.psd1 -Force
-    Get-Content sampleStructure.txt | % { New-Item -ItemType Directory "TestDrive:/$_" -Force}
+    Get-Content sampleStructure.txt | % { New-Item -ItemType Directory "TestDrive:/$_" -Force }
   }
 
   AfterAll {
@@ -97,7 +97,7 @@ Describe 'cd-extras' {
 
     It 'throws if the named location cannot be found' {
       cd powershell/src
-      {Undo-Location doesnotexist} | Should Throw "Could not find"
+      { Undo-Location doesnotexist } | Should Throw "Could not find"
     }
 
     It 'matches more than one segment if necessary' {
@@ -144,7 +144,7 @@ Describe 'cd-extras' {
     It 'throws if the named location cannot be found' {
       cd powershell/src
       cd-
-      {Redo-Location doesnotexist} | Should Throw
+      { Redo-Location doesnotexist } | Should Throw
     }
   }
 
@@ -192,9 +192,14 @@ Describe 'cd-extras' {
     }
 
     It 'works in the registry provider' -Skip:(!$IsWindows) {
-      cd HKLM:
+      cd HKLM:/
       cd so/mic
       CurrentDir | Should Be Microsoft
+    }
+
+    It 'supports the double dot operator' {
+      cd pow/src/Typ..Gen
+      CurrentDir | Should Be TypeCatalogGen
     }
   }
 
@@ -220,18 +225,18 @@ Describe 'cd-extras' {
     It 'leaves an entry on the undo stack' {
       Set-Location .\powershell\src\Modules\Shared\Microsoft.PowerShell.Utility
       cd Shared Unix
-      Get-Stack -Undo | select -First 1 | Split-Path -Leaf |
-        Should Be Microsoft.PowerShell.Utility
+      Get-Stack -Undo | Select-Object -First 1 | Split-Path -Leaf |
+      Should Be Microsoft.PowerShell.Utility
     }
 
     It 'throws if the replaceable text is not in the current directory name' {
       Set-Location powershell\src\Modules\Shared\Microsoft.PowerShell.Utility
-      {cd: shard Unix} | Should Throw "String 'shard'"
+      { cd: shard Unix } | Should Throw "String 'shard'"
     }
 
     It 'throws if the replacement results in a path which does not exist' {
       Set-Location powershell\src\Modules\Shared\Microsoft.PowerShell.Utility
-      {cd: Shared unice} | Should Throw "No such directory"
+      { cd: Shared unice } | Should Throw "No such directory"
     }
   }
 
@@ -280,23 +285,23 @@ Describe 'cd-extras' {
 
     It 'throws if the given name part is not found' {
       Set-Location powershell\src\Modules\Shared\
-      {Step-Up zrc} | Should Throw
+      { Step-Up zrc } | Should Throw
     }
   }
 
   Describe 'Get-Up' {
     It 'returns the parent directory by default' {
       Set-Location pow*/docs/git
-      Get-Up | should be (Resolve-Path ..).Path
+      Get-Up | Should be (Resolve-Path ..).Path
     }
 
     It 'can take an arbitrary path' {
-      Get-Up -From powershell\docs\git | should be (Resolve-Path powershell\docs).Path
+      Get-Up -From powershell\docs\git | Should be (Resolve-Path powershell\docs).Path
     }
 
     It 'stops at the root' {
       Set-Location pow*/docs/git
-      Get-Up 255 | should be $PWD.Drive.Root
+      Get-Up 255 | Should be $PWD.Drive.Root
     }
   }
 
@@ -313,8 +318,8 @@ Describe 'cd-extras' {
     It 'does not choke on duplicate directory names' {
       Set-Location powershell/powershell
       $xup = Export-Up -NoGlobals
-      $xup[0] | should BeLike $pwd.Path
-      $xup[1] | should not BeLike ($pwd.Path | Split-Path)
+      $xup[0] | Should BeLike $pwd.Path
+      $xup[1] | Should not BeLike ($pwd.Path | Split-Path)
     }
 
     It 'should not export the root directory by default' {
@@ -376,6 +381,11 @@ Describe 'cd-extras' {
       Set-Location powershell
       { src } | Should Throw
       CurrentDir | Should Be powershell
+    }
+
+    It 'supports the double dot operator' {
+      pow/src/Typ..Gen
+      CurrentDir | Should Be TypeCatalogGen
     }
 
     It 'works in the registry provider' -Skip:(!$IsWindows) {
@@ -441,29 +451,29 @@ Describe 'cd-extras' {
 
     It 'does not search CD_PATH when given directory is rooted or relative' {
       Set-CdExtrasOption -Option CD_PATH -Value @('TestDrive:\powershell\src\')
-      {cd ./resgen -ErrorAction Stop} | Should Throw "Cannot find path"
+      { cd ./resgen -ErrorAction Stop } | Should Throw "Cannot find path"
     }
   }
 
   Describe 'Expand-Path' {
     It 'returns expected expansion Windows style' {
       Expand-Path p/s/m/U |
-        Should Be (Join-Path $TestDrive powershell\src\Modules\Unix)
+      Should Be (Join-Path $TestDrive powershell\src\Modules\Unix)
     }
 
     It 'returns expected expansion relative style' {
       Expand-Path ./p/s/m/U |
-        Should Be (Join-Path $TestDrive powershell\src\Modules\Unix)
+      Should Be (Join-Path $TestDrive powershell\src\Modules\Unix)
     }
 
     It 'expands rooted paths' {
       Expand-Path /p/s/m/U | # TestDrive root Windows only
-        ShouldBeOnWindows (Join-Path $TestDrive powershell\src\Modules\Unix)
+      ShouldBeOnWindows (Join-Path $TestDrive powershell\src\Modules\Unix)
     }
 
     It 'can return multiple expansions' {
       (Expand-Path ./p/s/m/s/M).Length |
-        Should Be 2
+      Should Be 2
     }
 
     It 'considers CD_PATH for expansion' {
@@ -473,7 +483,12 @@ Describe 'cd-extras' {
 
     It 'expands around periods' {
       Expand-Path p/s/.Con |
-        Should Be (Join-Path $TestDrive powershell\src\Microsoft.PowerShell.ConsoleHost)
+      Should Be (Join-Path $TestDrive powershell\src\Microsoft.PowerShell.ConsoleHost)
+    }
+
+    It 'supports the double dot operator' {
+      Expand-Path pow/src/Typ..Gen |
+      Should Be (Join-Path $TestDrive powershell\src\TypeCatalogGen)
     }
 
     It 'works in Windows registry' -Skip:(!$IsWindows) {
@@ -519,11 +534,11 @@ Describe 'cd-extras' {
 
     Describe 'Tab expansion' {
       It 'expands multiple items' {
-        $actual = CompletePaths -wordToComplete 'pow/t/c' | Select -Expand CompletionText
+        $actual = CompletePaths -wordToComplete 'pow/t/c' | Select-Object -Expand CompletionText
         $actual | Should HaveCount 3
 
         function ShouldContain($likeStr) {
-          $actual | Where {$_ -like $likeStr} | Should Not BeNullOrEmpty
+          $actual | Where-Object { $_ -like $likeStr } | Should Not BeNullOrEmpty
         }
 
         ShouldContain "*test${/}csharp${/}"
@@ -566,12 +581,12 @@ Describe 'cd-extras' {
       It 'completes file paths' {
         Set-Location $PSScriptRoot
         (CompletePaths -filesOnly -wordToComplete './samp').CompletionText |
-          Should Match "sampleStructure.txt"
+        Should Match "sampleStructure.txt"
       }
 
       It 'provides usable registry paths' -Skip:(!$IsWindows) {
         (CompletePaths -dirsOnly -wordToComplete 'HKLM:\Soft\Mic').CompletionText |
-          Should Match "HKLM:\\Software\\Microsoft"
+        Should Match "HKLM:\\Software\\Microsoft"
       }
 
       It 'escapes square brackets' {
@@ -579,9 +594,14 @@ Describe 'cd-extras' {
         $actual.CompletionText | Should BeLike "'*directory*squarebrackets${/}one${/}'"
       }
 
-      It 'appends a directory seperator given a single dot' {
+      It 'appends a directory separator given a single dot' {
         $actual = CompletePaths -wordToComplete '.'
         @($actual)[0].CompletionText | Should Be ".${/}"
+      }
+
+      It 'supports the double dot operator' {
+        $actual = CompletePaths -wordToComplete 'pow/src/Typ..Gen'
+        $actual.CompletionText | Should BeLike "*src${/}TypeCatalogGen${/}"
       }
     }
 

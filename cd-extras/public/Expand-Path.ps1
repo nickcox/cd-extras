@@ -34,7 +34,7 @@ function Expand-Path {
   [CmdletBinding()]
   param (
     [string] $Candidate = './',
-    [int]    $MaxResults = [int]::MaxValue,    
+    [int]    $MaxResults = [int]::MaxValue,
     [array]  $SearchPaths = $cde.CD_PATH,
     [switch] $File,
     [switch] $Directory,
@@ -49,7 +49,7 @@ function Expand-Path {
   $replacement = ('../' * [Math]::Max(0, $match.LastIndexOf('.'))) -replace '.$'
 
   [string]$wildcardedPath = $Candidate `
-    -replace $match, $replacement `
+    -replace [Regex]::Escape($match), $replacement `
     -replace '(\w/|\w\\|\w$)', '$0*' `
     -replace '(/\*|\\\*)', ('*' + ${/}) `
     -replace '(/$|\\$)', '$0*' `

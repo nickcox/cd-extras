@@ -205,13 +205,15 @@ You can also use the alias `cd:` or the explicit `ReplaceWith` parameter.
 ### Enhanced expansion for built-ins
 
 `cd`, `pushd` and `ls` (by default) provide enhanced tab completions, expanding all path
-segments so that you don't have to individually tab (⇥) through each one.
+segments so that you don't have to individually tab (⇥) through each one. Because this
+could result in multiple completions with the same leaf name, `cd-extras` will display
+the full path of each item in the completion menu so that you can tell them apart.
 
 ```sh
 [~]> cd /w/s/set⇥⇥
 [~]> cd C:\Windows\SysWOW64\setup\█
-C:\Windows\System32\setup\  C:\Windows\SysWOW64\setup\
-                            ──────────────────────────
+C:\Windows\System32\setup\      C:\Windows\SysWOW64\setup\
+                                ───────────────────────────
 ```
 
 Periods (`.`) are expanded around so, for example, a segment containing `.sdk`
@@ -220,6 +222,25 @@ is expanded into `*.sdk*`.
 ```sh
 [~]> cd proj/pow/s/.sdk⇥
 [~]> cd ~\projects\powershell\src\Microsoft.PowerShell.SDK\█
+```
+
+or
+
+```sh
+[~]> ls pr/pow/t/ins.sh⇥
+[~]> ls ~\projects\powershell\tools\install-powershell.sh | cat
+#!/bin/bash
+...
+[~]>
+```
+
+You can also use a double-dot (`..`) token to indicate a section which begins with the
+characters to its left and continues with the characters to the right.
+
+```sh
+[~]> ls pr/pow/t/ins..psh.sh⇥
+.\tools\installpsh-amazonlinux.sh     .\tools\installpsh-osx.sh
+─────────────────────────────────
 ```
 
 You can change the list of commands that participate in enhanced directory completion
@@ -232,8 +253,8 @@ using the `DirCompletions` [option](#configure):
 [~]> mkdir ~\powershell\src\█
 ```
 
-It's also possible to opt into enhanced file-only or general (file & directory)
-completion using the `FileCompletions` and `PathCompletions` options respectively.
+Similarly, you opt into enhanced file-only or general (file & directory) completion
+using the `FileCompletions` and `PathCompletions` options respectively.
 Note that the `FileCompletions` option is often less useful than the others as you
 won't be able to tab through directories to get to the file you're looking for.
 
@@ -267,20 +288,25 @@ Paths within the `$cde.CD_PATH` array are included for all completion types.
 [~]> ~\Documents\WindowsPowerShell\Modules\█
 ```
 
+In the filesystem provider, these expansions can optionally be colourised via
+[DirColors][1] by setting the `ColorCompletion` option (`setocd ColorCompletion`).
+Alternatively, you can supply your own colourisation by creating a global
+`Format-ColorizedFilename` function.
+
 ### Navigation helper expansions
 
 Expansions are provided for the `cd+`, `cd-` and `up` (_aka_ `..`) aliases.
 
-When the `MenuCompletion` option is set to `$true` and more than one completion is available,
-the completions offered are the indexes of each corresponding directory; the full path is
-displayed in the menu below. _cd-extras_ will attempt to detect `PSReadLine` in order to set
-this option appropriately at start-up. For example:
+When the `MenuCompletion` option is set to `$true` and more than one completion is
+available, the completions offered are the indexes of each corresponding directory;
+the name is displayed in the menu below. _cd-extras_ will attempt to detect `PSReadLine`
+options in order to set this option appropriately at start-up. For example:
 
 ```sh
 [C:\Windows\System32\drivers\etc]> up ⇥
 [C:\Windows\System32\drivers\etc]> up 1
 1. drivers  2. System32  3. Windows  4. C:\
-──────────
+───────────
 ```
 
 It's also possible tab-complete these three commands (`cd+`, `cd-`, `up`) using a
@@ -356,7 +382,7 @@ If an unambiguous match is available then `cd` can be used directly, without fir
 invoking tab expansion.
 
 ```sh
-[~]> cd /w/s/d/et
+[~]> cd /w/s..32/d/et
 [C:\Windows\System32\drivers\etc]> cd ~/pr/pow/src
 [~\projects\PowerShell\src]> cd .sdk
 [~\projects\PowerShell\src\Microsoft.PowerShell.SDK]> █
@@ -403,7 +429,7 @@ with other providers too though.
 
 Functionality is tested and should work on non-Windows operating systems. Note that the
 `MenuCompletion` option will likely be off be default unless you configure PSReadLine with
-a `MenuComplete` handler _before_ importing `cd-extras`.
+a `MenuComplete` keybinding _before_ importing `cd-extras`.
 
 ```sh
 Set-PSReadLineKeyHandler -Key Tab -Function MenuComplete
@@ -463,6 +489,9 @@ Import-Module cd-extras\cd-extras\cd-extras.psd1 # for reals
   - Commands that participate in enhanced tab expansion for any type of path (files & directories).
 - _FileCompletions_: `[array] = @()`
   - Commands that participate in enhanced tab expansion for files.
+- _ColorCompletion_ : `[bool] = false`
+  - If truthy, offered Dir/Path/File completions will be coloured by `Format-ColorizedFilename`,
+    if available.
 - _MaxCompletions_ : `[int] = 80`
   - Limit the number of Dir/Path/File completions offered
 
@@ -514,3 +543,5 @@ different alias then you'll probably want to restore the default `cd` alias at t
 ```
 
 `cd-extras` will only remember locations visited via `Set-LocationEx` or its alias.
+
+[1]: https://github.com/DHowett/DirColors
