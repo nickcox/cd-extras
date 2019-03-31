@@ -1,5 +1,14 @@
 # Changes
 
+## [1.6] 2019-03-31
+
+- Implement double dot token in path expansions.
+- Implement optional colourisation of path completions.
+- Implement pass-through of -Force switch in path expansions.
+- Fix issue where square brackets could break `up`.
+- Fix issue where `cd` with -LiteralPath was broken.
+- Fix issue where path shortening not working correctly with registry provider.
+
 ## [1.5.5] 2019-03-27
 
 - Fix issue Step-Forward and Step-Back not working with menu completion turned off.

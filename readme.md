@@ -280,6 +280,18 @@ or the target itself should handle expanding `~` where necessary. e.g:
 [~]> co ~\projects\powershell\█
 ```
 
+An alternative to registering every command you might want to complete is to create a
+tiny wrapper to pipeline input from `ls` (`Get-ChildItem`) which provides enhanced path
+completion by default.
+
+```sh
+[~]> function bat { &bat.exe $input }
+[~]> ls ~/pr/po/r.md⇥
+[~]> ls ~/projects/powershell/readme.md | bat
+File: C:\Users\Nick\projects\PowerShell\README.md
+...
+```
+
 Paths within the `$cde.CD_PATH` array are included for all completion types.
 
 ```sh
@@ -445,7 +457,7 @@ setocd MenuCompletion
 
 ## Install
 
-From the [gallery](https://www.powershellgallery.com/packages/cd-extras/1.3.1)
+From the [gallery](https://www.powershellgallery.com/packages/cd-extras/)
 
 ```
 
@@ -454,7 +466,7 @@ Import-Module cd-extras
 
 # add to profile. e.g:
 
-Add-Content \$PROFILE @("`n", "Import-Module cd-extras")
+Add-Content $PROFILE @("`n", "Import-Module cd-extras")
 
 ```
 
@@ -482,7 +494,7 @@ Import-Module cd-extras\cd-extras\cd-extras.psd1 # for reals
   - If specified, `cd` command with no arguments will change to this directory.
 - _MenuCompletion_: `[bool] = $true` (if PSReadLine available)
   - If truthy, indexes are offered as completions for `up`, `cd+` and `cd-` with full paths
-    displayed in the menu
+    displayed in the menu.
 - _DirCompletions_: `[array] = @('Push-Location', 'Set-Location', 'Get-ChildItem')`
   - Commands that participate in enhanced tab expansion for directories.
 - _PathCompletions_: `[array] = @()`
@@ -493,7 +505,8 @@ Import-Module cd-extras\cd-extras\cd-extras.psd1 # for reals
   - If truthy, offered Dir/Path/File completions will be coloured by `Format-ColorizedFilename`,
     if available.
 - _MaxCompletions_ : `[int] = 80`
-  - Limit the number of Dir/Path/File completions offered
+  - Limit the number of Dir/Path/File completions offered. Should probably be at least one less than
+    `(Get-PSReadLineOption).CompletionQueryItems`.
 
 To configure _cd-extras_ create a hashtable, `cde`, with one or more of these keys _before_ importing
 it:
