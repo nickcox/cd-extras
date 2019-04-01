@@ -129,7 +129,7 @@ Function Set-LocationEx {
     }
 
     elseif ($PSBoundParameters.Count -eq 0) {
-      $Path = $cde.NOARG_CD |DefaultIfEmpty {$PWD}
+      $Path = $cde.NOARG_CD | DefaultIfEmpty { $PWD }
     }
 
     elseif ($PSCmdlet.ParameterSetName -eq 'Path') {
@@ -139,7 +139,7 @@ Function Set-LocationEx {
           (Test-Path "variable:$Path") -and
           ($vpath = Get-Variable $Path -ValueOnly) -and
           (Test-Path $vpath)
-        ) {$Path = $vpath}
+        ) { $Path = $vpath }
         elseif (
           ($dirs = Expand-Path $Path -Directory) -and
           (@($dirs).Count -eq 1 -or ($dirs = $dirs |? Name -eq $Path).Count -eq 1)) {
@@ -148,8 +148,8 @@ Function Set-LocationEx {
       }
     }
 
-    $target = $Path |DefaultIfEmpty {$LiteralPath}
-    if ($target -and ($target = $target | EscapeSquareBrackets | Resolve-Path -ErrorAction Ignore) -and (
+    $target = $Path | DefaultIfEmpty { $LiteralPath }
+    if ($target -and ($target = Resolve-Path -LiteralPath $target -ErrorAction Ignore) -and (
         ($target.Path | RemoveTrailingSeparator) -ne ((Get-Location).Path))) {
 
       Clear-Stack -Redo
@@ -164,7 +164,7 @@ Function Set-LocationEx {
       'Microsoft.PowerShell.Management\Set-Location',
       [System.Management.Automation.CommandTypes]::Cmdlet
     )
-    $scriptCmd = {& $wrappedCmd @PSBoundParameters }
+    $scriptCmd = { & $wrappedCmd @PSBoundParameters }
     $steppablePipeline = $scriptCmd.GetSteppablePipeline($myInvocation.CommandOrigin)
     $steppablePipeline.Begin($PSCmdlet)
  	}

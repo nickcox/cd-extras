@@ -14,11 +14,11 @@ function CompleteAncestors {
   }
 
   $valueToMatch = $wordToComplete | RemoveSurroundingQuotes
-  $escapedValue = $valueToMatch | Normalise | Escape
+  $normalised = $valueToMatch | NormaliseAndEscape
 
-  $ups.GetEnumerator() |  Where Value -eq $valueToMatch |
-    DefaultIfEmpty {$ups.GetEnumerator() | Where Key -match $escapedValue} |
-    DefaultIfEmpty {$ups.GetEnumerator() | Where Value -match $escapedValue} |
+  $ups.GetEnumerator() | where Value -eq $valueToMatch |
+    DefaultIfEmpty { $ups.GetEnumerator() | where Key -match $normalised } |
+    DefaultIfEmpty { $ups.GetEnumerator() | where Value -match $normalised } |
     Completions |
     IndexedComplete
 }

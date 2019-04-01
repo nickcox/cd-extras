@@ -6,8 +6,8 @@ $Script:cycleDirection = [CycleDirection]::Undo # used by Step-Back
 
 function DefaultIfEmpty([scriptblock] $default) {
   Begin { $any = $false }
-  Process { if ($_) {$any = $true; $_} }
-  End { if (!$any) {&$default} }
+  Process { if ($_) { $any = $true; $_ } }
+  End { if (!$any) { &$default } }
 }
 
 filter IsRootedOrRelative {
@@ -27,8 +27,8 @@ filter IsDescendedFrom($maybeAncestor) {
   (Resolve-Path $_ -ErrorAction Ignore) -like "$(Resolve-Path $maybeAncestor)*"
 }
 
-function NormaliseAndEscape($pathPart) {
-  $pathPart | Normalise | Escape
+filter NormaliseAndEscape {
+  $_ | Normalise | Escape
 }
 
 filter Normalise {
@@ -57,26 +57,26 @@ filter EscapeSquareBrackets {
 }
 
 function GetStackIndex([array]$stack, [string]$namepart) {
-  $null = (
-    $items = $stack |? Path -eq $namepart # full path match
+  (
+    $items = $stack | Where-Object Path -eq $namepart # full path match
   ) -or (
-    $items = $stack |? {($_ | Split-Path -Leaf) -eq $namepart} # full leaf match
+    $items = $stack | Where-Object { ($_ | Split-Path -Leaf) -eq $namepart } # full leaf match
   ) -or (
-    $items = $stack |? {($_ | Split-Path -Leaf).StartsWith($namepart)} # leaf starts with
+    $items = $stack | Where-Object { ($_ | Split-Path -Leaf).StartsWith($namepart) } # leaf starts with
   ) -or (
-    $items = $stack |? Path -match (NormaliseAndEscape $namepart) # anything...
-  )
+    $items = $stack | Where-Object Path -match ($namepart | NormaliseAndEscape) # anything...
+  ) | Out-Null
 
-  [array]::indexOf($stack, ($items | Select -First 1))
+  [array]::indexOf($stack, ($items | select -First 1))
 }
 
 function IndexedComplete($items) {
   # accept input from parameter or from pipeline
-  if (!$items) {$items = @(); $input | % {$items += $_}}
+  if (!$items) { $items = @(); $input | % { $items += $_ } }
 
   $items | % {
-    $itemText = if ($cde.MenuCompletion -and @($items).Count -gt 1) {"$($_.index)"}
-    else {$_.long | SurroundAndTerminate}
+    $itemText = if ($cde.MenuCompletion -and @($items).Count -gt 1) { "$($_.index)" }
+    else { $_.long | SurroundAndTerminate }
 
     [Management.Automation.CompletionResult]::new(
       $itemText,

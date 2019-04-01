@@ -21,7 +21,7 @@ function Switch-LocationPart {
     [Parameter(Mandatory)][string]$With
   )
 
-  $normalised = NormaliseAndEscape $Replace
+  $normalised = $Replace | NormaliseAndEscape
 
   if (!($PWD.Path -match $normalised)) {
     Write-Error "String '$normalised' isn't in '$PWD'" -ErrorAction Stop

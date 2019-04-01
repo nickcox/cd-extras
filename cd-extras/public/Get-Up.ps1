@@ -41,7 +41,7 @@ function Get-Up {
     [string] $From = $PWD
   )
 
-  $next = $From | EscapeSquareBrackets | Resolve-Path
+  $next = Resolve-Path -LiteralPath $From
   $root = $next.Drive.Root
 
   try {
@@ -63,13 +63,13 @@ function Get-Up {
       if ($next.Drive.Root -eq $NamePart) { return $NamePart }
 
       while ($next = $next | Split-Path) {
-        if (($next | Split-Path -Leaf) -match (NormaliseAndEscape $NamePart)) { return $next }
+        if (($next | Split-Path -Leaf) -match ($NamePart | NormaliseAndEscape)) { return $next }
       }
 
       # if we couldn't match by leaf name then match by complete path
       # this is only really used for completion when MenuCompletion is off
       $next = $From | Resolve-Path | select -Expand Path
-      $resolvedTarget = Resolve-Path $NamePart -ErrorAction Ignore | Select -Expand Path
+      $resolvedTarget = Resolve-Path $NamePart -ErrorAction Ignore | select -Expand Path
 
       do {
         if ($next -eq $resolvedTarget) { return $next }

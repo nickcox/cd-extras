@@ -18,12 +18,8 @@ function CompletePaths {
   filter CompletionResult {
 
     # add normalised trailing directory separator; quote if contains spaces
-    $trailChar = if ($_.PSIsContainer) {${/}}
-    $fullPath = $_ | 
-      Select -Expand PSPath | 
-      EscapeSquareBrackets |
-      Convert-Path | 
-      EscapeSquareBrackets # that's right... twice :D
+    $trailChar = if ($_.PSIsContainer) { ${/} }
+    $fullPath = $_ | select -Expand PSPath | Convert-Path
 
     $completionText = if ($wordToComplete -match '^\.{1,2}$') {
       $wordToComplete
@@ -32,7 +28,7 @@ function CompletePaths {
       $_ | Resolve-Path -Relative
     }
     elseif ($homeDir = (Get-Location).Provider.Home) {
-      $_ -replace "^$(NormaliseAndEscape $homeDir)", "~"
+      $_ -replace "^$($homeDir | NormaliseAndEscape)", "~"
     }
     else {
       $fullPath
@@ -57,7 +53,7 @@ function CompletePaths {
     $listItemText = if (
       ($cde.ColorCompletion) -and
       ($_.PSProvider.Name -eq 'FileSystem') -and 
-      (test-path Function:\Format-ColorizedFilename)) {
+      (Test-Path Function:\Format-ColorizedFilename)) {
       Format-ColorizedFilename $_
     }
     else {
@@ -68,7 +64,7 @@ function CompletePaths {
       $completionText,
       $listItemText,
       'ParameterValue',
-      ($fullPath |DefaultIfEmpty {$_})
+      ($fullPath | DefaultIfEmpty { $_ })
     )
   }
 
@@ -81,14 +77,14 @@ function CompletePaths {
     $cde.CDABLE_VARS -and
     $wordToComplete -match '[^/\\]+' -and
     ($maybeVar = Get-Variable "$($Matches[0])*" |
-        Where {$_.Value -and (Test-Path ($_.Value) -PathType Container)} |
-        Select -Expand Value)
+      where { $_.Value -and (Test-Path ($_.Value) -PathType Container) } |
+      select -Expand Value)
   ) {
     Expand-Path @switches ($wordToComplete -replace $Matches[0], $maybeVar) -MaxResults $cde.MaxCompletions
   }
 
   @($completions) + @($variCompletions) |
-    Select -Unique |
-    Select -First $cde.MaxCompletions |
-    CompletionResult
+  select -Unique |
+  select -First $cde.MaxCompletions |
+  CompletionResult
 }

@@ -61,7 +61,7 @@ function Export-Up() {
     # so we add it explicitly here instead of inside the loop
     if (
       $IncludeRoot -and
-      $output.Values -notcontains $start.Drive.Root
+      $output.Values -notContains $start.Drive.Root
     ) {
       $output.Add($start.Drive.Root, $start.Drive.Root)
     }
