@@ -45,11 +45,11 @@ Function Set-LocationEx {
 .EXAMPLE
 	PS C:\>cd C:
   This command sets the current location C: drive in the file system provider.
-  
+
 .EXAMPLE
 	PS C:\>cd
   This command sets the current location to `$cde.NOARG_CD`. (The home directory by default.)
-  
+
 .EXAMPLE
   PS C:\Users\Bob\Documents>cd bob sue
 	This command attempts to replace 'bob' in the current location with sue so that the working directory is changed to C:\Users\Sue\Documents.

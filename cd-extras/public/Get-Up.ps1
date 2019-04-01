@@ -12,6 +12,9 @@ Partial directory name for which to search.
 .PARAMETER From
 The directory from which to start. $PWD by default.
 
+.ALIASES
+gup
+
 .EXAMPLE
 # Get the parent of the current location
 C:\Windows\System32> Get-Up
@@ -34,6 +37,7 @@ C:\Windows\System32\drivers\etc> _
 Undo-Location
 #>
 function Get-Up {
+  [OutputType([String])]
   [CmdletBinding(DefaultParameterSetName = 'levels')]
   param(
     [Parameter(ParameterSetName = 'levels', Position = 0)] [byte]$n = 1,
@@ -49,7 +53,7 @@ function Get-Up {
     if ($PSCmdlet.ParameterSetName -eq 'levels' -and $n -ge 1) {
 
       1..$n | % {
-        if ($next -ne $root -and ($parent = $next | Split-Path)) { 
+        if ($next -ne $root -and ($parent = $next | Split-Path)) {
           $next = $parent
         }
         else { $next = $root } # fixes issue on Linux

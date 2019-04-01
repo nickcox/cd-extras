@@ -30,14 +30,15 @@ C:\> cd windows
 C:\Windows> cd system32
 C:\Windows\system32> Get-Stack -Undo
 
-Path       
-----       
-C:\Windows 
+Path
+----
+C:\Windows
 C:\
 #>
 
 function Get-Stack {
 
+  [OutputType([System.Collections.Hashtable])]
   [CmdletBinding()]
   param(
     [switch] $Undo,

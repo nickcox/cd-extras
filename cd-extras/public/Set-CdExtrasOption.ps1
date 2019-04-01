@@ -8,7 +8,7 @@ The option to update.
 .PARAMETER Value
 The new value.
 
-.Aliases
+.ALIASES
 setocd
 
 .EXAMPLE
@@ -25,6 +25,7 @@ Set the search paths to the single directory '/temp'
 #>
 function Set-CdExtrasOption {
 
+  [OutputType([void])]
   [CmdletBinding()]
   param (
     [Parameter(Mandatory)]

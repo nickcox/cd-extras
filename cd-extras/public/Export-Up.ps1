@@ -14,6 +14,9 @@ Don't copy output into global variables.
 .PARAMETER IncludeRoot
 Includes the root level path in the output.
 
+.ALIASES
+xup
+
 .EXAMPLE
 # Expand all ancestors of the given path (except the root) into global variables
 C:\> Export-Up -From C:\projects\powershell\src\Microsoft.PowerShell.SDK
@@ -30,6 +33,8 @@ C:\projects\powershell\
 C:\projects\powershell\src\Microsoft.PowerShell.SDK> _
 #>
 function Export-Up() {
+
+  [OutputType([System.Collections.Specialized.OrderedDictionary])]
   [CmdletBinding()]
   param(
     [string] $From = $PWD,

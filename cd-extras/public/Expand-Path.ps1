@@ -18,6 +18,9 @@ Limits search results to leaf items.
 .PARAMETER Directory
 Limits search results to container items.
 
+.ALIASES
+xpa
+
 .EXAMPLE
 # Expand a well-known Windows path by abbreviating each segment
 PS C:\> Expand-Path /win/sys/dr/et -Directory
@@ -31,6 +34,7 @@ d-----       21/12/2017  11:50 PM                etc
 #>
 function Expand-Path {
 
+  [OutputType([object[]])]
   [CmdletBinding()]
   param (
     [string] $Candidate = './',

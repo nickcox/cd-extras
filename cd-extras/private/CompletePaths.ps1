@@ -52,7 +52,7 @@ function CompletePaths {
     # dirColors support
     $listItemText = if (
       ($cde.ColorCompletion) -and
-      ($_.PSProvider.Name -eq 'FileSystem') -and 
+      ($_.PSProvider.Name -eq 'FileSystem') -and
       (Test-Path Function:\Format-ColorizedFilename)) {
       Format-ColorizedFilename $_
     }

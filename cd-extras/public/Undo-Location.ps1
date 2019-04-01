@@ -9,6 +9,9 @@ The number of locations to undo.
 .PARAMETER NamePart
 Partial path name to choose from undo stack.
 
+.ALIASES
+cd-
+
 .EXAMPLE
 PS C:\Windows\System32> # Move backward to the previous location
 PS C:\Windows\System32> cd ..
@@ -31,6 +34,7 @@ PS C:\Windows\System32> _
 
 .LINK
 Redo-Location
+Get-Stack
 #>
 function Undo-Location {
   [CmdletBinding(DefaultParameterSetName = 'number')]
