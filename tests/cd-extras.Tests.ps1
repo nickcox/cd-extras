@@ -57,6 +57,13 @@ Describe 'cd-extras' {
       (Get-Stack -Undo).Count | should be 2
       (Get-Stack -Undo) | select -First 1 | should -Match 'powershell$'
     }
+
+    It 'supports piping values' {
+      @('powershell', 'src') | cd
+      CurrentDir | Should Be 'src'
+      cd-
+      CurrentDir | Should Be 'powershell'
+    }
   }
 
   Describe 'Undo-Location' {
