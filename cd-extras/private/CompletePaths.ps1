@@ -76,9 +76,7 @@ function CompletePaths {
   $variCompletions = if (
     $cde.CDABLE_VARS -and
     $wordToComplete -match '[^/\\]+' -and
-    ($maybeVar = Get-Variable "$($Matches[0])*" |
-      where { $_.Value -and (Test-Path ($_.Value) -PathType Container) } |
-      select -Expand Value)
+    ($maybeVar = Get-Variable "$($Matches[0])*" -ValueOnly | where { Test-Path $_ -PathType Container })
   ) {
     Expand-Path @switches ($wordToComplete -replace $Matches[0], $maybeVar) -MaxResults $cde.MaxCompletions
   }

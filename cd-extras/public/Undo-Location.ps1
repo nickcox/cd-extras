@@ -52,7 +52,7 @@ function Undo-Location {
   }
 
   if ($PSCmdlet.ParameterSetName -eq 'named') {
-    if (-not ($stack = Get-Stack -Undo)) { 
+    if (-not ($stack = Get-Stack -Undo)) {
       Write-Error "The undo stack is currently empty" -ErrorAction Stop
     }
 

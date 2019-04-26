@@ -178,7 +178,8 @@ CDABLE_VARS is off by default. Enable it with: `Set-CdExtrasOption CDABLE_VARS`.
 ## No argument cd
 
 If the option `$cde.NOARG_CD` is defined then `cd` with no arguments will move into the
-nominated directory. Defaults to `'~'`.
+nominated directory. Note that on PowerShell versions >= 6.0, if this is changed from the
+default of `~`, it will override the out of the box behaviour.
 
 ```sh
 [~/projects/powershell]> cd

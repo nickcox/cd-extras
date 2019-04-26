@@ -11,7 +11,7 @@ Describe 'cd-extras' {
     $Global:cde = $null
     Push-Location $PSScriptRoot
     Import-Module ../cd-extras/cd-extras.psd1 -Force
-    Get-Content sampleStructure.txt | % { New-Item -ItemType Directory "TestDrive:/$_" -Force }
+    Get-Content sampleStructure.txt | New-Item -ItemType Directory -Path {"TestDrive:/$_"}
   }
 
   AfterAll {
@@ -416,23 +416,23 @@ Describe 'cd-extras' {
 
   Describe 'No arg cd' {
     It 'moves to the expected location' {
-      $cde.NOARG_CD | Should Be '~'
+      $cde.NOARG_CD = '/'
       cd
-      (Get-Location).Path | Should Be (Resolve-Path ~).Path
+      (Get-Location).Path | Should Be (Resolve-Path /).Path
     }
 
     It 'leaves an entry in the Undo stack' {
       $startLocation = (Get-Location).Path
-      $cde.NOARG_CD | Should Be '~'
+      $cde.NOARG_CD = '~'
       cd
       (Get-Stack -Undo | select -First 1).Path | Should Be $startLocation
     }
 
     It 'does not change location when null' {
-      $startLocation = (Get-Location).Path
+      $startLocation = (cd $env:TEMP -PassThru).Path
       $cde.NOARG_CD = $null
       cd
-      $pwd | Should Be $startLocation
+      $pwd | Should -Be $startLocation
     }
   }
 

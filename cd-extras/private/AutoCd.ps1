@@ -19,8 +19,7 @@ function AutoCd() {
 
     elseif ($cde.CDABLE_VARS) {
       if (
-        (Test-Path variable:$CommandName) -and
-        ($path = Get-Variable $CommandName -ValueOnly) -and
+        ($path = Get-Variable $CommandName -ValueOnly -ErrorAction Ignore) -and
         (Test-Path $path)
       ) {
         $scriptBlock = { Set-LocationEx $path }

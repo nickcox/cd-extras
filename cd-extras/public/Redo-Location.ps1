@@ -46,7 +46,7 @@ function Redo-Location {
   }
 
   if ($PSCmdlet.ParameterSetName -eq 'named') {
-    if (-not ($stack = Get-Stack -Redo)) { 
+    if (-not ($stack = Get-Stack -Redo)) {
       "The redo stack is currently empty"
     }
 

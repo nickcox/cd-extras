@@ -70,20 +70,21 @@ function GetStackIndex([array]$stack, [string]$namepart) {
   [array]::indexOf($stack, ($items | select -First 1))
 }
 
-function IndexedComplete($items) {
-  # accept input from parameter or from pipeline
-  if (!$items) { $items = @(); $input | % { $items += $_ } }
+function IndexedComplete() {
+  Begin { $items = @() }
+  Process { $items += $_ }
+  End {
+    $items | % {
+      $itemText = if ($cde.MenuCompletion -and @($items).Count -gt 1) { "$($_.index)" }
+      else { $_.long | SurroundAndTerminate }
 
-  $items | % {
-    $itemText = if ($cde.MenuCompletion -and @($items).Count -gt 1) { "$($_.index)" }
-    else { $_.long | SurroundAndTerminate }
-
-    [Management.Automation.CompletionResult]::new(
-      $itemText,
-      "$($_.index). $($_.short)" ,
-      "ParameterValue",
-      "$($_.index). $($_.long)"
-    )
+      [Management.Automation.CompletionResult]::new(
+        $itemText,
+        "$($_.index). $($_.short)" ,
+        "ParameterValue",
+        "$($_.index). $($_.long)"
+      )
+    }
   }
 }
 

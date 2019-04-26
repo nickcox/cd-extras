@@ -64,8 +64,7 @@ function Expand-Path {
   $wildcardedPaths = if ($SearchPaths -and -not ($Candidate | IsRootedOrRelative)) {
     # always include the local path, regardless of whether it was passed
     # in the searchPaths parameter (this differs from the behaviour in bash)
-    @($wildcardedPath) + (
-      $SearchPaths | % { Join-Path $_ $wildcardedPath })
+    @($wildcardedPath) + ($SearchPaths | Join-Path -ChildPath $wildcardedPath)
   }
   else { $wildcardedPath }
 

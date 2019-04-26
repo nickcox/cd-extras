@@ -128,7 +128,7 @@ Function Set-LocationEx {
       return
     }
 
-    elseif ($PSBoundParameters.Count -eq 0) {
+    elseif ($PSBoundParameters.Count -eq 0 -and !$myInvocation.ExpectingInput) {
       $Path = $cde.NOARG_CD | DefaultIfEmpty { $PWD }
     }
 
@@ -136,8 +136,7 @@ Function Set-LocationEx {
       if ($Path -and !(Test-Path $Path) -or ($Path -match '^\.{3,}')) {
         if (
           $cde.CDABLE_VARS -and
-          (Test-Path "variable:$Path") -and
-          ($vpath = Get-Variable $Path -ValueOnly) -and
+          ($vpath = Get-Variable $Path -ValueOnly -ErrorAction Ignore) -and
           (Test-Path $vpath)
         ) { $Path = $vpath }
         elseif (
@@ -157,7 +156,7 @@ Function Set-LocationEx {
       Push-Location -StackName $back
     }
 
-    if ($Path) {
+    if ($Path -and !$myInvocation.ExpectingInput) {
       $PSBoundParameters['Path'] = $Path
     }
     $wrappedCmd = $ExecutionContext.InvokeCommand.GetCommand(
