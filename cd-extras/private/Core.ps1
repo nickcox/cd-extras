@@ -1,6 +1,6 @@
 ${Script:/} = [System.IO.Path]::DirectorySeparatorChar
-$Script:fwd = 'fwd'
-$Script:back = 'back'
+$Script:undoStack = [System.Collections.Stack]::new()
+$Script:redoStack = [System.Collections.Stack]::new()
 enum CycleDirection { Undo; Redo }
 $Script:cycleDirection = [CycleDirection]::Undo # used by Step-Back
 

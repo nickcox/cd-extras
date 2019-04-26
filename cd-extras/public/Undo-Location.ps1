@@ -44,19 +44,15 @@ function Undo-Location {
 
   if ($PSCmdlet.ParameterSetName -eq 'number' -and $n -ge 1) {
     1..$n | % {
-      if ($null -ne (Get-Location -StackName $back -ea Ignore)) {
-        Push-Location -StackName $fwd
-        Pop-Location -StackName $back -ea Ignore
+      if ($undoStack.Count) {
+        $redoStack.Push($PWD)
+        Set-Location $undoStack.Pop()
       }
     }
   }
 
   if ($PSCmdlet.ParameterSetName -eq 'named') {
-    if (-not ($stack = Get-Stack -Undo)) {
-      Write-Error "The undo stack is currently empty" -ErrorAction Stop
-    }
-
-    $match = GetStackIndex $stack $NamePart
+    $match = GetStackIndex $undoStack.ToArray() $NamePart
 
     if ($match -ge 0) {
       Undo-Location ($match + 1)

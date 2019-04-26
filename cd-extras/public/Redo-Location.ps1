@@ -38,19 +38,15 @@ function Redo-Location {
 
   if ($PSCmdlet.ParameterSetName -eq 'number' -and $n -ge 1) {
     1..$n | % {
-      if ($null -ne (Get-Location -StackName $fwd -ea Ignore)) {
-        Push-Location -StackName $back
-        Pop-Location -StackName $fwd
+      if ($redoStack.Count) {
+        $undoStack.Push($PWD)
+        Set-Location $redoStack.Pop()
       }
     }
   }
 
   if ($PSCmdlet.ParameterSetName -eq 'named') {
-    if (-not ($stack = Get-Stack -Redo)) {
-      "The redo stack is currently empty"
-    }
-
-    $match = GetStackIndex $stack $NamePart
+    $match = GetStackIndex $redoStack.ToArray() $NamePart
 
     if ($match -ge 0) {
       Redo-Location ($match + 1)

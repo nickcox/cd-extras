@@ -151,9 +151,9 @@ Function Set-LocationEx {
     if ($target -and ($target = Resolve-Path -LiteralPath $target -ErrorAction Ignore) -and (
         ($target.Path | RemoveTrailingSeparator) -ne ((Get-Location).Path))) {
 
-      Clear-Stack -Redo
+      $redoStack.Clear()
+      $undoStack.Push((Get-Location))
       $Script:cycleDirection = [CycleDirection]::Undo
-      Push-Location -StackName $back
     }
 
     if ($Path -and !$myInvocation.ExpectingInput) {

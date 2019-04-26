@@ -17,6 +17,6 @@ function Clear-Stack {
     [switch] $Redo
   )
 
-  if ($Undo -or !($Undo -or $Redo)) { $Script:back = 'back' + [Guid]::NewGuid() }
-  if ($Redo -or !($Undo -or $Redo)) { $Script:fwd = 'fwd' + [Guid]::NewGuid() }
+  if ($Undo -or !($Undo -or $Redo)) { $undoStack.Clear() }
+  if ($Redo -or !($Undo -or $Redo)) { $redoStack.Clear() }
 }
