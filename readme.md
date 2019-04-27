@@ -41,7 +41,7 @@ Provides the following aliases (and corresponding functions):
 - `up`, `..` (`Step-Up`)
 - `cd-` (`Undo-Location`)
 - `cd+` (`Redo-Location`)
-- `cdb` (`Step-Back`)
+- `cdb` (`Step-Between`)
 
 Examples:
 
@@ -52,10 +52,11 @@ Examples:
 [C:\Windows]> █
 ```
 
-Note that the aliases are `cd-` and `cd+` - without a space - _not_ `cd -` and `cd +`.
+Note that the aliases are `cd-` and `cd+`, without a space. `cd -` and `cd +`,
+with a space, also work but you won't get [tab expansions](#navigation-helper-expansions).
 Repeated uses of `cd-` will keep moving backwards towards the beginning of the stack
 rather than toggling between the two most recent directories as in vanilla bash.
-Use `Step-Back` (`cdb`) if you want to toggle between undo and redo.
+Use `Step-Between` (`cdb`) if you want to toggle between undo and redo.
 
 ```sh
 [C:\Windows\System32]> ..

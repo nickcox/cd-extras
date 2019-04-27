@@ -13,7 +13,7 @@ PS C:\Windows\> cdb
 PS C:\Windows\System32> _
 #>
 
-function Step-Back() {
+function Step-Between() {
   if ($Script:cycleDirection -eq [CycleDirection]::Undo) {
     Undo-Location
     $Script:cycleDirection = [CycleDirection]::Redo

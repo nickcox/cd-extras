@@ -155,7 +155,7 @@ Describe 'cd-extras' {
     }
   }
 
-  Describe 'Step-Back' {
+  Describe 'Step-Between' {
     It 'toggles between two directories' {
       cd ./powershell/src/Modules
       cd ../../demos/Apache
