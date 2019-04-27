@@ -129,6 +129,16 @@ Function Set-LocationEx {
       return
     }
 
+    elseif ($Path -eq '-') {
+      Undo-Location
+      return
+    }
+
+    elseif ($Path -eq '+') {
+      Redo-Location
+      return
+    }
+
     elseif ($PSBoundParameters.Count -eq 0 -and !$myInvocation.ExpectingInput) {
       $Path = $cde.NOARG_CD | DefaultIfEmpty { $PWD }
     }
