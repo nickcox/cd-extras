@@ -1,5 +1,10 @@
 # Changes
 
+## [1.7] 2019-04-27
+- Support `cd +` and `cd -` as in PS 6.2
+- Rename Step-Back to Step-Between
+- Fix issue where `cd` not accepting piped input
+
 ## [1.6] 2019-03-31
 
 - Implement double dot token in path expansions.
@@ -11,7 +16,7 @@
 
 ## [1.5.5] 2019-03-27
 
-- Fix issue Step-Forward and Step-Back not working with menu completion turned off.
+- Fix issue Step-Forward and Step-Between not working with menu completion turned off.
 - Make setocd parameter mandatory.
 
 ## [1.5.4] 2019-03-27
@@ -38,7 +43,7 @@
 - Use drive root path instead of name in ancestor menu completion.
 - Fix issue on Linux where one can't `up` to the root directory.
 - Fix issue where duplicates added to the stack.
-- Reimplement `Step-Back` in terms of `Undo-Location` and `Redo-Location`.
+- Reimplement `Step-Between` in terms of `Undo-Location` and `Redo-Location`.
 - Add aliases `dirs` and `setocd`.
 - Enable boolean options without an argument `setocd CDABLE_VARS`.
 
