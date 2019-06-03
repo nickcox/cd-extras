@@ -11,7 +11,7 @@ Describe 'cd-extras' {
     $Global:cde = $null
     Push-Location $PSScriptRoot
     Import-Module ../cd-extras/cd-extras.psd1 -Force
-    Get-Content sampleStructure.txt | New-Item -ItemType Directory -Path {"TestDrive:/$_"}
+    Get-Content sampleStructure.txt | New-Item -ItemType Directory -Path { "TestDrive:/$_" }
   }
 
   AfterAll {
@@ -22,6 +22,7 @@ Describe 'cd-extras' {
 
   BeforeEach {
     Set-Location TestDrive:\
+    setocd CD_PATH @()
     Clear-Stack -Undo -Redo
   }
 
@@ -62,7 +63,7 @@ Describe 'cd-extras' {
       @('powershell', 'src') | cd
       CurrentDir | Should Be 'src'
       cd-
-      CurrentDir | Should Be 'powershell'
+      CurrentDir | Should Not Be 'src'
     }
   }
 
@@ -115,6 +116,27 @@ Describe 'cd-extras' {
       cd- src/mod
       CurrentDir | Should Be Modules
     }
+
+    It 'pops a directory with literal square brackets' {
+      cd 'powershell/directory`[with`]squarebrackets/one'
+      cd ..
+      cd-
+      CurrentDir | Should Be one
+    }
+
+    It 'pushes current directory when moving into a directory with literal square brackets' {
+      cd powershell
+      cd 'directory`[with`]squarebrackets/one'
+      cd-
+      CurrentDir | Should Be powershell
+    }
+
+    It 'pushes current directory when CDing into a directory with escaped square brackets' {
+      cd powershell
+      cd demos/A?ure
+      cd-
+      CurrentDir | Should Be powershell
+    }
   }
 
   Describe 'Redo-Location' {
@@ -152,6 +174,13 @@ Describe 'cd-extras' {
       cd powershell/src
       cd-
       { Redo-Location doesnotexist } | Should Throw
+    }
+
+    It 'pops a directory with square brackets' {
+      cd 'powershell/directory`[with`]squarebrackets/one'
+      cd-
+      cd+
+      CurrentDir | Should Be one
     }
   }
 
@@ -432,7 +461,7 @@ Describe 'cd-extras' {
       $startLocation = (Get-Location).Path
       $cde.NOARG_CD = '~'
       cd
-      (Get-Stack -Undo | select -First 1).Path | Should Be $startLocation
+      (Get-Stack -Undo | select -First 1) | Should Be $startLocation
     }
 
     It 'does not change location when null' {
@@ -580,7 +609,7 @@ Describe 'cd-extras' {
       }
 
       It 'completes CDABLE_VARS' {
-        Set-CdExtrasOption -Option CDABLE_VARS $true
+        setocd CDABLE_VARS
         $Global:dir = Resolve-Path ./powershell/src
         (CompletePaths -wordToComplete 'dir').CompletionText | Should Match 'src'
       }
@@ -598,7 +627,7 @@ Describe 'cd-extras' {
 
       It 'escapes square brackets' {
         $actual = CompletePaths -wordToComplete 'pow/directory[with]squarebrackets/o'
-        $actual.CompletionText | Should BeLike "'*directory*squarebrackets${/}one${/}'"
+        $actual.CompletionText | Should BeLike "'*${/}powershell${/}directory*squarebrackets${/}one${/}'"
       }
 
       It 'appends a directory separator given a single dot' {
@@ -641,7 +670,7 @@ Describe 'cd-extras' {
         Set-LocationEx src
         $cde.MenuCompletion = $false
         $actual = CompleteStack -wordToComplete '' -commandName 'Undo'
-        $actual[0].CompletionText | Should BeLike "*testdrive*"
+        $actual[0].CompletionText | Should BeLike "TestDrive:\powershell"
       }
 
       It 'uses the full path when only one completion is available' {

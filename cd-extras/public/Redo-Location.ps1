@@ -40,7 +40,7 @@ function Redo-Location {
     1..$n | % {
       if ($redoStack.Count) {
         $undoStack.Push($PWD)
-        Set-Location $redoStack.Pop()
+        $redoStack.Pop() | EscapeWildcards | Set-Location
       }
     }
   }

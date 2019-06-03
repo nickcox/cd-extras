@@ -9,26 +9,28 @@ function CompletePaths {
     $boundParameters
   )
 
-  $force = $boundParameters -and [bool]$boundParameters['Force']
+  <#
+    Given a full path, $_, return a fully formed completion result.
+    Logic: use a relative path if the supplied word isn't rooted
+    (like /temp/... or ~/... or C:\...) *and* the resolved path is a
+    child of the current directory or its parent.
 
-  # given a full path, $_, return a fully formed completion result
-  # logic: use a relative path if the supplied word isn't rooted (like /temp/... or ~/... C:\...)
-  # *and* the resolved path is a child of the current directory or its parent
-  # for absolute paths, replace home dir location with tilde
+    For absolute paths, replace home dir location with tilde.
+  #>
   filter CompletionResult {
 
     # add normalised trailing directory separator; quote if contains spaces
     $trailChar = if ($_.PSIsContainer) { ${/} }
-    $fullPath = $_ | select -Expand PSPath | Convert-Path
+    $fullPath = $_ | select -Expand PSPath |% {Convert-Path -LiteralPath $_}
 
     $completionText = if ($wordToComplete -match '^\.{1,2}$') {
       $wordToComplete
     }
     elseif (!($wordToComplete | IsRooted) -and ($fullPath | IsDescendedFrom ..)) {
-      $_ | Resolve-Path -Relative
+      $fullPath | Resolve-Path -Relative
     }
     elseif ($homeDir = (Get-Location).Provider.Home) {
-      $_ -replace "^$($homeDir | NormaliseAndEscape)", "~"
+      $fullPath -replace "^$($homeDir | NormaliseAndEscape)", "~"
     }
     else {
       $fullPath
@@ -38,10 +40,10 @@ function CompletePaths {
       RemoveTrailingSeparator |
       SurroundAndTerminate $trailChar
 
-    # there seems to be a weird bug in PowerShell where square brackets must be escaped
-    # by every/many(?) command(s) _except_ Get-ChildItem, where they must *not* be escaped
+    # there seems to be a weird behaviour in PowerShell where wildcards must be escaped
+    # by every/many(?) command(s) _except_ Get-ChildItem, where they should not be escaped
     if ($commandName -ne 'Get-ChildItem') {
-      $completionText = $completionText | EscapeSquareBrackets
+      $completionText = $completionText | EscapeWildcards
     }
 
     # hack to support registry provider
@@ -68,9 +70,10 @@ function CompletePaths {
     )
   }
 
-  $switches = @{ File = $filesOnly; Directory = $dirsOnly; Force = $force }
+  $switches = @{ File = $filesOnly; Directory = $dirsOnly; Force = $true }
+  $escapedWord = $wordToComplete | EscapeWildcards
 
-  $completions = Expand-Path @switches $wordToComplete -MaxResults $cde.MaxCompletions
+  $completions = Expand-Path @switches $escapedWord -MaxResults $cde.MaxCompletions
 
   #replace cdable_vars
   $variCompletions = if (
@@ -78,7 +81,7 @@ function CompletePaths {
     $wordToComplete -match '[^/\\]+' -and
     ($maybeVar = Get-Variable "$($Matches[0])*" -ValueOnly | where { Test-Path $_ -PathType Container })
   ) {
-    Expand-Path @switches ($wordToComplete -replace $Matches[0], $maybeVar) -MaxResults $cde.MaxCompletions
+    Expand-Path @switches ($escapedWord -replace $Matches[0], $maybeVar) -MaxResults $cde.MaxCompletions
   }
 
   @($completions) + @($variCompletions) |

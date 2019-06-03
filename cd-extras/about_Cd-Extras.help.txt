@@ -5,8 +5,7 @@
 <!-- TOC -->
 
 - [Navigation helpers](#navigation-helpers)
-  - [Navigate by `n` steps](#navigate-by-n-steps)
-  - [Navigate by name](#navigate-by-name)
+  - [Navigate even faster](#navigate-even-faster)
 - [AUTO_CD](#auto_cd)
 - [CD_PATH](#cd_path)
 - [CDABLE_VARS](#cdable_vars)
@@ -70,7 +69,7 @@ Use `Step-Between` (`cdb`) if you want to toggle between undo and redo.
 [C:\]> █
 ```
 
-### Navigate by `n` steps
+### Navigate even faster
 
 `up`, `cd+` and `cd-` each take a single optional parameter: either a number, `n`,
 specifying how many steps to traverse...
@@ -83,13 +82,10 @@ specifying how many steps to traverse...
 [C:\temp]> █
 ```
 
-### Navigate by name
-
 ...or a string, `NamePart`, used to change to the nearest directory whose name matches
-the given argument. Given a `NamePart`, _cd-extras_ will search, starting at the current
-location, for directories whose _leaf_ name contains the given string. If none is found
-then it will attempt to match against the full path instead.
-[Tab completion](#navigation-helper-expansions) is available for these three helpers.
+the given argument. Given a `NamePart`, _cd-extras_ will search from the current location
+for directories whose _leaf_ name contains the given string. If none is found then it
+will attempt to match within the full path of each candidate directory. [Tab completion](#navigation-helper-expansions) is available for these three helpers.
 
 ```sh
 [C:\Windows]> cd system32
@@ -137,8 +133,8 @@ Search additional locations for candidate directories. [Tab-expansion](#enhanced
 into `CD_PATH` directories is provided.
 
 ```sh
-[~]> $cde.CD_PATH = @('~/documents')
-[~]> # or Set-CdExtrasOption CD_PATH @('~/documents')
+[~]> setocd CD_PATH ~/documents
+[~]> # or $cde.CD_PATH = @('~/documents')'
 [~]> cd WindowsPowerShell
 [~/documents/WindowsPowerShell]> █
 ```
@@ -146,7 +142,7 @@ into `CD_PATH` directories is provided.
 Note that `CD_PATH`s are _not_ searched when an absolute or relative path is given.
 
 ```sh
-[~]> $cde.CD_PATH = @('~/documents')
+[~]> setocd CD_PATH '~/documents'
 [~]> cd ./WindowsPowerShell
 Set-Location : Cannot find path '~\WindowsPowerShell' because it does not exist.
 ```
@@ -174,13 +170,13 @@ same subdirectories you could create a corresponding variable.
 [~/projects/powershell/.git/hooks]> █
 ```
 
-CDABLE_VARS is off by default. Enable it with: `Set-CdExtrasOption CDABLE_VARS`.
+CDABLE_VARS is off by default. Enable it with, `setocd CDABLE_VARS`.
 
 ## No argument cd
 
 If the option `$cde.NOARG_CD` is defined then `cd` with no arguments will move into the
-nominated directory. Note that on PowerShell versions >= 6.0, if this is changed from the
-default of `~`, it will override the out of the box behaviour.
+nominated directory. Note that this overrides the out of the box behaviour on PowerShell
+versions >= 6.0 if changed from the default of `~`.
 
 ```sh
 [~/projects/powershell]> cd
@@ -207,15 +203,13 @@ You can also use the alias `cd:` or the explicit `ReplaceWith` parameter.
 ### Enhanced expansion for built-ins
 
 `cd`, `pushd` and `ls` (by default) provide enhanced tab completions, expanding all path
-segments so that you don't have to individually tab (⇥) through each one. Because this
-could result in multiple completions with the same leaf name, `cd-extras` will display
-the full path of each item in the completion menu so that you can tell them apart.
+segments so that you don't have to individually tab (⇥) through each one.
 
 ```sh
-[~]> cd /w/s/set⇥⇥
-[~]> cd C:\Windows\SysWOW64\setup\█
-C:\Windows\System32\setup\      C:\Windows\SysWOW64\setup\
-                                ───────────────────────────
+[~]> cd /w/s/dr⇥⇥
+[~]> cd C:\Windows\System32\DriverState\
+drivers   DriverState   DriverStore
+          ───────────
 ```
 
 Periods (`.`) are expanded around so, for example, a segment containing `.sdk`
@@ -265,8 +259,8 @@ won't be able to tab through directories to get to the file you're looking for.
 [~]> # or Set-CdExtrasOption PathCompletions ($cde.PathCompletions + 'Invoke-Item')
 [~]> ii /t/⇥
 [~]> C:\temp\subdir\█
-C:\temp\subdir  C:\temp\txtFile.txt  C:\temp\txtFile2.txt
-──────────────
+subdir  txtFile.txt  txtFile2.txt
+──────
 ```
 
 In each case, expansions work against the target's `Path` parameter.
@@ -283,15 +277,18 @@ or the target itself should handle expanding `~` where necessary. e.g:
 ```
 
 An alternative to registering every command you might want to complete is to create a
-tiny wrapper to pipeline input from `ls` (`Get-ChildItem`) which provides enhanced path
-completion by default.
+tiny wrapper to pipeline input from `ls` (`Get-ChildItem`).
 
 ```sh
 [~]> function bat { &bat.exe $input }
 [~]> ls ~/pr/po/r.md⇥
 [~]> ls ~/projects/powershell/readme.md | bat
+
+───────────────────────────────────────────────────────
 File: C:\Users\Nick\projects\PowerShell\README.md
-...
+───────────────────────────────────────────────────────
+1 | ...
+2 | ...
 ```
 
 Paths within the `$cde.CD_PATH` array are included for all completion types.
@@ -302,9 +299,9 @@ Paths within the `$cde.CD_PATH` array are included for all completion types.
 [~]> ~\Documents\WindowsPowerShell\Modules\█
 ```
 
-In the filesystem provider, these expansions can optionally be colourised via
+In the filesystem provider, expansions can optionally be colourised via
 [DirColors][1] by setting the `ColorCompletion` option (`setocd ColorCompletion`).
-Alternatively, you can supply your own colourisation by creating a global
+Alternatively, you can implement your own colourisation by creating a global
 `Format-ColorizedFilename` function.
 
 ### Navigation helper expansions
@@ -324,7 +321,7 @@ options in order to set this option appropriately at start-up. For example:
 ```
 
 It's also possible tab-complete these three commands (`cd+`, `cd-`, `up`) using a
-partial directory name (the [`NamePart` parameter](#navigate-by-name)).
+partial directory name (the [`NamePart` parameter](#navigate-even-faster)).
 
 ```sh
 [~\projects\PowerShell\src\Modules\Shared]> up pr⇥
@@ -344,15 +341,9 @@ The multi-dot syntax provides tab completion into ancestor directories.
 ```sh
 [C:\projects\powershell\docs\git]> cd .../⇥
 
-C:\projects\powershell\.git     C:\projects\powershell\.vscode
-───────────────────────────
-C:\projects\powershell\demos    C:\projects\powershell\docs
-
-C:\projects\powershell\test     C:\projects\powershell\.github
-
-C:\projects\powershell\assets   C:\projects\powershell\docker
-
-C:\projects\powershell\src      C:\projects\powershell\tools
+.git     .vscode    demos    docs   test
+─────
+.github    assets   docker   src    tools
 ```
 
 `Export-Up` (`xup`) recursively expands each parent path into a global variable
@@ -468,7 +459,7 @@ Import-Module cd-extras
 
 # add to profile. e.g:
 
-Add-Content $PROFILE @("`n", "Import-Module cd-extras")
+Add-Content $PROFILE `n,Import-Module cd-extras
 
 ```
 

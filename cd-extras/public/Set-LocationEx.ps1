@@ -119,6 +119,8 @@ Function Set-LocationEx {
 
  	begin {
 
+    $startLocation = $PWD.Path
+
     $outBuffer = $null
     if ($PSBoundParameters.TryGetValue('OutBuffer', [ref]$outBuffer)) {
       $PSBoundParameters['OutBuffer'] = 1
@@ -172,21 +174,18 @@ Function Set-LocationEx {
 
  	process {
 
-    $target = $Path | DefaultIfEmpty { $LiteralPath }
-    if ($target -and ($target = Resolve-Path -LiteralPath $target -ErrorAction Ignore) -and (
-        ($target.Path | RemoveTrailingSeparator) -ne ((Get-Location).Path))) {
-
-      $redoStack.Clear()
-      $undoStack.Push((Get-Location))
-      $Script:cycleDirection = [CycleDirection]::Undo
-    }
-
     if ($steppablePipeline) {
       $steppablePipeline.Process($_)
     }
   }
 
  	end {
+
+    if ($PWD.Path -ne $startLocation) {
+      $redoStack.Clear()
+      $undoStack.Push($startLocation)
+      $Script:cycleDirection = [CycleDirection]::Undo
+    }
 
     if ($steppablePipeline) {
       $steppablePipeline.End()

@@ -52,19 +52,19 @@ filter RemoveTrailingSeparator {
   $_ -replace "[/\\]$", ''
 }
 
-filter EscapeSquareBrackets {
-  $_ -replace '\[', '`[' -replace ']', '`]'
+filter EscapeWildcards {
+  [WildcardPattern]::Escape($_)
 }
 
 function GetStackIndex([array]$stack, [string]$namepart) {
   (
-    $items = $stack | Where-Object Path -eq $namepart # full path match
+    $items = $stack -eq $namepart # full path match
   ) -or (
-    $items = $stack | Where-Object { ($_ | Split-Path -Leaf) -eq $namepart } # full leaf match
+    $items = $stack |? { ($_ | Split-Path -Leaf) -eq $namepart } # full leaf match
   ) -or (
-    $items = $stack | Where-Object { ($_ | Split-Path -Leaf).StartsWith($namepart) } # leaf starts with
+    $items = $stack |? { ($_ | Split-Path -Leaf).StartsWith($namepart) } # leaf starts with
   ) -or (
-    $items = $stack | Where-Object Path -match ($namepart | NormaliseAndEscape) # anything...
+    $items = $stack -match ($namepart | NormaliseAndEscape) # anything...
   ) | Out-Null
 
   [array]::indexOf($stack, ($items | select -First 1))
@@ -80,7 +80,7 @@ function IndexedComplete() {
 
       [Management.Automation.CompletionResult]::new(
         $itemText,
-        "$($_.index). $($_.short)" ,
+        "$($_.index). $($_.short)",
         "ParameterValue",
         "$($_.index). $($_.long)"
       )

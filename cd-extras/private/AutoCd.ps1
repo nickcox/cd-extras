@@ -6,7 +6,7 @@ function AutoCd() {
     $scriptBlock = $null
 
     # If the command is already a valid path
-    if ((Test-Path $CommandName) -and ($CommandName -notmatch '^\.{3,}')) {
+    if ((Test-Path $CommandName)) {
       $scriptBlock = { Set-LocationEx $CommandName }
     }
 

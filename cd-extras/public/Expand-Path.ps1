@@ -54,12 +54,12 @@ function Expand-Path {
 
   [string]$wildcardedPath = $Candidate `
     -replace [Regex]::Escape($match), $replacement `
-    -replace '(\w/|\w\\|\w$)', '$0*' `
-    -replace '(/\*|\\\*)', ('*' + ${/}) `
-    -replace '(/$|\\$)', '$0*' `
-    -replace '(\w)\.\.', '$1*' `
-    -replace '(\.\w|\w\.$)', '*$0' `
-    -replace '\[|\]', '*'
+    -replace '\w/|\w\\|\w$', '$0*' <# asterisks around slashes and at end #> `
+    -replace '/\*|\\\*', "*${/}" <# /* or \* --> */ #> `
+    -replace '/$|\\$', '$0*' <# append trailing aster if ends with slash #> `
+    -replace '(\w)\.\.', '$1*' <# support double dot operator #> `
+    -replace '\.\w|\w\.$', '*$0' <# expand around dots #> `
+    -replace '\[|\]', '`$0' <# escape square brackets #>
 
   $wildcardedPaths = if ($SearchPaths -and -not ($Candidate | IsRootedOrRelative)) {
     # always include the local path, regardless of whether it was passed
