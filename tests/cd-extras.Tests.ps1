@@ -639,6 +639,12 @@ Describe 'cd-extras' {
         $actual = CompletePaths -wordToComplete 'pow/src/Typ..Gen'
         $actual.CompletionText | Should BeLike "*src${/}TypeCatalogGen${/}"
       }
+
+      It 'truncates long menu items' {
+        $actual = CompletePaths -wordToComplete 'pow/s/M.P.C.D'
+        $cde.MaxMenuLength = 38
+        $actual.ListItemText | Should Be 'Microsoft.PowerShell.Commands.Diagnostic'
+      }
     }
 
     Describe 'Stack expansion' {

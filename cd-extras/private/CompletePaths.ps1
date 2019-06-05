@@ -6,7 +6,7 @@ function CompletePaths {
     $parameterName,
     $wordToComplete,
     $commandAst,
-    $boundParameters
+    $boundParameters = @{}
   )
 
   <#
@@ -64,13 +64,18 @@ function CompletePaths {
 
     [Management.Automation.CompletionResult]::new(
       $completionText,
-      $listItemText,
-      'ParameterValue',
-      ($fullPath | DefaultIfEmpty { $_ })
+      ($listItemText | Truncate),
+      [Management.Automation.CompletionResultType]::ParameterValue,
+      $($fullPath | DefaultIfEmpty { $_ })
     )
   }
 
-  $switches = @{ File = $filesOnly; Directory = $dirsOnly; Force = $true }
+  $switches = @{
+    File = $boundParameters['File'] -or $filesOnly
+    Directory = $boundParameters['Directory'] -or $dirsOnly
+    Force = $true
+  }
+
   $escapedWord = $wordToComplete | EscapeWildcards
 
   $completions = Expand-Path @switches $escapedWord -MaxResults $cde.MaxCompletions

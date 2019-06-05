@@ -1,8 +1,12 @@
 # Changes
+## [1.9] 2019-06-05
+- Truncate completion menu items to 40 characters by default.
+- Pass through `-File` and `Directory` switches to path completion where necessary.
+
 ## [1.8] 2019-06-04
-- Stack now contains path strings rather than PathInfo objects
-- Fix bug where literal paths containing square brackets not pushed and popped correctly
-- Paths completions always use `-Force`
+- Stack now contains path strings rather than PathInfo objects.
+- Fix bug where literal paths containing square brackets not pushed and popped correctly.
+- Paths completions always use `-Force`.
 
 ## [1.7] 2019-04-27
 - Support `cd +` and `cd -` as in PS 6.2

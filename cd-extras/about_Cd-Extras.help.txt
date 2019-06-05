@@ -9,13 +9,13 @@
 - [AUTO_CD](#auto_cd)
 - [CD_PATH](#cd_path)
 - [CDABLE_VARS](#cdable_vars)
+- [Path shortening](#path-shortening)
 - [No argument cd](#no-argument-cd)
 - [Two argument cd](#two-argument-cd)
 - [Expansion](#expansion)
   - [Enhanced expansion for built-ins](#enhanced-expansion-for-built-ins)
   - [Navigation helper expansions](#navigation-helper-expansions)
   - [Multi-dot and variable based expansions](#multi-dot-and-variable-based-expansions)
-- [Path shortening](#path-shortening)
 - [Additional helpers](#additional-helpers)
 - [Note on compatibility](#note-on-compatibility)
   - [Alternative providers](#alternative-providers)
@@ -41,8 +41,6 @@ Provides the following aliases (and corresponding functions):
 - `cd-` (`Undo-Location`)
 - `cd+` (`Redo-Location`)
 - `cdb` (`Step-Between`)
-
-Examples:
 
 ```sh
 [C:\Windows\System32]> up # or ..
@@ -85,7 +83,8 @@ specifying how many steps to traverse...
 ...or a string, `NamePart`, used to change to the nearest directory whose name matches
 the given argument. Given a `NamePart`, _cd-extras_ will search from the current location
 for directories whose _leaf_ name contains the given string. If none is found then it
-will attempt to match within the full path of each candidate directory. [Tab completion](#navigation-helper-expansions) is available for these three helpers.
+will attempt to match within the full path of each candidate directory.
+[Tab completion](#navigation-helper-expansions) is available for these three helpers.
 
 ```sh
 [C:\Windows]> cd system32
@@ -129,8 +128,8 @@ As with the `cd` command, [abbreviated paths](#path-shortening) are supported.
 
 ## CD_PATH
 
-Search additional locations for candidate directories. [Tab-expansion](#enhanced-expansion-for-built-ins)
-into `CD_PATH` directories is provided.
+Search additional locations for candidate directories.
+[Tab-expansion](#enhanced-expansion-for-built-ins) into `CD_PATH` directories is provided.
 
 ```sh
 [~]> setocd CD_PATH ~/documents
@@ -172,11 +171,31 @@ same subdirectories you could create a corresponding variable.
 
 CDABLE_VARS is off by default. Enable it with, `setocd CDABLE_VARS`.
 
+## Path shortening
+
+If an unambiguous match is available then `cd` can be used directly, without any tab expansion.
+
+```sh
+[~]> cd /w/s..32/d/et
+[C:\Windows\System32\drivers\etc]> cd ~/pr/pow/src
+[~\projects\PowerShell\src]> cd .sdk
+[~\projects\PowerShell\src\Microsoft.PowerShell.SDK]> █
+```
+
+[`AUTO_CD`](#auto_cd) works the same way if enabled.
+
+```sh
+[~]> /w/s/d/et
+[C:\Windows\System32\drivers\etc]> ~/pr/pow/src
+[~\projects\PowerShell\src]> .sdk
+[~\projects\PowerShell\src\Microsoft.PowerShell.SDK]> █
+```
+
 ## No argument cd
 
 If the option `$cde.NOARG_CD` is defined then `cd` with no arguments will move into the
 nominated directory. Note that this overrides the out of the box behaviour on PowerShell
-versions >= 6.0 if changed from the default of `~`.
+versions >= 6.0, if changed from the default of `~`.
 
 ```sh
 [~/projects/powershell]> cd
@@ -227,6 +246,7 @@ or
 [~]> ls ~\projects\powershell\tools\install-powershell.sh | cat
 #!/bin/bash
 ...
+
 [~]>
 ```
 
@@ -244,19 +264,19 @@ using the `DirCompletions` [option](#configure):
 
 ```sh
 [~]> $cde.DirCompletions += 'mkdir'
-[~]> # or Set-CdExtrasOption DirCompletions ($cde.DirCompletions + 'mkdir')
+[~]> # setocd DirCompletions mkdir, $cde.DirCompletions
 [~]> mkdir ~/pow/src⇥
 [~]> mkdir ~\powershell\src\█
 ```
 
 Similarly, you opt into enhanced file-only or general (file & directory) completion
 using the `FileCompletions` and `PathCompletions` options respectively.
-Note that the `FileCompletions` option is often less useful than the others as you
-won't be able to tab through directories to get to the file you're looking for.
+Note that the `FileCompletions` option is less useful as you won't be able to tab
+through directories to get to the file you're looking for.
 
 ```sh
 [~]> $cde.PathCompletions += 'Invoke-Item'
-[~]> # or Set-CdExtrasOption PathCompletions ($cde.PathCompletions + 'Invoke-Item')
+[~]> # or setocd PathCompletions $cde.PathCompletions, 'Invoke-Item'
 [~]> ii /t/⇥
 [~]> C:\temp\subdir\█
 subdir  txtFile.txt  txtFile2.txt
@@ -381,27 +401,6 @@ You can combine `CDABLE_VARS` with [AUTO_CD](#auto_cd) for great good:
 [C:\projects\powershell\src]> █
 ```
 
-## Path shortening
-
-If an unambiguous match is available then `cd` can be used directly, without first
-invoking tab expansion.
-
-```sh
-[~]> cd /w/s..32/d/et
-[C:\Windows\System32\drivers\etc]> cd ~/pr/pow/src
-[~\projects\PowerShell\src]> cd .sdk
-[~\projects\PowerShell\src\Microsoft.PowerShell.SDK]> █
-```
-
-`AUTO_CD` works the same way if enabled.
-
-```sh
-[~]> /w/s/d/et
-[C:\Windows\System32\drivers\etc]> ~/pr/pow/src
-[~\projects\PowerShell\src]> .sdk
-[~\projects\PowerShell\src\Microsoft.PowerShell.SDK]> █
-```
-
 ## Additional helpers
 
 - Get-Stack (_dirs_)
@@ -497,7 +496,9 @@ Import-Module cd-extras\cd-extras\cd-extras.psd1 # for reals
 - _ColorCompletion_ : `[bool] = false`
   - If truthy, offered Dir/Path/File completions will be coloured by `Format-ColorizedFilename`,
     if available.
-- _MaxCompletions_ : `[int] = 80`
+- MaxMenuLength : `[int] = 40`
+  - Truncate completion menu items to this length. May break column layout below about 40 characters.
+- _MaxCompletions_ : `[int] = 99`
   - Limit the number of Dir/Path/File completions offered. Should probably be at least one less than
     `(Get-PSReadLineOption).CompletionQueryItems`.
 

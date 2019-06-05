@@ -10,6 +10,10 @@ function DefaultIfEmpty([scriptblock] $default) {
   End { if (!$any) { &$default } }
 }
 
+filter Truncate([int] $maxLength = $cde.MaxMenuLength) {
+  $_.Substring(0, [Math]::Min($maxLength, $_.length))
+}
+
 filter IsRootedOrRelative {
   ($_ | IsRooted) -or ($_ | IsRelative)
 }
