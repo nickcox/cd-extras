@@ -14,9 +14,6 @@ Don't copy output into global variables.
 .PARAMETER IncludeRoot
 Includes the root level path in the output.
 
-.ALIASES
-xup
-
 .EXAMPLE
 # Expand all ancestors of the given path (except the root) into global variables
 C:\> Export-Up -From C:\projects\powershell\src\Microsoft.PowerShell.SDK
@@ -44,7 +41,7 @@ function Export-Up() {
   )
 
   $start = Resolve-Path $From -ErrorAction Ignore
-  if (!$start -or !($next = $start.Path)) {return}
+  if (!$start -or !($next = $start.Path)) { return }
 
   $getPair = { @{name = (Split-Path $next -Leaf); path = "$next" } }
   $output = [ordered]@{ (&$getPair).name = (&$getPair).path }

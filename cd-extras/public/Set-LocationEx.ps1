@@ -128,17 +128,17 @@ Function Set-LocationEx {
 
     if ($ReplaceWith) {
       Switch-LocationPart $Path $ReplaceWith
-      return
+      break
     }
 
-    elseif ($Path -eq '-') {
-      Undo-Location
-      return
+    elseif ($Path -match '(^\-)(\d*$)') {
+      Undo-Location ([Math]::Max([int]$Matches[2], 1))
+      break
     }
 
-    elseif ($Path -eq '+') {
-      Redo-Location
-      return
+    elseif ($Path -match '(^\+)(\d*$)') {
+      Redo-Location ([Math]::Max([int]$Matches[2], 1))
+      break
     }
 
     elseif ($PSBoundParameters.Count -eq 0 -and !$myInvocation.ExpectingInput) {

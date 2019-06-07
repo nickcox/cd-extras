@@ -12,9 +12,6 @@ Partial directory name for which to search.
 .PARAMETER From
 The directory from which to start. $PWD by default.
 
-.ALIASES
-gup
-
 .EXAMPLE
 # Get the parent of the current location
 C:\Windows\System32> Get-Up
@@ -72,8 +69,8 @@ function Get-Up {
 
       # if we couldn't match by leaf name then match by complete path
       # this is only really used for completion when MenuCompletion is off
-      $next = $From | Resolve-Path | select -Expand Path
-      $resolvedTarget = Resolve-Path $NamePart -ErrorAction Ignore | select -Expand Path
+      $next = Resolve-Path -LiteralPath $From | select -Expand Path
+      $resolvedTarget = Resolve-Path -LiteralPath $NamePart -ErrorAction Ignore | select -Expand Path
 
       do {
         if ($next -eq $resolvedTarget) { return $next }

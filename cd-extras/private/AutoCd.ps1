@@ -10,10 +10,15 @@ function AutoCd() {
       $scriptBlock = { Set-LocationEx $CommandName }
     }
 
+    # tilde syntax
+    elseif ($CommandName -match "(^~)(\d+$)") {
+      $scriptBlock = { Undo-Location ([int]$Matches[2]) }
+    }
+
     # Try smart expansion
     elseif ($expanded = Expand-Path $CommandName -Directory) {
       if ($expanded.Count -eq 1) {
-        $scriptBlock = { Set-LocationEx ($expanded | Resolve-Path -Relative) }
+        $scriptBlock = { $expanded | Resolve-Path -Relative | Set-LocationEx }
       }
     }
 

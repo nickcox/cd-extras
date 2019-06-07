@@ -9,9 +9,6 @@ Part of the current directory path to replace.
 .PARAMETER With
 Text with which to replace.
 
-.ALIASES
-cd:
-
 .EXAMPLE
 ~\Modules\Unix\Microsoft.PowerShell.Utility> Switch-LocationPart unix shared
 Sets the current directory to ~\Modules\Shared\Microsoft.PowerShell.Utility, if it exists

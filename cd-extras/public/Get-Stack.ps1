@@ -1,16 +1,12 @@
 <#
 .SYNOPSIS
 See the items in the cd-extras history stack.
-(Wraps Get-Location -Stack in the context of the cd-extras module.)
 
 .PARAMETER Undo
 Show contents of the Undo stack.
 
 .PARAMETER Redo
 Show contents of the Redo stack.
-
-.ALIASES
-dirs
 
 .EXAMPLE
 # Get contents of both stacks (default)
@@ -25,31 +21,46 @@ Redo                           C:\windows\System32
 Undo                           C:\
 
 .EXAMPLE
-# Get contents of undo stack
+# Get indexed contents of undo stack
 C:\> cd windows
 C:\Windows> cd system32
-C:\Windows\system32> Get-Stack -Undo
+C:\Windows\system32> Get-Stack -v
 
-Path
-----
-C:\Windows
-C:\
+0   C:\Windows\system32
+1   C:\Windows
+2   C:\
 #>
 
 function Get-Stack {
 
   [OutputType([System.Collections.Hashtable])]
+  [OutputType([String])]
   [CmdletBinding()]
   param(
+    [Alias("v")]
+    [switch] $Indexed,
+
+    [Alias("l", "p")]
     [switch] $Undo,
+
     [switch] $Redo
   )
 
-  if ($Undo -and -not $Redo) { return $undoStack }
-  if ($Redo -and -not $Undo) { return $redoStack }
-
-  @{
+  $output = if ($Undo -and -not $Redo -or $Indexed) { $undoStack }
+  elseif ($Redo -and -not $Undo) { $redoStack }
+  else {
+    @{
     Undo = $undoStack
     Redo = $redoStack
+  }}
+
+  if ($Indexed) {
+    "0`t$PWD"
+    for ($i = 0; $i -lt $output.Count; $i++) {
+      "$($i+1)`t$($output[$i])"
+    }
+  }
+  else {
+    $output
   }
 }

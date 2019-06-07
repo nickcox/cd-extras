@@ -9,9 +9,6 @@ Number of levels above the starting location. (One by default.)
 .PARAMETER NamePart
 Partial directory name for which to search.
 
-.ALIASES
-up
-
 .EXAMPLE
 # Set location to the parent of the current directory
 C:\Windows\System32> up

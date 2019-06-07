@@ -1,4 +1,15 @@
 # Changes
+
+## [1.11] 2019-06-07
+- Add support for `~n` as an alternative to `cd- n`
+- Add support for `dirs -l`, `dirs -v`.
+- Remove invalid `ALIASES` keyword in help comments.
+
+## [1.10] 2019-06-06
+- Support zsh style `cd -n` and `cd +n`.
+- Add `dirsc` alias.
+- Fix niggle with `Step-Up` through a directory with square brackets.
+
 ## [1.9] 2019-06-05
 - Truncate completion menu items to 40 characters by default.
 - Pass through `-File` and `Directory` switches to path completion where necessary.

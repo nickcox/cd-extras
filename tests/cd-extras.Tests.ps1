@@ -15,7 +15,7 @@ Describe 'cd-extras' {
   }
 
   AfterAll {
-    Clear-Stack -Undo -Redo
+    Clear-Stack
     $Global:cde = $xcde
     Pop-Location
   }
@@ -23,7 +23,7 @@ Describe 'cd-extras' {
   BeforeEach {
     Set-Location TestDrive:\
     setocd CD_PATH @()
-    Clear-Stack -Undo -Redo
+    Clear-Stack
   }
 
   function CurrentDir() {
@@ -69,36 +69,31 @@ Describe 'cd-extras' {
 
   Describe 'Undo-Location' {
     It 'moves back to previous directory' {
-      cd powershell
-      cd src
+      cd powershell; cd src
       cd-
       CurrentDir | Should Be powershell
     }
 
     It 'moves back "n" locations' {
-      cd powershell
-      cd src
-      cd Modules
-      cd Shared
+      cd powershell; cd src; cd Modules; cd Shared
       cd- 2
       CurrentDir | Should Be src
     }
 
+    It 'works with the zsh style syntax' {
+      cd powershell; cd src; cd Modules; cd Shared
+      cd -2
+      CurrentDir | Should Be src
+    }
+
     It 'moves back to a named location' {
-      cd powershell
-      cd src
-      cd Modules
-      cd Shared
+      cd powershell; cd src; cd Modules; cd Shared
       cd- src
       CurrentDir | Should Be src
     }
 
     It 'prefers an exact match if available' {
-      cd powershell
-      cd src
-      cd libpsl-native
-      cd test
-      cd googletest
+      cd powershell; cd src; cd libpsl-native;  cd test; cd googletest
       cd- TestDrive:${/}powershell${/}src
       CurrentDir | Should Be src
     }
@@ -109,31 +104,25 @@ Describe 'cd-extras' {
     }
 
     It 'matches more than one segment if necessary' {
-      cd powershell
-      cd src
-      cd Modules
-      cd Shared
+      cd powershell; cd src; cd Modules; cd Shared
       cd- src/mod
       CurrentDir | Should Be Modules
     }
 
     It 'pops a directory with literal square brackets' {
-      cd 'powershell/directory`[with`]squarebrackets/one'
-      cd ..
+      cd 'powershell/directory`[with`]squarebrackets/one'; cd ..
       cd-
       CurrentDir | Should Be one
     }
 
     It 'pushes current directory when moving into a directory with literal square brackets' {
-      cd powershell
-      cd 'directory`[with`]squarebrackets/one'
+      cd powershell; cd 'directory`[with`]squarebrackets/one'
       cd-
       CurrentDir | Should Be powershell
     }
 
     It 'pushes current directory when CDing into a directory with escaped square brackets' {
-      cd powershell
-      cd demos/A?ure
+      cd powershell; cd demos/A?ure;
       cd-
       CurrentDir | Should Be powershell
     }
@@ -141,31 +130,25 @@ Describe 'cd-extras' {
 
   Describe 'Redo-Location' {
     It 'moves forward on the stack' {
-      cd powershell
-      cd src
-      cd-
+      cd powershell; cd src; cd-
       cd+
       CurrentDir | Should Be src
     }
 
     It 'moves forward "n" locations' {
-      cd powershell
-      cd src
-      cd Modules
-      cd Shared
-      cd-
-      cd-
+      cd powershell; cd src; cd Modules; cd Shared; cd-; cd-
       cd+ 2
       CurrentDir | Should Be Shared
     }
 
+    It 'works with the zsh style syntax' {
+      cd powershell; cd src; cd Modules; cd Shared; cd-; cd-
+      cd +2
+      CurrentDir | Should Be Shared
+    }
+
     It 'moves forward to a named location' {
-      cd powershell
-      cd src
-      cd Modules
-      cd Shared
-      cd-
-      cd-
+      cd powershell; cd src; cd Modules; cd Shared; cd-; cd-
       cd+ shared
       CurrentDir | Should Be Shared
     }
@@ -177,8 +160,7 @@ Describe 'cd-extras' {
     }
 
     It 'pops a directory with square brackets' {
-      cd 'powershell/directory`[with`]squarebrackets/one'
-      cd-
+      cd 'powershell/directory`[with`]squarebrackets/one'; cd-
       cd+
       CurrentDir | Should Be one
     }
@@ -428,6 +410,12 @@ Describe 'cd-extras' {
       cd HKLM:
       so/mic
       CurrentDir | Should Be Microsoft
+    }
+
+    It 'supports tilde syntax' {
+      cd powershell; cd src; cd Modules; cd Shared
+      ~2
+      CurrentDir | Should Be src
     }
   }
 

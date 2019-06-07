@@ -8,9 +8,6 @@ The number of locations to redo.
 .PARAMETER NamePart
 Partial path name to choose from redo stack.
 
-.ALIASES
-cd+
-
 .EXAMPLE
 C:\Windows\System32> # Move backward using Undo-Location, then forward using Redo-Location
 C:\Windows\System32> cd ..

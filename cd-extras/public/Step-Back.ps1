@@ -2,9 +2,6 @@
 .SYNOPSIS
 Toggle between undo and redo of the last location on the stack.
 
-.ALIASES
-cdb
-
 .EXAMPLE
 # toggles between the two most recent directories
 PS C:\Windows\> cd system32

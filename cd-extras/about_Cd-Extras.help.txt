@@ -29,7 +29,7 @@
 
 # What is it?
 
-general conveniences for the `cd` command in PowerShell, mostly stolen from bash and zsh.
+:zap: super powers for the `cd` command in PowerShell, mostly stolen from bash and zsh :zap:
 
 ![Basic Navigation](./basic-navigation.gif)
 
@@ -75,31 +75,30 @@ specifying how many steps to traverse...
 ```sh
 [C:\Windows\System32]> .. 2 # or `up 2`
 [C:\]> cd temp
-[C:\temp]> cd- 2
+[C:\temp]> cd- 2 # `cd -2` or just `~2` would also work
 [C:\Windows\System32]> cd+ 2
 [C:\temp]> █
 ```
 
 ...or a string, `NamePart`, used to change to the nearest directory whose name matches
 the given argument. Given a `NamePart`, _cd-extras_ will search from the current location
-for directories whose _leaf_ name contains the given string. If none is found then it
-will attempt to match within the full path of each candidate directory.
+for directories whose _leaf_ name contains the given string¹. If none is found then it
+will attempt to match within the full path of each candidate directory².
 [Tab completion](#navigation-helper-expansions) is available for these three helpers.
 
 ```sh
 [C:\Windows]> cd system32
 [C:\Windows\System32]> cd drivers
-[C:\Windows\System32\drivers]> cd- sys
+[C:\Windows\System32\drivers]> cd- sys # [1] by leaf name
 [C:\Windows\System32]> cd+
 [C:\Windows\System32\drivers]> cd- win
-[C:\Windows\]> cd+ 32/dr
+[C:\Windows\]> cd+ 32/dr # [2] by full name
 [C:\Windows\System32\drivers]> up win
 [C:\Windows\]> █
 ```
 
 When the [AUTO_CD](#auto_cd) option is enabled, multiple dot syntax is supported as an
-alternative to `up [n]` with [tab completions](#multi-dot-and-variable-based-expansions)
-available.
+alternative to `up [n]` and `~n` as an alternative to `cd- n`.
 
 ```sh
 [C:\Windows\System32\drivers\etc]> ... # same as `up 2` or `.. 2`
@@ -115,7 +114,9 @@ Change directory without typing `cd`.
 ```sh
 [~]> projects
 [~/projects]> cd-extras
-[~/projects/cd-extras]> █
+[~/projects/cd-extras]> ~
+[~]> /
+[C:\]> █
 ```
 
 As with the `cd` command, [abbreviated paths](#path-shortening) are supported.
@@ -123,7 +124,23 @@ As with the `cd` command, [abbreviated paths](#path-shortening) are supported.
 ```sh
 [~]> pr
 [~/projects]> cd-e
+[~/projects/cd-extras]> ~
+[~]> pr/cd
 [~/projects/cd-extras]> █
+```
+
+`AUTO_CD` also supports a shorthand syntax for `cd-` using tilde (`~`).
+
+```sh
+[C:\Windows\System32]> /
+[C:\]> temp
+[C:\temp]> dirs -v
+0   C:\temp
+1   C:\
+2   C:\Windows\System32
+
+[C:\temp]> ~2
+[C:\Windows\System32]> █
 ```
 
 ## CD_PATH
@@ -149,7 +166,7 @@ Set-Location : Cannot find path '~\WindowsPowerShell' because it does not exist.
 ## CDABLE_VARS
 
 Save yourself a `$` when cding into folders using a variable name and enable
-[completion](#multi-dot-and-variable-based-expansions) for child directories.
+[expansion](#multi-dot-and-variable-based-expansions) for child directories.
 Given a variable containing the path to a folder (configured, perhaps, in your
 `$PROFILE` or by invoking [`Export-Up`](#multi-dot-and-variable-based-expansions)),
 you can `cd` into it using the name of the variable.
@@ -404,14 +421,16 @@ You can combine `CDABLE_VARS` with [AUTO_CD](#auto_cd) for great good:
 ## Additional helpers
 
 - Get-Stack (_dirs_)
-  - view contents of undo (`cd-`) and redo (`cd+`) stacks;
-    limit output with the `-Undo` or `-Redo` switches
+  - view contents of undo (`cd-`) and redo (`cd+`) stacks
+- Clear-Stack (_dirsc_)
+  - clear contents of undo (`cd-`) and redo (`cd+`) stacks
 - Get-Up (_gup_)
   - get the path of an ancestor directory, either by name or by traversing upwards `n` levels
 - Expand-Path (_xpa_)
-  - expand a candidate path by inserting wildcards between each segment
-- Set-CdExtrasOption (_setocd_)
-  - [configure](#configure) cd-extras
+  - expand a candidate path by inserting wildcards between each segment.
+
+  **note:** the expansion may match more than you expect. always test the output before piping it
+  into a destructive command.
 
 ## Note on compatibility
 
@@ -458,7 +477,7 @@ Import-Module cd-extras
 
 # add to profile. e.g:
 
-Add-Content $PROFILE `n,Import-Module cd-extras
+Add-Content $PROFILE `n, 'Import-Module cd-extras'
 
 ```
 
@@ -467,7 +486,7 @@ or from get the latest from github
 ```
 
 git clone git@github.com:nickcox/cd-extras.git
-Import-Module cd-extras\cd-extras\cd-extras.psd1 # for reals
+Import-Module cd-extras\cd-extras\cd-extras.psd1 # yep, three :D
 
 ```
 
