@@ -1,5 +1,9 @@
 # Changes
 
+## [1.12] 2019-10-07
+- `~` as an alias for `Undo-Location`
+- Fix regression where multiple `CD_PATHS` breaks
+
 ## [1.11] 2019-06-07
 - Add support for `~n` as an alternative to `cd- n`
 - Add support for `dirs -l`, `dirs -v`.
