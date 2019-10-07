@@ -34,12 +34,12 @@ function Expand-Path {
   [OutputType([object[]])]
   [CmdletBinding()]
   param (
-    [string] $Candidate = './',
-    [int]    $MaxResults = [int]::MaxValue,
-    [array]  $SearchPaths = $cde.CD_PATH,
-    [switch] $File,
-    [switch] $Directory,
-    [switch] $Force
+    [string]    $Candidate = './',
+    [int]       $MaxResults = [int]::MaxValue,
+    [string[]]  $SearchPaths = $cde.CD_PATH,
+    [switch]    $File,
+    [switch]    $Directory,
+    [switch]    $Force
   )
 
   # if we've been given an empty string then expand everything below $PWD

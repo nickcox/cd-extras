@@ -44,7 +44,7 @@ Provides the following aliases (and corresponding functions):
 
 ```sh
 [C:\Windows\System32]> up # or ..
-[C:\Windows]> cd-
+[C:\Windows]> cd- # or ~
 [C:\Windows\System32]> cd+
 [C:\Windows]> █
 ```
@@ -119,8 +119,7 @@ Change directory without typing `cd`.
 ```sh
 [~]> projects
 [~/projects]> cd-extras
-[~/projects/cd-extras]> ~
-[~]> /
+[~/projects]> /
 [C:\]> █
 ```
 
@@ -129,12 +128,15 @@ As with the `cd` command, [abbreviated paths](#path-shortening) are supported.
 ```sh
 [~]> pr
 [~/projects]> cd-e
-[~/projects/cd-extras]> ~
+[~/projects/cd-extras]> cd
 [~]> pr/cd
 [~/projects/cd-extras]> █
 ```
 
-`AUTO_CD` also supports a shorthand syntax for `cd-` using tilde (`~`).
+`AUTO_CD` also supports a shorthand syntax for `cd-` using tilde (`~`). You can
+use this with or without a space between tilde and the number, although [tab
+completion](#Enhanced-expansion-for-built-ins) only works if you do include a space
+(`~ ⇥`).
 
 ```sh
 [C:\Windows\System32]> /
@@ -144,7 +146,7 @@ As with the `cd` command, [abbreviated paths](#path-shortening) are supported.
 1   C:\
 2   C:\Windows\System32
 
-[C:\temp]> ~2
+[C:\temp]> ~2 # or ~ 2
 [C:\Windows\System32]> █
 ```
 
@@ -510,7 +512,7 @@ Import-Module cd-extras\cd-extras\cd-extras.psd1 # yep, three :D
 
 - _AUTO_CD_: `[bool] = $true`
   - Any truthy value enables auto_cd.
-- _CD_PATH_: `[array] = @()`
+- _CD_PATH_: `[string[]] = @()`
   - Paths to be searched by `cd` and tab expansion. Note that this is an array, not a delimited
   string.
 - _CDABLE_VARS_: `[bool] = $false`
@@ -521,11 +523,11 @@ Import-Module cd-extras\cd-extras\cd-extras.psd1 # yep, three :D
 - _MenuCompletion_: `[bool] = $true` (if PSReadLine available)
   - If truthy, indexes are offered as completions for `up`, `cd+` and `cd-` with full paths
     displayed in the menu.
-- _DirCompletions_: `[array] = @('Push-Location', 'Set-Location', 'Get-ChildItem')`
+- _DirCompletions_: `[string[]] = @('Push-Location', 'Set-Location', 'Get-ChildItem')`
   - Commands that participate in enhanced tab expansion for directories.
-- _PathCompletions_: `[array] = @()`
+- _PathCompletions_: `[string[]] = @()`
   - Commands that participate in enhanced tab expansion for any type of path (files & directories).
-- _FileCompletions_: `[array] = @()`
+- _FileCompletions_: `[string[]] = @()`
   - Commands that participate in enhanced tab expansion for files.
 - _ColorCompletion_ : `[bool] = false`
   - If truthy, offered Dir/Path/File completions will be coloured by `Format-ColorizedFilename`,

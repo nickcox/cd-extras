@@ -92,7 +92,7 @@ function IndexedComplete() {
   }
 }
 
-function RegisterCompletions([array] $commands, $param, $target) {
+function RegisterCompletions([string[]] $commands, $param, $target) {
   Register-ArgumentCompleter -CommandName $commands -ParameterName $param -ScriptBlock $target
 }
 

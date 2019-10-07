@@ -1,3 +1,4 @@
+Set-Alias '~' Undo-Location
 Set-Alias ..  Step-Up
 Set-Alias up  Step-Up
 Set-Alias cdb Step-Between
