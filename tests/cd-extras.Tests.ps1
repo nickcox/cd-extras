@@ -664,7 +664,7 @@ InModuleScope cd-extras {
       Set-LocationEx src
       $cde.MenuCompletion = $false
       $actual = CompleteStack -wordToComplete '' -commandName 'Undo'
-      $actual[0].CompletionText | Should BeLike "TestDrive:\powershell"
+      $actual[0].CompletionText | Should BeLike "TestDrive:${/}powershell"
     }
 
     It 'uses the full path when only one completion is available' {
