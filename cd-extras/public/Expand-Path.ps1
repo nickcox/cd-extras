@@ -18,6 +18,9 @@ Limits search results to leaf items.
 .PARAMETER Directory
 Limits search results to container items.
 
+.PARAMETER Force
+Indicates that this cmdlet gets items that cannot otherwise be accessed, such as hidden items.
+
 .EXAMPLE
 # Expand a well-known Windows path by abbreviating each segment
 PS C:\> Expand-Path /win/sys/dr/et -Directory

@@ -8,9 +8,6 @@ The option to update.
 .PARAMETER Value
 The new value.
 
-.ALIASES
-setocd
-
 .EXAMPLE
 PS C:\> Set-CdExtrasOption AUTO_CD
 Enables flag AUTO_CD
@@ -57,19 +54,19 @@ function Set-CdExtrasOption {
 
   $Global:cde.$option = $value
 
-  $isUnderTest = {$Global:__cdeUnderTest -and !($Global:__cdeUnderTest = $false)}
+  $isUnderTest = { $Global:__cdeUnderTest -and !($Global:__cdeUnderTest = $false) }
 
-  RegisterCompletions @('Step-Up') 'n' {CompleteAncestors @args}
-  RegisterCompletions @('Undo-Location', 'Redo-Location') 'n' {CompleteStack @args}
+  RegisterCompletions @('Step-Up') 'n' { CompleteAncestors @args }
+  RegisterCompletions @('Undo-Location', 'Redo-Location') 'n' { CompleteStack @args }
 
   if ($cde.DirCompletions) {
-    RegisterCompletions $cde.DirCompletions 'Path' {CompletePaths -dirsOnly @args}
+    RegisterCompletions $cde.DirCompletions 'Path' { CompletePaths -dirsOnly @args }
   }
   if ($cde.FileCompletions) {
-    RegisterCompletions $cde.FileCompletions 'Path' {CompletePaths -filesOnly @args}
+    RegisterCompletions $cde.FileCompletions 'Path' { CompletePaths -filesOnly @args }
   }
   if ($cde.PathCompletions) {
-    RegisterCompletions $cde.PathCompletions 'Path' {CompletePaths @args}
+    RegisterCompletions $cde.PathCompletions 'Path' { CompletePaths @args }
   }
 
   if ($cde.AUTO_CD) {

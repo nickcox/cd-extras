@@ -8,6 +8,9 @@ Show contents of the Undo stack.
 .PARAMETER Redo
 Show contents of the Redo stack.
 
+.PARAMETER Indexed
+Show indexed contents of the Undo stack.
+
 .EXAMPLE
 # Get contents of both stacks (default)
 C:\> cd windows
@@ -30,37 +33,39 @@ C:\Windows\system32> Get-Stack -v
 1   C:\Windows
 2   C:\
 #>
-
 function Get-Stack {
 
   [OutputType([System.Collections.Hashtable])]
   [OutputType([String])]
-  [CmdletBinding()]
+  [CmdletBinding(DefaultParameterSetName = 'unindexed')]
   param(
     [Alias("v")]
+    [Parameter(ParameterSetName = 'indexed', Position = 0)]
     [switch] $Indexed,
 
     [Alias("l", "p")]
+    [Parameter(ParameterSetName = 'unindexed', Position = 0)]
     [switch] $Undo,
 
+    [Parameter(ParameterSetName = 'unindexed', Position = 1)]
     [switch] $Redo
   )
 
-  $output = if ($Undo -and -not $Redo -or $Indexed) { $undoStack }
-  elseif ($Redo -and -not $Undo) { $redoStack }
-  else {
-    @{
-    Undo = $undoStack
-    Redo = $redoStack
-  }}
-
   if ($Indexed) {
-    "0`t$PWD"
-    for ($i = 0; $i -lt $output.Count; $i++) {
-      "$($i+1)`t$($output[$i])"
+    $array = $undoStack.ToArray()
+    "0`t$PWD <--"
+    for ($i = 1; $i -le $array.Count; $i++) {
+      "$i`t" + $array[$i - 1]
     }
   }
   else {
-    $output
+    if ($Undo -and -not $Redo -or $Indexed) { $undoStack }
+    elseif ($Redo -and -not $Undo) { $redoStack }
+    else {
+      @{
+        Undo = $undoStack
+        Redo = $redoStack
+      }
+    }
   }
 }

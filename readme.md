@@ -35,11 +35,11 @@
 
 ## Navigation helpers
 
-Provides the following aliases (and corresponding functions):
+_cd-extras_ provides the following aliases (and corresponding functions):
 
 - `up`, `..` (`Step-Up`)
-- `cd-` (`Undo-Location`)
-- `cd+` (`Redo-Location`)
+- `cd-`, `~`, (`Undo-Location`)
+- `cd+`, `~~`, (`Redo-Location`)
 - `cdb` (`Step-Between`)
 
 ```sh
@@ -75,15 +75,15 @@ specifying how many steps to traverse...
 ```sh
 [C:\Windows\System32]> .. 2 # or `up 2`
 [C:\]> cd temp
-[C:\temp]> cd- 2 # `cd -2` or just `~2` would also work
+[C:\temp]> cd- 2 # `cd -2`, `~ 2` or just `~2` would also work
 [C:\Windows\System32]> cd+ 2
 [C:\temp]> █
 ```
 
-...or a string, `NamePart`, used to change to the nearest directory whose name matches
-the given argument. Given a `NamePart`, _cd-extras_ will search from the current location
-for directories whose _leaf_ name contains the given string¹. If none is found then it
-will attempt to match within the full path of each candidate directory².
+...or a string, `NamePart`, used to select the nearest matching directory.
+Given a `NamePart`, _cd-extras_ will search from the current location for directories
+whose _leaf_ name contains the given string¹. If none is found then it will attempt
+to find a match within the full path of each candidate directory².
 
 [Tab expansions](#navigation-helper-expansions) are available for these three helpers.
 
