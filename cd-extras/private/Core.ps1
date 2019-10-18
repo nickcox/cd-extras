@@ -64,9 +64,9 @@ function GetStackIndex([array]$stack, [string]$namepart) {
   (
     $items = $stack -eq $namepart # full path match
   ) -or (
-    $items = $stack |? { ($_ | Split-Path -Leaf) -eq $namepart } # full leaf match
+    $items = $stack | ? { ($_ | Split-Path -Leaf) -eq $namepart } # full leaf match
   ) -or (
-    $items = $stack |? { ($_ | Split-Path -Leaf).StartsWith($namepart) } # leaf starts with
+    $items = $stack | ? { ($_ | Split-Path -Leaf).StartsWith($namepart) } # leaf starts with
   ) -or (
     $items = $stack -match ($namepart | NormaliseAndEscape) # anything...
   ) | Out-Null
@@ -79,14 +79,14 @@ function IndexedComplete() {
   Process { $items += $_ }
   End {
     $items | % {
-      $itemText = if ($cde.MenuCompletion -and @($items).Count -gt 1) { "$($_.index)" }
-      else { $_.long | SurroundAndTerminate }
+      $itemText = if ($cde.MenuCompletion -and @($items).Count -gt 1) { "$($_.n)" }
+      else { $_.path | SurroundAndTerminate }
 
       [Management.Automation.CompletionResult]::new(
         $itemText,
-        "$($_.index). $($_.short)",
+        "$($_.n). $($_.name)",
         "ParameterValue",
-        "$($_.index). $($_.long)"
+        "$($_.n). $($_.path)"
       )
     }
   }

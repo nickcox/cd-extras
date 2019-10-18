@@ -85,7 +85,9 @@ Given a `NamePart`, _cd-extras_ will search from the current location for direct
 whose _leaf_ name contains the given string¹. If none is found then it will attempt
 to find a match within the full path of each candidate directory².
 
-[Tab expansions](#navigation-helper-expansions) are available for these three helpers.
+[Tab expansions](#navigation-helper-expansions) are available for these three commands.
+You can also use `Get-Stack -Undo` (`dirs -Undo`), `Get-Stack -Redo` (`dirs -Redo`) and
+`Get-Ancestors` (`xup`) to quickly show the locations available for navigation.
 
 ```sh
 [C:\Windows]> cd system32
@@ -96,6 +98,16 @@ to find a match within the full path of each candidate directory².
 [C:\Windows\]> cd+ 32/dr # [2] by full name
 [C:\Windows\System32\drivers]> up win
 [C:\Windows\]> █
+```
+
+```sh
+[C:\Windows\System32\drivers]> Get-Ancestors -IncludeRoot # xup
+
+n Name        Path
+- ----        ----
+1 System32    C:\Windows\System32
+2 Windows     C:\Windows
+3 C:\         C:\
 ```
 
 When the [AUTO_CD](#auto_cd) option is enabled, multiple dot syntax is available as an
@@ -142,9 +154,12 @@ completion](#Enhanced-expansion-for-built-ins) only works if you do include a sp
 [C:\Windows\System32]> /
 [C:\]> temp
 [C:\temp]> dirs -v
-0   C:\temp
-1   C:\
-2   C:\Windows\System32
+
+n Name      Path
+- ----      ----
+0 temp      C:\temp
+1 C:\       C:\
+2 System32  C:\Windows\System32
 
 [C:\temp]> ~2 # or ~ 2
 [C:\Windows\System32]> █
@@ -176,7 +191,7 @@ Set-Location : Cannot find path '~\WindowsPowerShell' because it does not exist.
 Save yourself a `$` when cding into folders using a variable name and enable
 [expansion](#multi-dot-and-variable-based-expansions) for child directories.
 Given a variable containing the path to a folder (configured, perhaps, in your
-`$PROFILE` or by invoking [`Export-Up`](#multi-dot-and-variable-based-expansions)),
+`$PROFILE` or by invoking [`Get-Ancestors`](#multi-dot-and-variable-based-expansions)),
 you can `cd` into it using the name of the variable.
 
 ```sh
@@ -402,21 +417,21 @@ The multi-dot syntax provides tab completion into ancestor directories.
 .github    assets   docker   src    tools
 ```
 
-`Export-Up` (`xup`) recursively expands each parent path into a global variable
-with a corresponding name. Why? In combination with [CDABLE_VARS](#cdable_vars),
-it can be useful for navigating a deeply nested folder structure without needing
-to count `..`s. For example:
+When used with the `-Export` option, `Get-Ancestors` (`xup`) recursively expands
+each parent directory's path into a global variable with a corresponding name.
+Why? In combination with [CDABLE_VARS](#cdable_vars), it can be useful for navigating
+a deeply nested folder structure without needing to count `..`s. For example:
 
 ```sh
 [C:\projects\powershell\src\Modules\Unix]> xup
 
-Name                           Value
-----                           -----
-Unix                           C:\projects\powershell\src\Modules\Unix
-Modules                        C:\projects\powershell\src\Modules
-src                            C:\projects\powershell\src
-powershell                     C:\projects\powershell
-projects                       C:\projects
+n Name        Path
+- ----        ----
+1 Unix        C:\projects\powershell\src\Modules\Unix
+2 Modules     C:\projects\powershell\src\Modules
+3 src         C:\projects\powershell\src
+4 powershell  C:\projects\powershell
+5 projects    C:\projects
 
 [C:\projects\powershell\src\Modules\Unix]> cd po⇥
 [C:\projects\powershell\src\Modules\Unix]> cd C:\projects\powershell\█

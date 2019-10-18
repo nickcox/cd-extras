@@ -27,9 +27,9 @@ C:\Windows> _
 function Step-Up {
 
   [OutputType([void])]
-  [CmdletBinding(DefaultParameterSetName = 'levels')]
+  [CmdletBinding(DefaultParameterSetName = 'n')]
   param(
-    [Parameter(ParameterSetName = 'levels', Position = 0)] [byte]$n = 1,
+    [Parameter(ParameterSetName = 'n', Position = 0)] [byte]$n = 1,
     [Parameter(ParameterSetName = 'named', Position = 0)] [string]$NamePart
   )
 

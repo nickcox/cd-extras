@@ -176,7 +176,7 @@ Set-Location : Cannot find path '~\WindowsPowerShell' because it does not exist.
 Save yourself a `$` when cding into folders using a variable name and enable
 [expansion](#multi-dot-and-variable-based-expansions) for child directories.
 Given a variable containing the path to a folder (configured, perhaps, in your
-`$PROFILE` or by invoking [`Export-Up`](#multi-dot-and-variable-based-expansions)),
+`$PROFILE` or by invoking [`Get-Ancestors`](#multi-dot-and-variable-based-expansions)),
 you can `cd` into it using the name of the variable.
 
 ```sh
@@ -402,7 +402,7 @@ The multi-dot syntax provides tab completion into ancestor directories.
 .github    assets   docker   src    tools
 ```
 
-`Export-Up` (`xup`) recursively expands each parent path into a global variable
+`Get-Ancestors` (`xup`) recursively expands each parent path into a global variable
 with a corresponding name. Why? In combination with [CDABLE_VARS](#cdable_vars),
 it can be useful for navigating a deeply nested folder structure without needing
 to count `..`s. For example:

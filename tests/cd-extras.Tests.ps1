@@ -47,7 +47,7 @@ Describe 'cd-extras' {
       cd powershell
       cd src
       (Get-Stack -Undo).Count | should be 2
-      (Get-Stack -Undo) | select -First 1 | should -Match 'powershell$'
+      Get-Stack -Undo | select -First 1 -Expand Name | should -Be 'powershell'
     }
 
     It 'does not push duplicates' {
@@ -56,7 +56,7 @@ Describe 'cd-extras' {
       cd src
       cd ../src
       (Get-Stack -Undo).Count | should be 2
-      (Get-Stack -Undo) | select -First 1 | should -Match 'powershell$'
+      (Get-Stack -Undo) | select -First 1 -Expand Name | should -Be 'powershell'
     }
 
     It 'supports piping values' {
@@ -121,7 +121,7 @@ Describe 'cd-extras' {
       CurrentDir | Should Be powershell
     }
 
-    It 'pushes current directory when CDing into a directory with escaped square brackets' {
+    It 'pushes current directory when CDing into a directory with question mark' {
       cd powershell; cd demos/A?ure;
       cd-
       CurrentDir | Should Be powershell
@@ -240,7 +240,7 @@ Describe 'cd-extras' {
       Get-Location | Split-Path | Should Be TestDrive:${/}powershell${/}src${/}Modules${/}Unix
     }
 
-    It 'leaves an entry on the undo stack' {
+    It 'leaves an entry on the Undo stack' {
       Set-Location .\powershell\src\Modules\Shared\Microsoft.PowerShell.Utility
       cd Shared Unix
       Get-Stack -Undo | Select-Object -First 1 | Split-Path -Leaf |
@@ -259,6 +259,12 @@ Describe 'cd-extras' {
 }
 
 Describe 'Step-Up' {
+  It 'moves up one level if no arguments given' {
+    Set-Location p*\src\Sys*\Format*\common\Utilities
+    Step-Up
+    CurrentDir | Should Be common
+  }
+
   It 'can navigate upward by a given number of directories' {
     Set-Location p*\src\Sys*\Format*\common\Utilities
     Step-Up 4
@@ -310,24 +316,28 @@ Describe 'Step-Up' {
 Describe 'Get-Up' {
   It 'returns the parent directory by default' {
     Set-Location pow*/docs/git
-    Get-Up | Should be (Resolve-Path ..).Path
+    Get-Up | Should Be (Resolve-Path ..).Path
   }
 
   It 'can take an arbitrary path' {
     Get-Up -From powershell\docs\git | Should be (Resolve-Path powershell\docs).Path
   }
 
-  It 'stops at the root' {
+  It 'return $null when n is out of range' {
     Set-Location pow*/docs/git
-    Get-Up 255 | Should be $PWD.Drive.Root
+    Get-Up 255 | Should BeNullOrEmpty
+  }
+
+  It 'is fine with square brackets' {
+    Set-Location 'powershell/directory`[with`]squarebrackets/one'
+    Get-Up | Split-Path -Leaf | Should Be 'directory[with]squarebrackets'
   }
 }
 
-Describe 'Export-Up' {
+Describe 'Get-Ancestors' {
   It 'exports parents up to but not including the root' {
     Set-Location p*\src\Sys*\Format*\common\Utilities
-    Export-Up -Force
-    $Global:utilities | Should Be (Resolve-Path .).Path
+    Get-Ancestors -Export -Force
     $Global:common | Should Be (Resolve-Path ..).Path
     $Global:formatAndOutput | Should Be (Resolve-Path ../..).Path
     # ...
@@ -335,19 +345,19 @@ Describe 'Export-Up' {
 
   It 'does not choke on duplicate directory names' {
     Set-Location powershell/powershell
-    $xup = Export-Up -NoGlobals
-    $xup[0] | Should BeLike $pwd.Path
-    $xup[1] | Should not BeLike ($pwd.Path | Split-Path)
+    $xup = (Get-Ancestors).Path
+    $xup | select -Index 0 | Should BeLike ($pwd.Path | Split-Path)
+    $xup | select -Index 1 | Should BeLike ($pwd.Path | Split-Path | Split-Path)
   }
 
   It 'should not export the root directory by default' {
-    $xup = Export-Up -NoGlobals -From ~
-    $xup.Keys | Should -Not -Contain (Resolve-Path ~).Drive.Root
+    $xup = Get-Ancestors -From ~
+    $xup.Path | Should -Not -Contain (Resolve-Path ~).Drive.Root
   }
 
   It 'should export the root directory when switch set' {
-    $xup = Export-Up -NoGlobals -From ~ -IncludeRoot
-    $xup.Keys | Should -Contain (Resolve-Path ~).Drive.Root
+    $xup = Get-Ancestors -From ~ -IncludeRoot
+    $xup.Path | Should -Contain (Resolve-Path ~).Drive.Root
   }
 }
 
@@ -374,12 +384,6 @@ Describe 'AUTO_CD' {
     Set-Location powershell
     sr/Res
     CurrentDir | Should Be ResGen
-  }
-
-  It 'can navigate up one level' {
-    Set-Location p*\src\Sys*\Format*\common\Utilities
-    ..
-    CurrentDir | Should Be common
   }
 
   It 'can navigate up multiple levels' {
@@ -449,7 +453,7 @@ Describe 'No arg cd' {
     $startLocation = (Get-Location).Path
     $cde.NOARG_CD = '~'
     cd
-    (Get-Stack -Undo | select -First 1) | Should Be $startLocation
+    Get-Stack -Undo | select -First 1 -Expand Path | Should Be $startLocation
   }
 
   It 'does not change location when null' {
@@ -664,7 +668,7 @@ InModuleScope cd-extras {
       Set-LocationEx src
       $cde.MenuCompletion = $false
       $actual = CompleteStack -wordToComplete '' -commandName 'Undo'
-      $actual[0].CompletionText | Should BeLike "TestDrive:${/}powershell"
+      $actual[0].CompletionText | Should BeLike "TestDrive:\powershell"
     }
 
     It 'uses the full path when only one completion is available' {
