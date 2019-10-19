@@ -24,7 +24,7 @@ Undo                           C:\
 # Get indexed contents of undo stack
 C:\> cd windows
 C:\Windows> cd system32
-C:\Windows\system32> Get-Stack -v
+C:\Windows\system32> Get-Stack -u
 
 n Name      Path
 - ----      ----
