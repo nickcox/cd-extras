@@ -86,6 +86,12 @@ Describe 'cd-extras' {
       CurrentDir | Should Be src
     }
 
+    It 'works with the tilde syntax' {
+      cd powershell; cd src; cd Modules; cd Shared
+      cd ~2
+      CurrentDir | Should Be src
+    }
+
     It 'moves back to a named location' {
       cd powershell; cd src; cd Modules; cd Shared
       cd- src
@@ -144,6 +150,12 @@ Describe 'cd-extras' {
     It 'works with the zsh style syntax' {
       cd powershell; cd src; cd Modules; cd Shared; cd-; cd-
       cd +2
+      CurrentDir | Should Be Shared
+    }
+
+    It 'works with the tilde syntax' {
+      cd powershell; cd src; cd Modules; cd Shared; cd-; cd-
+      cd ~~2
       CurrentDir | Should Be Shared
     }
 
@@ -416,10 +428,17 @@ Describe 'AUTO_CD' {
     CurrentDir | Should Be Microsoft
   }
 
-  It 'supports tilde syntax' {
+  It 'supports tilde undo syntax' {
     cd powershell; cd src; cd Modules; cd Shared
     ~2
     CurrentDir | Should Be src
+  }
+
+  It 'supports tilde redo syntax' {
+    cd powershell; cd src; cd Modules; cd Shared
+    cd- 2
+    ~~2
+    CurrentDir | Should Be Shared
   }
 }
 

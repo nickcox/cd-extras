@@ -52,6 +52,7 @@ Function Set-LocationEx {
 
 .EXAMPLE
   PS C:\Users\Bob\Documents>cd bob sue
+  PS C:\Users\Sue\Documents> _
 	This command attempts to replace 'bob' in the current location with sue so that the working directory is changed to C:\Users\Sue\Documents.
 
 .NOTES
@@ -126,21 +127,25 @@ Function Set-LocationEx {
       $PSBoundParameters['OutBuffer'] = 1
     }
 
+    # two arg
     if ($ReplaceWith) {
       Switch-LocationPart $Path $ReplaceWith
       break
     }
 
-    elseif ($Path -match '(^\-)(\d*$)') {
+    #cd -n, cd ~n
+    elseif ($Path -match '^(\-|~)(\d*)$') {
       Undo-Location ([Math]::Max([int]$Matches[2], 1))
       break
     }
 
-    elseif ($Path -match '(^\+)(\d*$)') {
+    # cd +n, cd ~~n
+    elseif ($Path -match '^(\+|~~)(\d*)$') {
       Redo-Location ([Math]::Max([int]$Matches[2], 1))
       break
     }
 
+    # no arg
     elseif ($PSBoundParameters.Count -eq 0 -and !$myInvocation.ExpectingInput) {
       $Path = $cde.NOARG_CD | DefaultIfEmpty { $PWD }
     }
@@ -148,13 +153,15 @@ Function Set-LocationEx {
     elseif ($PSCmdlet.ParameterSetName -eq 'Path') {
       if ($Path -and !(Test-Path $Path) -or ($Path -match '^\.{3,}')) {
         if (
+          # cdable vars
           $cde.CDABLE_VARS -and
           ($vpath = Get-Variable $Path -ValueOnly -ErrorAction Ignore) -and
           (Test-Path $vpath)
         ) { $Path = $vpath }
         elseif (
+          # expand-path
           ($dirs = Expand-Path $Path -Directory) -and
-          (@($dirs).Count -eq 1 -or ($dirs = $dirs | ? Name -eq $Path).Count -eq 1)) {
+          (@($dirs).Count -eq 1 -or ($dirs = $dirs | Where Name -eq $Path).Count -eq 1)) {
           $Path = $dirs | Resolve-Path -Relative
         }
       }
