@@ -22,12 +22,14 @@ C:\Windows\System32> _
 # Get the grandparent of the current location
 C:\Windows\System32\drivers\etc> Get-Up 2
 C:\Windows\System32
+
 C:\Windows\System32\drivers\etc> _
 
 .EXAMPLE
 # Get the first ancestor containing the term 'win'
 C:\Windows\System32\drivers\etc> Get-Up win
 C:\Windows
+
 C:\Windows\System32\drivers\etc> _
 
 .LINK

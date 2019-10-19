@@ -1,5 +1,12 @@
 # Changes
 
+## [2.0.0-beta1]
+- Rename `Export-Up` to `Get-Ancestors`
+- Change output of `Get-Stack -Undo` and `Get-Stack -Redo`
+- Add tilde syntax support to `Set-Location-Ex`
+- Add tilde redo support to `AUTO_CD`
+- Add `~~` as an alias of `Redo-Location`
+
 ## [1.12] 2019-10-07
 - `~` as an alias for `Undo-Location`
 - Fix regression where multiple `CD_PATHS` breaks

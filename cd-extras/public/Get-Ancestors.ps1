@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-Export each ancestor of the current or given directory (to a global variable by default).
+List ancestors of the current or given directory, optionally exporting each one into a global variable.
 
 .PARAMETER From
 The folder from which to start. $PWD by default.
@@ -15,18 +15,29 @@ Copy output into global variables.
 When used with Export, overwrites any existing globals variables of the same names with the new values.
 
 .EXAMPLE
+# List the ancestors of the current directory, including the root directory
+C:\Windows\System32\drivers\etc> Get-Ancestors -IncludeRoot
+
+n Name     Path
+- ----     ----
+1 drivers  C:\Windows\System32\drivers
+2 System32 C:\Windows\System32
+3 Windows  C:\Windows
+4 C:\      C:\
+
+.EXAMPLE
 # Expand all ancestors of the given path (except the root) into global variables
 C:\> Get-Ancestors -From C:\projects\powershell\src\Microsoft.PowerShell.SDK
 
-Name                           Value
-----                           -----
-Microsoft.PowerShell.SDK       C:\projects\powershell\src\Microsoft.PowerShell.SDK\
-src                            C:\projects\powershell\src\
-powershell                     C:\projects\powershell\
-projects                       C:\projects\
+n Name        Path
+- ----        ----
+1 src         C:\projects\powershell\src
+2 powershell  C:\projects\powershell
+3 projects    C:\projects
 
 C:\projects\powershell\src\Microsoft.PowerShell.SDK> $powershell
 C:\projects\powershell\
+
 C:\projects\powershell\src\Microsoft.PowerShell.SDK> _
 #>
 function Get-Ancestors() {
