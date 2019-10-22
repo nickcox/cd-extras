@@ -1,6 +1,6 @@
 function CompleteAncestors {
   param($commandName, $parameterName, $wordToComplete, $commandAst, $boundParameters)
-  $ups = Get-Ancestors -IncludeRoot
+  $ups = Get-Ancestors
   if (-not $ups) { return }
 
   $valueToMatch = $wordToComplete | RemoveSurroundingQuotes

@@ -361,13 +361,13 @@ Describe 'cd-extras' {
       $xup[1] | Should BeLike ($pwd.Path | Split-Path | Split-Path)
     }
 
-    It 'should not export the root directory by default' {
-      $xup = Get-Ancestors -From ~
+    It 'should not export the root directory when switch set' {
+      $xup = Get-Ancestors -From ~ -ExcludeRoot
       $xup.Path | Should -Not -Contain (Resolve-Path ~).Drive.Root
     }
 
-    It 'should export the root directory when switch set' {
-      $xup = Get-Ancestors -From ~ -IncludeRoot
+    It 'should export the root directory by default' {
+      $xup = Get-Ancestors -From ~
       $xup.Path | Should -Contain (Resolve-Path ~).Drive.Root
     }
   }

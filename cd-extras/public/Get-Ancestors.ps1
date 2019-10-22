@@ -5,8 +5,8 @@ List ancestors of the current or given directory, optionally exporting each one 
 .PARAMETER From
 The folder from which to start. $PWD by default.
 
-.PARAMETER IncludeRoot
-Includes the root level path in the output.
+.PARAMETER ExcludeRoot
+Excludes the root level path in the output.
 
 .PARAMETER Export
 Copy output into global variables.
@@ -16,7 +16,7 @@ When used with Export, overwrites any existing globals variables of the same nam
 
 .EXAMPLE
 # List the ancestors of the current directory, including the root directory
-C:\Windows\System32\drivers\etc> Get-Ancestors -IncludeRoot
+C:\Windows\System32\drivers\etc> Get-Ancestors
 
 n Name     Path
 - ----     ----
@@ -27,7 +27,7 @@ n Name     Path
 
 .EXAMPLE
 # Expand all ancestors of the given path (except the root) into global variables
-C:\> Get-Ancestors -From C:\projects\powershell\src\Microsoft.PowerShell.SDK
+C:\> Get-Ancestors -From C:\projects\powershell\src\Microsoft.PowerShell.SDK -ExcludeRoot -Export
 
 n Name        Path
 - ----        ----
@@ -47,7 +47,7 @@ function Get-Ancestors() {
   param(
     [parameter(ValueFromPipeline = $true)]
     [string] $From = $PWD,
-    [switch] $IncludeRoot,
+    [switch] $ExcludeRoot,
     [switch] $Export,
     [switch] $Force
   )
@@ -71,7 +71,7 @@ function Get-Ancestors() {
   # on Unix there's a weird empty path returned for the root directory
   # so we add it explicitly here instead of inside the loop
   if (
-    $IncludeRoot -and
+    !$ExcludeRoot -and
     $output.name -notContains $start.Drive.Root
   ) {
     $output += @{ Name = $start.Drive.Root; Path = $start.Drive.Root; n = $n++ }

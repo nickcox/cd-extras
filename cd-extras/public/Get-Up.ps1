@@ -45,7 +45,7 @@ function Get-Up {
     [string] $From = $PWD
   )
 
-  $ancestors = Get-Ancestors -From $From -IncludeRoot
+  $ancestors = Get-Ancestors -From $From
 
   if ($PSCmdlet.ParameterSetName -eq 'n') {
     if (!$n) {

@@ -28,7 +28,7 @@ filter IsRelative {
 }
 
 filter IsDescendedFrom($maybeAncestor) {
-  ($_ | Get-Ancestors -IncludeRoot).path -contains ($maybeAncestor | resolve-path)
+  ($_ | Get-Ancestors).Path -contains ($maybeAncestor | Resolve-Path)
 }
 
 filter NormaliseAndEscape {
