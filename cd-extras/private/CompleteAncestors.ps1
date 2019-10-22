@@ -1,7 +1,6 @@
 function CompleteAncestors {
   param($commandName, $parameterName, $wordToComplete, $commandAst, $boundParameters)
   $ups = Get-Ancestors
-  if (-not $ups) { return }
 
   $valueToMatch = $wordToComplete | RemoveSurroundingQuotes
   $normalised = $valueToMatch | NormaliseAndEscape
@@ -9,5 +8,6 @@ function CompleteAncestors {
   $ups | where Path -eq $valueToMatch |
   DefaultIfEmpty { $ups | where Name -match $normalised } |
   DefaultIfEmpty { $ups | where Path -match $normalised } |
-  IndexedComplete
+  IndexedComplete |
+  DefaultIfEmpty { $null }
 }

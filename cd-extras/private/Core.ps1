@@ -85,7 +85,7 @@ function IndexedComplete() {
       [Management.Automation.CompletionResult]::new(
         $itemText,
         "$($_.n). $($_.name)",
-        "ParameterValue",
+        [Management.Automation.CompletionResultType]::ParameterValue,
         "$($_.n). $($_.path)"
       )
     }

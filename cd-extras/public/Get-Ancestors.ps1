@@ -56,7 +56,7 @@ function Get-Ancestors() {
   if (!$start -or !($next = $start.Path)) { return }
 
   $getPair = { @((Split-Path $next -Leaf), $next) }
-  # $name, $path = &$getPair
+
   $n = 1
   $output = @( )
 
@@ -72,7 +72,8 @@ function Get-Ancestors() {
   # so we add it explicitly here instead of inside the loop
   if (
     !$ExcludeRoot -and
-    $output.name -notContains $start.Drive.Root
+    $output.name -notContains $start.Drive.Root -and
+    $From -ne $start.Drive.Root
   ) {
     $output += @{ Name = $start.Drive.Root; Path = $start.Drive.Root; n = $n++ }
   }

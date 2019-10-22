@@ -92,5 +92,6 @@ function CompletePaths {
   @($completions) + @($variCompletions) |
     select -Unique |
     select -First $cde.MaxCompletions |
-    CompletionResult
+    CompletionResult |
+    DefaultIfEmpty { $null }
 }

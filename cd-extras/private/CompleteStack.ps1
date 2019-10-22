@@ -11,8 +11,7 @@ function CompleteStack {
   ) { (Get-Stack -Redo) }
   else { (Get-Stack -Undo) }
 
-  if (-not $stack) { return }
-
   @($stack) | Where Path -match ($wordToComplete | RemoveSurroundingQuotes | RemoveTrailingSeparator | Escape) |
-  IndexedComplete
+  IndexedComplete |
+  DefaultIfEmpty { $null }
 }
