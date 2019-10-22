@@ -41,6 +41,7 @@ function Get-Up {
   param(
     [Parameter(ParameterSetName = 'n', Position = 0)] [byte]$n = 1,
     [Parameter(ParameterSetName = 'named', Position = 0)] [string]$NamePart,
+    [parameter(ValueFromPipeline = $true)]
     [string] $From = $PWD
   )
 
@@ -57,7 +58,7 @@ function Get-Up {
   if ($PSCmdlet.ParameterSetName -eq 'named') {
 
     if ($result = $ancestors | where Name -like "$NamePart*") {
-      return $result | select -first 1 -ExpandProperty Path
+      return $result | select -first 1 -Expand Path
     }
 
     # if we couldn't match by leaf name then match by complete path

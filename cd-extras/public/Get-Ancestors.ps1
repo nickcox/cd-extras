@@ -45,6 +45,7 @@ function Get-Ancestors() {
   [OutputType([System.Collections.IEnumerable])]
   [CmdletBinding()]
   param(
+    [parameter(ValueFromPipeline = $true)]
     [string] $From = $PWD,
     [switch] $IncludeRoot,
     [switch] $Export,

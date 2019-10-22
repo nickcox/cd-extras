@@ -37,6 +37,7 @@ function Expand-Path {
   [OutputType([object[]])]
   [CmdletBinding()]
   param (
+    [parameter(ValueFromPipeline = $true)]
     [string]    $Candidate = './',
     [int]       $MaxResults = [int]::MaxValue,
     [string[]]  $SearchPaths = $cde.CD_PATH,

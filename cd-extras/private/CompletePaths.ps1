@@ -6,7 +6,7 @@ function CompletePaths {
     $parameterName,
     $wordToComplete,
     $commandAst,
-    $boundParameters = @{}
+    $boundParameters = @{ }
   )
 
   <#
@@ -21,7 +21,7 @@ function CompletePaths {
 
     # add normalised trailing directory separator; quote if contains spaces
     $trailChar = if ($_.PSIsContainer) { ${/} }
-    $fullPath = $_ | select -Expand PSPath |% {Convert-Path -LiteralPath $_}
+    $fullPath = $_ | Convert-Path
 
     $completionText = if ($wordToComplete -match '^\.{1,2}$') {
       $wordToComplete
@@ -71,9 +71,9 @@ function CompletePaths {
   }
 
   $switches = @{
-    File = $boundParameters['File'] -or $filesOnly
+    File      = $boundParameters['File'] -or $filesOnly
     Directory = $boundParameters['Directory'] -or $dirsOnly
-    Force = $true
+    Force     = $true
   }
 
   $escapedWord = $wordToComplete | EscapeWildcards
@@ -90,7 +90,7 @@ function CompletePaths {
   }
 
   @($completions) + @($variCompletions) |
-  select -Unique |
-  select -First $cde.MaxCompletions |
-  CompletionResult
+    select -Unique |
+    select -First $cde.MaxCompletions |
+    CompletionResult
 }

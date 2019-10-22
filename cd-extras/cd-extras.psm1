@@ -9,13 +9,13 @@ $defaults = [ordered]@{
   CDABLE_VARS     = $false
   NOARG_CD        = '~'
   MaxCompletions  = 99
-  MaxMenuLength   = 40
+  MaxMenuLength   = 42
   DirCompletions  = @('Push-Location', 'Set-Location', 'Set-LocationEx')
   PathCompletions = @('Get-ChildItem')
   FileCompletions = @()
   ColorCompletion = $false
   MenuCompletion  = $null -ne (Get-Module PSReadLine) -and (
-    Get-PSReadLineKeyHandler -Bound |? Function -eq MenuComplete
+    Get-PSReadLineKeyHandler -Bound | ? Function -eq MenuComplete
   )
 }
 
