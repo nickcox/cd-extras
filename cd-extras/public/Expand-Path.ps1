@@ -23,7 +23,7 @@ Indicates that this cmdlet gets items that cannot otherwise be accessed, such as
 
 .EXAMPLE
 # Expand a well-known Windows path by abbreviating each segment
-PS C:\> Expand-Path /win/sys/dr/et -Directory
+PS C:\> Expand-Path /w/s/d/etc
 
     Directory: C:\Windows\System32\drivers
 

@@ -110,7 +110,7 @@ You can also use `Get-Stack -Undo` (`dirs -u`), `Get-Stack -Redo` (`dirs -r`) an
 `Get-Ancestors` (`xup`) to quickly show locations available for navigation.
 
 ```sh
-[C:/Windows/System32/drivers]> Get-Ancestors -IncludeRoot # xup -i
+[C:/Windows/System32/drivers]> Get-Ancestors # xup
 
 n Name        Path
 - ----        ----
@@ -489,7 +489,7 @@ This can be useful in combination with [CDABLE_VARS](#cdable_vars) for navigatin
 a deeply nested folder structure without needing to count `..`s.
 
 ```sh
-[C:/projects/powershell/src/Modules/Unix]> xup
+[C:/projects/powershell/src/Modules/Unix]> xup -Export -ExcludeRoot
 
 n Name        Path
 - ----        ----

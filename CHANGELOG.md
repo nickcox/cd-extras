@@ -1,5 +1,10 @@
 # Changes
 
+## [2.0.0-beta2]
+- Swap `Include-Root` for `Exclude-Root` in `Export-Ancestors`
+- Don't fall back to default completions when no completions are available
+- Path completion should respect `-Force` parameter if available on command being completed
+
 ## [2.0.0-beta1]
 - Rename `Export-Up` to `Get-Ancestors`
 - Change output of `Get-Stack -Undo` and `Get-Stack -Redo`

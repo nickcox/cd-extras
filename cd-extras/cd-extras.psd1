@@ -14,7 +14,7 @@
 
   PrivateData       = @{
     PSData = @{
-      Prerelease = 'beta1'
+      Prerelease = 'beta2'
       Tags       = @('cd+', 'cd-', 'AUTO_CD', 'CD_PATH', 'CDABLE_VARS', 'bash', 'zsh')
       LicenseUri = 'https://github.com/nickcox/cd-extras/blob/master/LICENSE'
       ProjectUri = 'https://github.com/nickcox/cd-extras'
