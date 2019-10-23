@@ -8,19 +8,17 @@ function CompletePaths {
     $commandAst,
     $boundParameters = @{ }
   )
-
+  
   <#
     Given a full path, $_, return a fully formed completion result.
     Logic: use a relative path if the supplied word isn't rooted
     (like /temp/... or ~/... or C:\...) *and* the resolved path is a
-    child of the current directory or its parent.
+    descendant of the current directory or its parent.
 
     For absolute paths, replace home dir location with tilde.
   #>
   filter CompletionResult {
 
-    # add normalised trailing directory separator; quote if contains spaces
-    $trailChar = if ($_.PSIsContainer) { ${/} }
     $fullPath = $_ | Convert-Path
 
     $completionText = if ($wordToComplete -match '^\.{1,2}$') {
@@ -36,15 +34,15 @@ function CompletePaths {
       $fullPath
     }
 
+    # add normalised trailing directory separator; quote if contains spaces
+    $trailChar = if ($_.PSIsContainer) { ${/} }
+
     $completionText = $completionText |
       RemoveTrailingSeparator |
-      SurroundAndTerminate $trailChar
-
-    # there seems to be a weird behaviour in PowerShell where wildcards must be escaped
-    # by every/many(?) command(s) _except_ Get-ChildItem, where they should not be escaped
-    if ($commandName -ne 'Get-ChildItem') {
-      $completionText = $completionText | EscapeWildcards
-    }
+      SurroundAndTerminate $trailChar |
+      # this actually breaks on directories with wildcards like square brackets
+      # but the behaviour is the same in vanilla PowerShell so... meh
+      EscapeWildcards
 
     # hack to support registry provider
     if ($_.PSProvider.Name -eq 'Registry') {
@@ -66,14 +64,15 @@ function CompletePaths {
       $completionText,
       ($listItemText | Truncate),
       [Management.Automation.CompletionResultType]::ParameterValue,
-      $($fullPath | DefaultIfEmpty { $_ })
+      $($fullPath)
     )
   }
 
   $switches = @{
     File      = $boundParameters['File'] -or $filesOnly
     Directory = $boundParameters['Directory'] -or $dirsOnly
-    Force     = $true
+    Force     = $boundParameters['Force'] -or $commandName -and (
+      (Get-Command $commandName -ea Ignore).Parameters.Keys -notcontains 'Force')
   }
 
   $escapedWord = $wordToComplete | EscapeWildcards
