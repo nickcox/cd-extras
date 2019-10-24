@@ -343,6 +343,10 @@ Describe 'cd-extras' {
       Set-Location 'powershell/directory`[with`]squarebrackets/one'
       Get-Up | Split-Path -Leaf | Should Be 'directory[with]squarebrackets'
     }
+
+    It 'should return -From when n is 0' {
+      Get-Up -n 0 | should -Be $PWD.Path
+    }
   }
 
   Describe 'Get-Ancestors' {
@@ -507,6 +511,11 @@ Describe 'cd-extras' {
         Should Be (Join-Path $TestDrive powershell\src\Modules\Unix)
     }
 
+    It 'expands $PWD if given an empty string' {
+      # last result should be powershell/powershell
+      Expand-Path '' | Select -l 1 -Expand Name | Should Be 'powershell'
+    }
+
     It 'returns expected expansion relative style' {
       Expand-Path ./p/s/m/U |
         Should Be (Join-Path $TestDrive powershell\src\Modules\Unix)
@@ -583,7 +592,7 @@ Describe 'Clear-Stack' {
 
 InModuleScope cd-extras {
 
-  Describe 'Tab expansion' {
+  Describe 'Path expansion' {
     It 'expands multiple items' {
       $actual = CompletePaths -wordToComplete 'pow/t/c' | % CompletionText
       $actual | Should HaveCount 3
@@ -616,6 +625,13 @@ InModuleScope cd-extras {
       Set-Location $PSScriptRoot
       $actual = CompletePaths -wordToComplete '../cd-extras/public'
       $actual.CompletionText | Should Be "..${/}cd-extras${/}public${/}"
+    }
+
+    It 'completes absolute paths with an absolute prefix' {
+      $root = (Resolve-Path $PSScriptRoot).Drive.Root
+
+      $actual = CompletePaths -wordToComplete $root
+      $actual[0].CompletionText | Should -BeLike "$root*"
     }
 
     It 'expands multiple dots' {
@@ -660,6 +676,21 @@ InModuleScope cd-extras {
       $actual.ListItemText.Length | Should -BeLessThan ($actual.CompletionText | Split-Path -Leaf).Length
       $actual.ListItemText.Length | Should Be $cde.MaxMenuLength
     }
+
+    It 'colourises output only if option set' {
+      setocd ColorCompletion
+      $actual = CompletePaths -wordToComplete './pow/s/.SDK'
+      $actual.ListItemText.ToCharArray() | Should -Contain ';'
+
+      setocd ColorCompletion $false
+      $actual = CompletePaths -wordToComplete './pow/s/.SDK'
+      $actual.ListItemText.ToCharArray() | Should -Not -Contain ';'
+    }
+
+    It 'returns $null result if no completions available' {
+      $actual = CompletePaths -wordToComplete 'zzzzzzzzz'
+      $actual | Should -Be $null
+    }
   }
 
   Describe 'Stack expansion' {
@@ -700,6 +731,12 @@ InModuleScope cd-extras {
       $actual = CompleteStack -wordToComplete '' -commandName 'Undo'
       $actual[0].CompletionText | Should BeLike "testdrive:${/}"
     }
+
+    It 'returns $null result if no completions available' {
+      dirsc
+      $actual = CompleteStack -wordToComplete '' -commandName 'Undo'
+      $actual | Should -Be $null
+    }
   }
 
   Describe 'Ancestor expansion' {
@@ -735,6 +772,26 @@ InModuleScope cd-extras {
       $target = CompleteAncestors -wordToComplete 'demos'
       $actual = CompleteAncestors -wordToComplete $target[0].CompletionText
       $actual[0].CompletionText | Should BeLike $target[0].CompletionText
+    }
+
+    It 'returns $null result if no completions available' {
+      xup | select -Last 1 | cd
+      xup | select -Last 1 | cd #do this twice to escape TestDrive
+      $actual = CompleteAncestors -wordToComplete ''
+      $actual | Should -Be $null
+    }
+  }
+
+  Describe 'core' {
+    It 'uses a custom logger if given' {
+      $logger = {
+        $script:message = $args
+      }
+
+      $global:cde | Add-Member -MemberType ScriptMethod -Name _logger -Value $logger
+      WriteLog "test"
+
+      $message | Should -Be "test"
     }
   }
 }
