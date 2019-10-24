@@ -97,6 +97,8 @@ function RegisterCompletions([string[]] $commands, $param, $target) {
 }
 
 function WriteLog($message) {
-  if ((Get-Variable cde) -and ($cde | Get-Member _logger)) { &$cde._logger $message }
+  if ((Get-Variable cde) -and ($cde | Get-Member -MemberType ScriptMethod _logger)) { 
+    $cde._logger($message)
+  }
   else { Write-Verbose $message }
 }

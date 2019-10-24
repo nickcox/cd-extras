@@ -29,7 +29,7 @@ else {
 # account for any properties missing in user supplied hash
 $defaults.GetEnumerator() | % {
   if (-not (Get-Member -InputObject $global:cde -Name $_.Name)) {
-    Add-Member -InputObject $cde $_.Name $_.Value
+    $cde | Add-Member $_.Name $_.Value
   }
 }
 

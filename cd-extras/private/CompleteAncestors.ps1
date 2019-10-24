@@ -1,5 +1,5 @@
 function CompleteAncestors {
-  param($commandName, $parameterName, $wordToComplete, $commandAst, $boundParameters)
+  param($commandName, $parameterName, $wordToComplete)
   $ups = Get-Ancestors
 
   $valueToMatch = $wordToComplete | RemoveSurroundingQuotes
