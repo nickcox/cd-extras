@@ -660,8 +660,8 @@ Import-Module cd-extras/cd-extras/cd-extras.psd1 # yep, three :D
 - _ColorCompletion_ : `[bool] = false`
   - If truthy, offered Dir/Path/File completions will be coloured by
   `Format-ColorizedFilename`, if available.
-- MaxMenuLength : `[int] = 48`
-  - Truncate completion menu items to this length. Column layout may break below about 45
+- MaxMenuLength : `[int] = 60`
+  - Truncate completion menu items to this length. Column layout may break below about 60
   characters.
 - _MaxCompletions_ : `[int] = 99`
   - Limit the number of Dir/Path/File completions offered. Should probably be at least one

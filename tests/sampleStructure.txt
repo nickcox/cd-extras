@@ -385,4 +385,4 @@ powershell\directory with spaces\child two
 powershell\directory[with]squarebrackets\one
 powershell\directory[with]squarebrackets\two
 powershell\powershell
-powershell\reallyreallyreallyreallyreallreallyreally_longdirectoryname
+powershell\reallyreallyreallyreallyreallreallyreallyreally_longdirectoryname
