@@ -11,12 +11,12 @@ function AutoCd() {
     }
 
     # tilde syntax: ~n
-    elseif ($CommandName -match '^(~)(\d*)$') {
+    elseif ($CommandName -match '^(~)(\d+)$') {
       $scriptBlock = { Undo-Location ([int]$Matches[2]) }
     }
 
     # tilde syntax: ~~n
-    elseif ($CommandName -match '^(~~)(\d*)$') {
+    elseif ($CommandName -match '^(~~)(\d+)$') {
       $scriptBlock = { Redo-Location ([int]$Matches[2]) }
     }
 

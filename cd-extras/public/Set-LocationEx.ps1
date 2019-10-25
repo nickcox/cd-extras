@@ -134,13 +134,13 @@ Function Set-LocationEx {
     }
 
     #cd -n, cd ~n
-    elseif ($Path -match '^(\-|~)(\d*)$') {
+    elseif ($Path -match '^(\-|~)(\d+)$') {
       Undo-Location ([Math]::Max([int]$Matches[2], 1))
       break
     }
 
     # cd +n, cd ~~n
-    elseif ($Path -match '^(\+|~~)(\d*)$') {
+    elseif ($Path -match '^(\+|~~)(\d+)$') {
       Redo-Location ([Math]::Max([int]$Matches[2], 1))
       break
     }
