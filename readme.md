@@ -8,7 +8,6 @@ cd-extras
 superpowers for the Powershell `cd` command, mostly stolen from bash and zsh
 :zap: :zap:
 
-![Basic Navigation](./basic-navigation.gif)
 
 <!-- TOC -->
 
@@ -39,6 +38,18 @@ superpowers for the Powershell `cd` command, mostly stolen from bash and zsh
 <!-- /TOC -->
 
 # Navigation helpers
+
+<details>
+<summary>
+  [<i>Watch</i>]
+  <p/>
+</summary>
+<p>
+
+![Navigation Helpers](assets/navigation-helpers.svg)
+
+</p>
+</details>
 
 _cd-extras_ provides the following aliases (and corresponding functions):
 
@@ -163,6 +174,18 @@ n Name        Path
 ```
 
 # `cd` enhancements
+
+<details>
+<summary>
+  [<i>Watch</i>]
+  <p/>
+</summary>
+<p>
+
+![Navigation Helpers](assets/cd-enhancements.svg)
+
+</p>
+</details>
 
 `cd-extras` provides a proxy to `Set-Location`, called `Set-LocationEx` which is aliased
 to `cd` by default, giving it several new abilities:
@@ -431,6 +454,18 @@ You can combine `CDABLE_VARS` with [AUTO_CD](#auto_cd) for great good:
 
 # AUTO_CD
 
+<details>
+<summary>
+  [<i>Watch</i>]
+  <p/>
+</summary>
+<p>
+
+![Navigation Helpers](assets/auto-cd.svg)
+
+</p>
+</details>
+
 Change directory without typing `cd`.
 
 ```sh
@@ -625,8 +660,8 @@ Import-Module cd-extras/cd-extras/cd-extras.psd1 # yep, three :D
 - _ColorCompletion_ : `[bool] = false`
   - If truthy, offered Dir/Path/File completions will be coloured by
   `Format-ColorizedFilename`, if available.
-- MaxMenuLength : `[int] = 42`
-  - Truncate completion menu items to this length. Column layout may break below about 40
+- MaxMenuLength : `[int] = 48`
+  - Truncate completion menu items to this length. Column layout may break below about 45
   characters.
 - _MaxCompletions_ : `[int] = 99`
   - Limit the number of Dir/Path/File completions offered. Should probably be at least one
