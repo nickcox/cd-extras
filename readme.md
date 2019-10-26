@@ -4,9 +4,9 @@
 cd-extras
 ===========
 
-:zap: :zap:
+:zap:
 superpowers for the Powershell `cd` command, mostly stolen from bash and zsh
-:zap: :zap:
+:zap:
 
 
 <!-- TOC -->
@@ -22,18 +22,17 @@ superpowers for the Powershell `cd` command, mostly stolen from bash and zsh
   - [Two argument `cd`](#two-argument-cd)
   - [Enhanced expansion for `cd` and others](#enhanced-expansion-for-cd-and-others)
   - [Multi-dot and variable based expansions](#multi-dot-and-variable-based-expansions)
-- [AUTOCD](#autocd)
-- [CDPATH](#cdpath)
-- [CDABLEVARS](#cdablevars)
+- [AUTO CD](#auto-cd)
+- [CD PATH](#cd-path)
+- [CDABLE VARS](#cdable-vars)
 - [Additional helpers](#additional-helpers)
 - [Compatibility](#compatibility)
   - [Alternative providers](#alternative-providers)
   - [OS X & Linux](#os-x--linux)
-- [Get started](#get-started)
-  - [Install](#install)
-  - [Configure](#configure)
-    - [cd-extras options](#cd-extras-options)
-    - [Using a different alias](#using-a-different-alias)
+- [Install](#install)
+- [Configure](#configure)
+  - [cd-extras options](#cd-extras-options)
+  - [Using a different alias](#using-a-different-alias)
 
 <!-- /TOC -->
 
@@ -452,7 +451,7 @@ You can combine `CDABLE_VARS` with [AUTO_CD](#auto_cd) for great good:
 [C:/projects/powershell/src]> █
 ```
 
-# AUTO_CD
+# AUTO CD
 
 <details>
 <summary>
@@ -461,7 +460,7 @@ You can combine `CDABLE_VARS` with [AUTO_CD](#auto_cd) for great good:
 </summary>
 <p>
 
-![Navigation Helpers](assets/auto-cd.svg)
+![AUTO_CD](assets/auto-cd.svg)
 
 </p>
 </details>
@@ -515,7 +514,7 @@ Multi-dot syntax also works with `AUTO_CD` as an alternative to `up [n]`.
 [C:/Windows]>  █
 ```
 
-# CD_PATH
+# CD PATH
 
 Search additional locations for candidate directories.
 
@@ -536,7 +535,7 @@ or relative path is given.
 Set-Location : Cannot find path '~\WindowsPowerShell' because it does not exist.
 ```
 
-# CDABLE_VARS
+# CDABLE VARS
 
 Save yourself a `$` when cding into folders using a variable name and enable
 [expansion](#multi-dot-and-variable-based-expansions) for child directories.
@@ -610,9 +609,7 @@ Otherwise you can enable `cd-extras` menu completions manually with:
 setocd MenuCompletion
 ```
 
-# Get started
-
-## Install
+# Install
 
 From the [gallery](https://www.powershellgallery.com/packages/cd-extras/)
 
@@ -633,9 +630,9 @@ Import-Module cd-extras/cd-extras/cd-extras.psd1 # yep, three :D
 
 ```
 
-## Configure
+# Configure
 
-### _cd-extras_ options
+## _cd-extras_ options
 
 - _AUTO_CD_: `[bool] = $true`
   - Any truthy value enables auto_cd.
@@ -701,7 +698,7 @@ $cde = @{
 Import-Module cd-extras
 ```
 
-### Using a different alias
+## Using a different alias
 
 _cd-extras_ aliases `cd` to its proxy command, `Set-LocationEx`, by default. If you want to use a
 different alias then you'll probably want to restore the default `cd` alias at the same time.
