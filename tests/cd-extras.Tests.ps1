@@ -566,6 +566,25 @@ Describe 'Get-Stack' {
     Get-Stack -Redo | Should -BeNullOrEmpty
   }
 
+  It 'returns indexes for the undo stack' {
+    cd powershell
+    cd src
+    cd .SDK
+
+    Get-Stack -Undo | select -Expand n | Should -Be 1, 2, 3
+  }
+
+  It 'do not return duplicate indexes for duplicate paths' {
+    cd powershell
+    cd src
+    cd ..
+    cd ..
+
+    $undos = Get-Stack -Undo
+    $undos | where n -eq 1 | select -Expand Path | Should -Be (
+      $undos | where n -eq 3 | select -Expand Path)
+  }
+
   It 'shows the redo stack' {
     cd powershell/src
     cd-
@@ -672,7 +691,7 @@ InModuleScope cd-extras {
     }
 
     It 'truncates long menu items' {
-      $actual = CompletePaths -wordToComplete 'pow/reallyreally'
+      $actual = CompletePaths -wordToComplete 'pow/reallyreally..long'
       $actual.ListItemText.Length | Should -BeLessThan ($actual.CompletionText | Split-Path -Leaf).Length
       $actual.ListItemText.Length | Should Be $cde.MaxMenuLength
     }
@@ -722,7 +741,7 @@ InModuleScope cd-extras {
       Set-LocationEx src
       $cde.MenuCompletion = $false
       $actual = CompleteStack -wordToComplete '' -commandName 'Undo'
-      $actual[0].CompletionText | Should BeLike "TestDrive:\powershell"
+      $actual[0].CompletionText | Should BeLike "TestDrive:${/}powershell"
     }
 
     It 'uses the full path when only one completion is available' {

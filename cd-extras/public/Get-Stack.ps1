@@ -43,15 +43,8 @@ function Get-Stack {
     [switch] $Redo
   )
 
-  function indexed($xs) {
-    $xs |
-      select @{ l = 'n'; e = { [array]::IndexOf($xs, $_) + 1 } },
-      @{l = 'Name'; e = { $_ | Split-Path -Leaf } },
-      @{l = 'Path'; e = { $_ } }
-  }
-
-  if ($Undo -and -not $Redo) { indexed $undoStack }
-  elseif ($Redo -and -not $Undo) { indexed $redoStack }
+  if ($Undo -and -not $Redo) { IndexPaths $undoStack.ToArray() }
+  elseif ($Redo -and -not $Undo) { IndexPaths $redoStack.ToArray() }
   else {
     @{
       Undo = $undoStack
