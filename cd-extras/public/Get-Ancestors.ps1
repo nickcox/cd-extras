@@ -53,36 +53,24 @@ function Get-Ancestors() {
   )
 
   $start = Resolve-Path -LiteralPath $From -ErrorAction Ignore
-  if (!$start -or !($next = $start.Path)) { return }
+  $root = $start.Drive.Root
 
-  $getPair = { @((Split-Path $next -Leaf), $next) }
+  if (!$start -or ($start.Path -eq $root)) { return }
 
-  $n = 1
-  $output = @( )
-
-  while (
-    ($next = $next | Split-Path) -and
-    ($next -ne $start.Drive.Root)) {
-
-    $name, $path = &$getPair
-    $output += @{ Name = $name; Path = $path; n = $n++ }
-  }
+  $next = $start.Path
+  $paths = @(while ($next -and ($next = $next | Split-Path) -and ($next -ne $root)) { $next })
 
   # on Unix there's a weird empty path returned for the root directory
   # so we add it explicitly here instead of inside the loop
-  if (
-    !$ExcludeRoot -and
-    $output.name -notContains $start.Drive.Root -and
-    $From -ne $start.Drive.Root
-  ) {
-    $output += @{ Name = $start.Drive.Root; Path = $start.Drive.Root; n = $n++ }
-  }
+  if (!$ExcludeRoot -and $From -ne $root) { $paths += $root }
+
+  $output = IndexPaths $paths
 
   if ($Export) {
-    $output | % {
-      New-Variable $_.name $_.path -Scope Global -Force:$Force -ErrorAction Ignore
+    @($output) | % {
+      New-Variable $_.name $_.path -Scope Global -Force:$Force -ErrorAction SilentlyContinue
     }
   }
 
-  $output | select n, Name, Path
+  $output
 }

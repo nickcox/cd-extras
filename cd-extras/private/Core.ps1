@@ -92,6 +92,18 @@ function IndexedComplete() {
   }
 }
 
+function IndexPaths($xs) {
+  if (!$xs.Length) { return }
+
+  1..$xs.Length | % {
+    [PSCustomObject] @{
+      n    = $_
+      Name = $xs[$_ - 1] | Split-Path -Leaf | DefaultIfEmpty { 'root' }
+      Path = $xs[$_ - 1]
+    }
+  }
+}
+
 function RegisterCompletions([string[]] $commands, $param, $target) {
   Register-ArgumentCompleter -CommandName $commands -ParameterName $param -ScriptBlock $target
 }
