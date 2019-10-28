@@ -30,12 +30,6 @@ Describe 'cd-extras' {
     Get-Location | Split-Path -Leaf
   }
 
-  function ShouldBeOnWindows($expected) {
-    if ($IsWindows) {
-      $Input | Should Be $expected
-    }
-  }
-
   Describe 'cd' {
     It 'works with spaces' {
       cd 'powershell/directory with spaces'
@@ -488,7 +482,9 @@ Describe 'cd-extras' {
 
   Describe 'CD_PATH' {
     It 'searches CD_PATH for candidate directories' {
-      Set-CdExtrasOption -Option CD_PATH -Value @('TestDrive:\powershell\src\', 'TestDrive:\powershell\docs\')
+      Set-CdExtrasOption -Option CD_PATH -Value @(
+        'TestDrive:\powershell\src\', 'TestDrive:\powershell\docs\')
+        
       cd ResGen
       CurrentDir | Should Be resgen
     }
@@ -513,7 +509,7 @@ Describe 'cd-extras' {
 
     It 'expands $PWD if given an empty string' {
       # last result should be powershell/powershell
-      Expand-Path '' | Select -l 1 -Expand Name | Should Be 'powershell'
+      Expand-Path '' | Select -last 1 -Expand Name | Should Be 'powershell'
     }
 
     It 'returns expected expansion relative style' {
@@ -521,297 +517,296 @@ Describe 'cd-extras' {
         Should Be (Join-Path $TestDrive powershell\src\Modules\Unix)
     }
 
-    It 'expands rooted paths' {
-      Expand-Path /p/s/m/U | # TestDrive root Windows only
-      ShouldBeOnWindows (Join-Path $TestDrive powershell\src\Modules\Unix)
-  }
+    It 'expands rooted paths' -Skip:(!$IsWindows) {
+      # rooted paths on TestDrive only seem to work on Windows
+      Expand-Path /p/s/m/U | Should -Be (Join-Path $TestDrive powershell\src\Modules\Unix)
+    }
 
-  It 'can return multiple expansions' {
-    (Expand-Path ./p/s/m/s/M).Length |
-      Should Be 2
-  }
+    It 'can return multiple expansions' {
+      (Expand-Path ./p/s/m/s/M).Length | Should Be 2
+    }
 
-  It 'considers CD_PATH for expansion' {
-    Set-CdExtrasOption -Option CD_PATH -Value @('TestDrive:\powershell\src\')
-    Expand-Path Microsoft.WSMan | Should HaveCount 2
-  }
-
-  It 'expands around periods' {
-    Expand-Path p/s/.Con |
-      Should Be (Join-Path $TestDrive powershell\src\Microsoft.PowerShell.ConsoleHost)
-  }
-
-  It 'supports the double dot operator' {
-    Expand-Path pow/src/Typ..Gen |
-      Should Be (Join-Path $TestDrive powershell\src\TypeCatalogGen)
-  }
-
-  It 'works in Windows registry' -Skip:(!$IsWindows) {
-    (Expand-Path HKLM:\Soft\Mic\).Count | Should BeGreaterOrEqual 1
-  }
-}
-
-Describe 'Get-Stack' {
-  BeforeEach {
-    Clear-Stack
-  }
-
-  It 'shows the redo and undo stacks' {
-    (Get-Stack).Count | Should Be 2
-  }
-
-  It 'shows the undo stack' {
-    cd powershell/src
-    Get-Stack -Undo | Should -Not -BeNullOrEmpty
-    Get-Stack -Redo | Should -BeNullOrEmpty
-  }
-
-  It 'returns indexes for the undo stack' {
-    cd powershell
-    cd src
-    cd .SDK
-
-    Get-Stack -Undo | select -Expand n | Should -Be 1, 2, 3
-  }
-
-  It 'do not return duplicate indexes for duplicate paths' {
-    cd powershell
-    cd src
-    cd ..
-    cd ..
-
-    $undos = Get-Stack -Undo
-    $undos | where n -eq 1 | select -Expand Path | Should -Be (
-      $undos | where n -eq 3 | select -Expand Path)
-  }
-
-  It 'shows the redo stack' {
-    cd powershell/src
-    cd-
-    Get-Stack -Redo | Should -Not -BeNullOrEmpty
-  }
-}
-
-Describe 'Clear-Stack' {
-  It 'clears the undo stack' {
-    cd powershell
-    Get-Stack -Undo | Should Not BeNullOrEmpty
-    Clear-Stack -Undo
-    Get-Stack -Undo | Should BeNullOrEmpty
-  }
-
-  It 'clears the redo stack' {
-    cd powershell
-    cd-
-    Get-Stack -Redo | Should Not BeNullOrEmpty
-    Clear-Stack -Redo
-    Get-Stack -Redo | Should BeNullOrEmpty
-  }
-}
-
-InModuleScope cd-extras {
-
-  Describe 'Path expansion' {
-    It 'expands multiple items' {
-      $actual = CompletePaths -wordToComplete 'pow/t/c' | % CompletionText
-      $actual | Should HaveCount 3
-
-      function ShouldContain($likeStr) {
-        $actual | Where-Object { $_ -like $likeStr } | Should Not BeNullOrEmpty
-      }
-
-      ShouldContain "*test${/}csharp${/}"
-      ShouldContain "*test${/}common${/}"
-      ShouldContain "*tools${/}credscan${/}"
+    It 'considers CD_PATH for expansion' {
+      Set-CdExtrasOption -Option CD_PATH -Value @('TestDrive:\powershell\src\')
+      Expand-Path Microsoft.WSMan | Should HaveCount 2
     }
 
     It 'expands around periods' {
-      $actual = CompletePaths -wordToComplete './pow/s/.SDK'
-      $actual.CompletionText | Should BeLike "*powershell${/}src${/}Microsoft.PowerShell.SDK${/}"
-    }
-
-    It 'completes directories with spaces correctly' {
-      $actual = CompletePaths  -wordToComplete 'pow/directory with spaces/child one'
-      $actual.CompletionText | Should BeLike "'*${/}child one${/}'"
-    }
-
-    It 'completes relative directories with spaces correctly' {
-      $actual = CompletePaths -wordToComplete './pow/directory with spaces/child one'
-      $actual.CompletionText | Should BeLike "'*${/}child one${/}'"
-    }
-
-    It 'completes relative directories with a relative prefix' {
-      Set-Location $PSScriptRoot
-      $actual = CompletePaths -wordToComplete '../cd-extras/public'
-      $actual.CompletionText | Should Be "..${/}cd-extras${/}public${/}"
-    }
-
-    It 'completes absolute paths with an absolute prefix' {
-      $root = (Resolve-Path $PSScriptRoot).Drive.Root
-
-      $actual = CompletePaths -wordToComplete $root
-      $actual[0].CompletionText | Should -BeLike "$root*"
-    }
-
-    It 'expands multiple dots' {
-      Set-Location p*\src\Sys*\Format*\common\Utilities
-      (CompletePaths -wordToComplete '...').CompletionText | Should Match 'FormatAndOutput'
-    }
-
-    It 'completes CDABLE_VARS' {
-      setocd CDABLE_VARS
-      $Global:dir = Resolve-Path ./powershell/src
-      (CompletePaths -wordToComplete 'dir').CompletionText | Should Match 'src'
-    }
-
-    It 'completes file paths' {
-      Set-Location $PSScriptRoot
-      (CompletePaths -filesOnly -wordToComplete './samp').CompletionText |
-        Should Match "sampleStructure.txt"
-    }
-
-    It 'provides usable registry paths' -Skip:(!$IsWindows) {
-      (CompletePaths -dirsOnly -wordToComplete 'HKLM:\Soft\Mic').CompletionText |
-        Should Match "HKLM:\\Software\\Microsoft"
-    }
-
-    It 'escapes square brackets' {
-      $actual = CompletePaths -wordToComplete 'pow/directory[with]squarebrackets/o'
-      $actual.CompletionText | Should BeLike "'*${/}powershell${/}directory*squarebrackets${/}one${/}'"
-    }
-
-    It 'appends a directory separator given a single dot' {
-      $actual = CompletePaths -wordToComplete '.'
-      @($actual)[0].CompletionText | Should Be ".${/}"
+      Expand-Path p/s/.Con |
+        Should Be (Join-Path $TestDrive powershell\src\Microsoft.PowerShell.ConsoleHost)
     }
 
     It 'supports the double dot operator' {
-      $actual = CompletePaths -wordToComplete 'pow/src/Typ..Gen'
-      $actual.CompletionText | Should BeLike "*src${/}TypeCatalogGen${/}"
+      Expand-Path pow/src/Typ..Gen |
+        Should Be (Join-Path $TestDrive powershell\src\TypeCatalogGen)
     }
 
-    It 'truncates long menu items' {
-      $actual = CompletePaths -wordToComplete 'pow/reallyreally..long'
-      $actual.ListItemText.Length | Should -BeLessThan ($actual.CompletionText | Split-Path -Leaf).Length
-      $actual.ListItemText.Length | Should Be $cde.MaxMenuLength
-    }
-
-    It 'colourises output only if option set' {
-      setocd ColorCompletion
-      $actual = CompletePaths -wordToComplete './pow/s/.SDK'
-      $actual.ListItemText.ToCharArray() | Should -Contain ';'
-
-      setocd ColorCompletion $false
-      $actual = CompletePaths -wordToComplete './pow/s/.SDK'
-      $actual.ListItemText.ToCharArray() | Should -Not -Contain ';'
-    }
-
-    It 'returns $null result if no completions available' {
-      $actual = CompletePaths -wordToComplete 'zzzzzzzzz'
-      $actual | Should -Be $null
+    It 'works in Windows registry' -Skip:(!$IsWindows) {
+      (Expand-Path HKLM:\Soft\Mic\).Count | Should BeGreaterOrEqual 1
     }
   }
 
-  Describe 'Stack expansion' {
-    It 'expands the undo stack' {
-      Set-LocationEx powershell
-      Set-LocationEx src
-      $actual = CompleteStack -wordToComplete '' -commandName 'Undo'
-      $actual.Count | Should BeGreaterThan 1
+  Describe 'Get-Stack' {
+    BeforeEach {
+      Clear-Stack
     }
 
-    It 'expands the redo stack' {
-      Set-LocationEx powershell
-      Set-LocationEx src
-      cd- 2
-      $actual = CompleteStack -wordToComplete '' -commandName 'Redo'
-      $actual.Count | Should BeGreaterThan 1
+    It 'shows the redo and undo stacks' {
+      (Get-Stack).Count | Should Be 2
     }
 
-    It 'uses index completion when menu completion is on' {
-      Set-LocationEx powershell
-      Set-LocationEx src
-      $cde.MenuCompletion = $true
-      $actual = CompleteStack -wordToComplete '' -commandName 'Undo'
-      $actual[0].CompletionText | Should Be 1
+    It 'shows the undo stack' {
+      cd powershell/src
+      Get-Stack -Undo | Should -Not -BeNullOrEmpty
+      Get-Stack -Redo | Should -BeNullOrEmpty
     }
 
-    It 'uses the full path when menu completion is off' {
-      Set-LocationEx powershell
-      Set-LocationEx src
-      $cde.MenuCompletion = $false
-      $actual = CompleteStack -wordToComplete '' -commandName 'Undo'
-      $actual[0].CompletionText | Should BeLike "TestDrive:${/}powershell"
+    It 'returns indexes for the undo stack' {
+      cd powershell
+      cd src
+      cd .SDK
+
+      Get-Stack -Undo | select -Expand n | Should -Be 1, 2, 3
     }
 
-    It 'uses the full path when only one completion is available' {
-      Set-LocationEx powershell
-      $cde.MenuCompletion = $true
-      $actual = CompleteStack -wordToComplete '' -commandName 'Undo'
-      $actual[0].CompletionText | Should BeLike "testdrive:${/}"
+    It 'do not return duplicate indexes for duplicate paths' {
+      cd powershell
+      cd src
+      cd ..
+      cd ..
+
+      $undos = Get-Stack -Undo
+      $undos | where n -eq 1 | select -Expand Path | Should -Be (
+        $undos | where n -eq 3 | select -Expand Path)
     }
 
-    It 'returns $null result if no completions available' {
-      dirsc
-      $actual = CompleteStack -wordToComplete '' -commandName 'Undo'
-      $actual | Should -Be $null
+    It 'shows the redo stack' {
+      cd powershell/src
+      cd-
+      Get-Stack -Redo | Should -Not -BeNullOrEmpty
     }
   }
 
-  Describe 'Ancestor expansion' {
-    It 'expands ancestors' {
-      Set-Location p*\src\Sys*\Format*\common\Utilities
-      $actual = CompleteAncestors -wordToComplete ''
-      $actual.Count | Should BeGreaterThan 5
+  Describe 'Clear-Stack' {
+    It 'clears the undo stack' {
+      cd powershell
+      Get-Stack -Undo | Should Not BeNullOrEmpty
+      Clear-Stack -Undo
+      Get-Stack -Undo | Should BeNullOrEmpty
     }
 
-    It 'uses index completion when menu completion is on' {
-      Set-Location ./powershell/demos/Apache
-      $cde.MenuCompletion = $true
-      $actual = CompleteAncestors -wordToComplete ''
-      $actual[0].CompletionText | Should Be 1
-    }
-
-    It 'uses the full path when menu completion is off' {
-      Set-Location ./powershell/demos/Apache
-      $cde.MenuCompletion = $false
-      $actual = CompleteAncestors -wordToComplete ''
-      $actual[0].CompletionText | Should BeLike "*powershell${/}demos"
-    }
-
-    It 'can complete against a more than one path segment' {
-      Set-Location ./powershell/demos/Apache
-      $actual = CompleteAncestors -wordToComplete 'll/de'
-      $actual | Should -HaveCount 1
-      $actual[0].CompletionText | Should BeLike "*powershell${/}demos"
-    }
-
-    It 'can match against a previously completed full path' {
-      Set-Location ./powershell/demos/Apache
-      $target = CompleteAncestors -wordToComplete 'demos'
-      $actual = CompleteAncestors -wordToComplete $target[0].CompletionText
-      $actual[0].CompletionText | Should BeLike $target[0].CompletionText
-    }
-
-    It 'returns $null result if no completions available' {
-      xup | select -Last 1 | cd
-      xup | select -Last 1 | cd #do this twice to escape TestDrive
-      $actual = CompleteAncestors -wordToComplete ''
-      $actual | Should -Be $null
+    It 'clears the redo stack' {
+      cd powershell
+      cd-
+      Get-Stack -Redo | Should Not BeNullOrEmpty
+      Clear-Stack -Redo
+      Get-Stack -Redo | Should BeNullOrEmpty
     }
   }
 
-  Describe 'core' {
-    It 'uses a custom logger if given' {
-      $logger = {
-        $script:message = $args
+  InModuleScope cd-extras {
+
+    Describe 'Path expansion' {
+      It 'expands multiple items' {
+        $actual = CompletePaths -wordToComplete 'pow/t/c' | % CompletionText
+        $actual | Should HaveCount 3
+
+        function ShouldContain($likeStr) {
+          $actual | Where-Object { $_ -like $likeStr } | Should Not BeNullOrEmpty
+        }
+
+        ShouldContain "*test${/}csharp${/}"
+        ShouldContain "*test${/}common${/}"
+        ShouldContain "*tools${/}credscan${/}"
       }
 
-      $global:cde | Add-Member -MemberType ScriptMethod -Name _logger -Value $logger
-      WriteLog "test"
+      It 'expands around periods' {
+        $actual = CompletePaths -wordToComplete './pow/s/.SDK'
+        $actual.CompletionText | Should BeLike "*powershell${/}src${/}Microsoft.PowerShell.SDK${/}"
+      }
 
-      $message | Should -Be "test"
+      It 'completes directories with spaces correctly' {
+        $actual = CompletePaths  -wordToComplete 'pow/directory with spaces/child one'
+        $actual.CompletionText | Should BeLike "'*${/}child one${/}'"
+      }
+
+      It 'completes relative directories with spaces correctly' {
+        $actual = CompletePaths -wordToComplete './pow/directory with spaces/child one'
+        $actual.CompletionText | Should BeLike "'*${/}child one${/}'"
+      }
+
+      It 'completes relative directories with a relative prefix' {
+        Set-Location $PSScriptRoot
+        $actual = CompletePaths -wordToComplete '../cd-extras/public'
+        $actual.CompletionText | Should Be "..${/}cd-extras${/}public${/}"
+      }
+
+      It 'completes absolute paths with an absolute prefix' {
+        $root = (Resolve-Path $PSScriptRoot).Drive.Root
+
+        $actual = CompletePaths -wordToComplete $root
+        $actual[0].CompletionText | Should -BeLike "$root*"
+      }
+
+      It 'expands multiple dots' {
+        Set-Location p*\src\Sys*\Format*\common\Utilities
+        (CompletePaths -wordToComplete '...').CompletionText | Should Match 'FormatAndOutput'
+      }
+
+      It 'completes CDABLE_VARS' {
+        setocd CDABLE_VARS
+        $Global:dir = Resolve-Path ./powershell/src
+        (CompletePaths -wordToComplete 'dir').CompletionText | Should Match 'src'
+      }
+
+      It 'completes file paths' {
+        Set-Location $PSScriptRoot
+        (CompletePaths -filesOnly -wordToComplete './samp').CompletionText |
+          Should Match "sampleStructure.txt"
+      }
+
+      It 'provides usable registry paths' -Skip:(!$IsWindows) {
+        (CompletePaths -dirsOnly -wordToComplete 'HKLM:\Soft\Mic').CompletionText |
+          Should Match "HKLM:\\Software\\Microsoft"
+      }
+
+      It 'escapes square brackets' {
+        $actual = CompletePaths -wordToComplete 'pow/directory[with]squarebrackets/o'
+        $actual.CompletionText | Should BeLike "'*${/}powershell${/}directory*squarebrackets${/}one${/}'"
+      }
+
+      It 'appends a directory separator given a single dot' {
+        $actual = CompletePaths -wordToComplete '.'
+        @($actual)[0].CompletionText | Should Be ".${/}"
+      }
+
+      It 'supports the double dot operator' {
+        $actual = CompletePaths -wordToComplete 'pow/src/Typ..Gen'
+        $actual.CompletionText | Should BeLike "*src${/}TypeCatalogGen${/}"
+      }
+
+      It 'truncates long menu items' {
+        $actual = CompletePaths -wordToComplete 'pow/reallyreally..long'
+        $actual.ListItemText.Length | Should -BeLessThan ($actual.CompletionText | Split-Path -Leaf).Length
+        $actual.ListItemText.Length | Should Be $cde.MaxMenuLength
+      }
+
+      It 'colourises output only if option set' {
+        setocd ColorCompletion
+        $actual = CompletePaths -wordToComplete './pow/s/.SDK'
+        $actual.ListItemText.ToCharArray() | Should -Contain ';'
+
+        setocd ColorCompletion $false
+        $actual = CompletePaths -wordToComplete './pow/s/.SDK'
+        $actual.ListItemText.ToCharArray() | Should -Not -Contain ';'
+      }
+
+      It 'returns $null result if no completions available' {
+        $actual = CompletePaths -wordToComplete 'zzzzzzzzz'
+        $actual | Should -Be $null
+      }
+    }
+
+    Describe 'Stack expansion' {
+      It 'expands the undo stack' {
+        Set-LocationEx powershell
+        Set-LocationEx src
+        $actual = CompleteStack -wordToComplete '' -commandName 'Undo'
+        $actual.Count | Should BeGreaterThan 1
+      }
+
+      It 'expands the redo stack' {
+        Set-LocationEx powershell
+        Set-LocationEx src
+        cd- 2
+        $actual = CompleteStack -wordToComplete '' -commandName 'Redo'
+        $actual.Count | Should BeGreaterThan 1
+      }
+
+      It 'uses index completion when menu completion is on' {
+        Set-LocationEx powershell
+        Set-LocationEx src
+        $cde.MenuCompletion = $true
+        $actual = CompleteStack -wordToComplete '' -commandName 'Undo'
+        $actual[0].CompletionText | Should Be 1
+      }
+
+      It 'uses the full path when menu completion is off' {
+        Set-LocationEx powershell
+        Set-LocationEx src
+        $cde.MenuCompletion = $false
+        $actual = CompleteStack -wordToComplete '' -commandName 'Undo'
+        $actual[0].CompletionText | Should BeLike "TestDrive:${/}powershell"
+      }
+
+      It 'uses the full path when only one completion is available' {
+        Set-LocationEx powershell
+        $cde.MenuCompletion = $true
+        $actual = CompleteStack -wordToComplete '' -commandName 'Undo'
+        $actual[0].CompletionText | Should BeLike "testdrive:${/}"
+      }
+
+      It 'returns $null result if no completions available' {
+        dirsc
+        $actual = CompleteStack -wordToComplete '' -commandName 'Undo'
+        $actual | Should -Be $null
+      }
+    }
+
+    Describe 'Ancestor expansion' {
+      It 'expands ancestors' {
+        Set-Location p*\src\Sys*\Format*\common\Utilities
+        $actual = CompleteAncestors -wordToComplete ''
+        $actual.Count | Should BeGreaterThan 5
+      }
+
+      It 'uses index completion when menu completion is on' {
+        Set-Location ./powershell/demos/Apache
+        $cde.MenuCompletion = $true
+        $actual = CompleteAncestors -wordToComplete ''
+        $actual[0].CompletionText | Should Be 1
+      }
+
+      It 'uses the full path when menu completion is off' {
+        Set-Location ./powershell/demos/Apache
+        $cde.MenuCompletion = $false
+        $actual = CompleteAncestors -wordToComplete ''
+        $actual[0].CompletionText | Should BeLike "*powershell${/}demos"
+      }
+
+      It 'can complete against a more than one path segment' {
+        Set-Location ./powershell/demos/Apache
+        $actual = CompleteAncestors -wordToComplete 'll/de'
+        $actual | Should -HaveCount 1
+        $actual[0].CompletionText | Should BeLike "*powershell${/}demos"
+      }
+
+      It 'can match against a previously completed full path' {
+        Set-Location ./powershell/demos/Apache
+        $target = CompleteAncestors -wordToComplete 'demos'
+        $actual = CompleteAncestors -wordToComplete $target[0].CompletionText
+        $actual[0].CompletionText | Should BeLike $target[0].CompletionText
+      }
+
+      It 'returns $null result if no completions available' {
+        xup | select -Last 1 | cd
+        xup | select -Last 1 | cd #do this twice to escape TestDrive
+        $actual = CompleteAncestors -wordToComplete ''
+        $actual | Should -Be $null
+      }
+    }
+
+    Describe 'core' {
+      It 'uses a custom logger if given' {
+        $logger = {
+          $script:message = $args
+        }
+
+        $global:cde | Add-Member -MemberType ScriptMethod -Name _logger -Value $logger
+        WriteLog "test"
+
+        $message | Should -Be "test"
+      }
     }
   }
-}
 }
