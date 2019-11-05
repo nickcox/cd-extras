@@ -351,10 +351,11 @@ through directories to get to the file you're looking for.
 [~]> $cde.PathCompletions += 'Invoke-Item'
 [~]> # or setocd PathCompletions $cde.PathCompletions, 'Invoke-Item'
 [~]> ii /t/⇥
-[~]> C:\temp\subdir\█
+[~]> ii C:\temp\subdir\█
 subdir  txtFile.txt  txtFile2.txt
-
 ──────
+
+C:\temp\subdir
 ```
 
 Paths within `$cde.CD_PATH` are included for all completion types.
