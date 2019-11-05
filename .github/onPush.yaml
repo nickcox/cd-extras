@@ -1,0 +1,47 @@
+name: Run tests
+on: [push]
+
+jobs:
+  build:
+    name: Run tests
+    # This job runs on Linux
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - name: checkout
+        uses: actions/checkout@v1
+
+      - name: Get Module path
+        id: module_path
+        run: echo "::set-output name=modulePath::$($env:PSModulePath.SPlit([IO.Path]::PathSeparator)[0])/Pester"
+        shell: pwsh
+
+      - uses: actions/cache@v1
+        id: cache
+        with:
+          path: ${{ steps.module_path.outputs.modulePath }}
+          key: ${{ runner.os }}-Pester
+
+      - name: Install Pester
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: Install-Module Pester
+        shell: pwsh
+
+      - name: Run the tests
+        id: run_tests
+        run: |
+          Import-Module Pester
+          Get-Module | select name, path | Out-Host
+          $outDir = New-Item ./_reports/ -ItemType Directory
+          $reportPath = "$outDir/testResults.xml"
+          cd tests
+          Invoke-Pester -OutputFormat JUnitXml -OutputFile $reportPath -EnableExit
+        shell: pwsh
+
+      - name: Upload test report
+        uses: actions/upload-artifact@master
+        with:
+          name: Test Report (${{ matrix.os }})
+          path: _reports
