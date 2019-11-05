@@ -1,24 +1,24 @@
 name: Run tests
-on: [push]
+on: push
 
 jobs:
   build:
     name: Run tests
-    # This job runs on Linux
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
     steps:
-      - name: checkout
+      - name: Checkout
         uses: actions/checkout@v1
 
-      - name: Get Module path
+      - name: Get module path
         id: module_path
         run: echo "::set-output name=modulePath::$($env:PSModulePath.SPlit([IO.Path]::PathSeparator)[0])/Pester"
         shell: pwsh
 
-      - uses: actions/cache@v1
+      - name: Cache Pester
+        uses: actions/cache@v1
         id: cache
         with:
           path: ${{ steps.module_path.outputs.modulePath }}

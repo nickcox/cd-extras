@@ -692,13 +692,20 @@ Describe 'cd-extras' {
       }
 
       It 'colourises output only if option set' {
-        setocd ColorCompletion
-        $actual = CompletePaths -wordToComplete './pow/s/.SDK'
-        $actual.ListItemText.ToCharArray() | Should -Contain ';'
+        function Format-ColorizedFilename () { ($script:called = $true).ToString() }
+
+        function InvokeCompletion() {
+          $script:called = $false
+          $null = CompletePaths -wordToComplete './pow/s/.SDK'
+        }
+
+        setocd ColorCompletion $true
+        InvokeCompletion
+        $called | Should -BeTrue
 
         setocd ColorCompletion $false
-        $actual = CompletePaths -wordToComplete './pow/s/.SDK'
-        $actual.ListItemText.ToCharArray() | Should -Not -Contain ';'
+        InvokeCompletion
+        $called | Should -BeFalse
       }
 
       It 'returns $null result if no completions available' {
