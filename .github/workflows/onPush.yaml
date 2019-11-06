@@ -7,37 +7,38 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest, macOS-latest]
     steps:
       - name: Checkout
         uses: actions/checkout@v1
 
-      - name: Get module path
-        id: module_path
-        run: echo "::set-output name=modulePath::$($env:PSModulePath.SPlit([IO.Path]::PathSeparator)[0])/Pester"
-        shell: pwsh
-
-      - name: Cache Pester
+      - name: Cache Modules
         uses: actions/cache@v1
         id: cache
         with:
-          path: ${{ steps.module_path.outputs.modulePath }}
-          key: ${{ runner.os }}-Pester
+          path: ps_modules
+          key: ${{ runner.os }}-PSModules
 
       - name: Install Pester
         if: steps.cache.outputs.cache-hit != 'true'
-        run: Install-Module Pester -Force
+        run: |
+          mkdir ps_modules
+          Find-Module Pester | Save-Module -Path ./ps_modules/
         shell: pwsh
 
       - name: Run the tests
         id: run_tests
         run: |
-          Import-Module Pester
+          echo 'Running tests...'
+          Import-Module ./ps_modules/Pester
           Get-Module | select name, path | Out-Host
           $outDir = New-Item ./_reports/ -ItemType Directory
           $reportPath = "$outDir/testResults.xml"
+          $coveragePath = "$outDir/coverage.xml"
+          $src = Get-ChildItem ./cd-extras -Recurse -File -Include *.ps1
           cd tests
-          Invoke-Pester -OutputFormat JUnitXml -OutputFile $reportPath -EnableExit
+          Invoke-Pester -OutputFormat JUnitXml -OutputFile $reportPath `
+            -CodeCoverage $src -CodeCoverageOutputFile $coveragePath -EnableExit
         shell: pwsh
 
       - name: Upload test report
