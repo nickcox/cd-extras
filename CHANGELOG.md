@@ -1,16 +1,14 @@
 # Changes
 
-## [2.0.0-beta2]
-- Swap `Include-Root` for `Exclude-Root` in `Export-Ancestors`
-- Don't fall back to default completions when no completions are available
-- Path completion should respect `-Force` parameter if available on command being completed
-
-## [2.0.0-beta1]
+## [2.0.0]
 - Rename `Export-Up` to `Get-Ancestors`
+- Swap `Include-Root` for `Exclude-Root` in `Export-Ancestors`
 - Change output of `Get-Stack -Undo` and `Get-Stack -Redo`
 - Add tilde syntax support to `Set-Location-Ex`
 - Add tilde redo support to `AUTO_CD`
 - Add `~~` as an alias of `Redo-Location`
+- Don't fall back to default completions when no completions are available
+- Path completion should respect `-Force` parameter if available on command being completed
 
 ## [1.12] 2019-10-07
 - `~` as an alias for `Undo-Location`

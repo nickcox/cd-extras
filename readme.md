@@ -242,7 +242,7 @@ Directories in [`CD_PATH`](#cd_path) will be matched.
 ```
 
 If you're not sure whether an unambiguous match is available then just hit tab to pick
-from a [list of potential matches](#Enhanced-expansion-for-built-ins) instead.
+from a [list of potential matches](#enhanced-expansion-for-cd-and-others) instead.
 
 ## Multi-dot `cd`
 

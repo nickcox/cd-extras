@@ -344,7 +344,7 @@ Describe 'cd-extras' {
   }
 
   Describe 'Get-Ancestors' {
-    It 'exports parents up to but not including the root' {
+    It 'exports ancestors when Export switch set' {
       Set-Location p*\src\Sys*\Format*\common\Utilities
       Get-Ancestors -Export -Force
       $Global:common | Should Be (Resolve-Path ..).Path

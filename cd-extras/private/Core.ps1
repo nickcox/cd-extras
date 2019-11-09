@@ -92,13 +92,16 @@ function IndexedComplete() {
   }
 }
 
-function IndexPaths($xs) {
+function IndexPaths(
+  $xs,
+  $rootLabel = 'root' # this on happens on *nix
+) {
   if (!$xs.Length) { return }
 
   1..$xs.Length | % {
     [PSCustomObject] @{
       n    = $_
-      Name = $xs[$_ - 1] | Split-Path -Leaf | DefaultIfEmpty { 'root' }
+      Name = $xs[$_ - 1] | Split-Path -Leaf | DefaultIfEmpty { $rootLabel }
       Path = $xs[$_ - 1]
     }
   }
