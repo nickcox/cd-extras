@@ -3,7 +3,7 @@
 Attempts to expand a given candidate path by appending a wildcard character (*)
 to the end of each path segment.
 
-.PARAMETER Candidate
+.PARAMETER Path
 Candidate search string.
 
 .PARAMETER MaxResults
@@ -37,8 +37,9 @@ function Expand-Path {
   [OutputType([object[]])]
   [CmdletBinding()]
   param (
+    [alias("Candidate")]
     [parameter(ValueFromPipeline = $true)]
-    [string]    $Candidate = './',
+    [string]    $Path = './',
     [int]       $MaxResults = [int]::MaxValue,
     [string[]]  $SearchPaths = $cde.CD_PATH,
     [switch]    $File,
@@ -47,30 +48,30 @@ function Expand-Path {
   )
 
   # if we've been given an empty string then expand everything below $PWD
-  if (!$Candidate) { $Candidate = './' }
+  if (!$Path) { $Path = './' }
 
-  $multiDot = [regex]::Match($Candidate, '^\.{3,}')
+  $multiDot = [regex]::Match($Path, '^\.{3,}')
   $match = $multiDot.Value
   $replacement = ('../' * [Math]::Max(0, $match.LastIndexOf('.'))) -replace '.$'
 
-  [string]$wildcardedPath = $Candidate `
+  [string]$wildcardedPath = $Path `
     -replace [Regex]::Escape($match), $replacement `
-    -replace '\w/|\w\\|\w$', '$0*' <# asterisks around slashes and at end #> `
+    -replace '`?\[|`?\]', '?' <# be as permissive as possible about square brackets #> `
+    -replace '\w/|\w\\|\w$|\?$', '$0*' <# asterisks around slashes and at end #> `
     -replace '/\*|\\\*', "*${/}" <# /* or \* --> */ #> `
     -replace '/$|\\$', '$0*' <# append trailing aster if ends with slash #> `
-    -replace '(\w)\.\.', '$1*' <# support double dot operator #> `
-    -replace '\.\w|\w\.$', '*$0' <# expand around dots #> `
-    -replace '\[|\]', '`$0' <# escape square brackets #>
+    -replace '(\w)\.\.(\w)', '$1*' <# support double dot operator #> `
+    -replace '\.\w|\w\.$', '*$0' <# expand around dots #>
 
-  $wildcardedPaths = if ($SearchPaths -and -not ($Candidate | IsRootedOrRelative)) {
+  $wildcardedPaths = if ($SearchPaths -and -not ($Path | IsRootedOrRelative)) {
     # always include the local path, regardless of whether it was passed
     # in the searchPaths parameter (this differs from the behaviour in bash)
     @($wildcardedPath) + ($SearchPaths | Join-Path -ChildPath $wildcardedPath)
   }
   else { $wildcardedPath }
 
-  WriteLog "`nExpanding $Candidate to: $wildcardedPaths"
+  WriteLog "`nExpanding $Path to: $wildcardedPaths"
   Get-Item $wildcardedPaths -Force:$Force -ErrorAction Ignore |
-    Where { (!$File -or !$_.PSIsContainer) -and (!$Directory -or $_.PSIsContainer) } |
-    Select -First $MaxResults
+  Where { (!$File -or !$_.PSIsContainer) -and (!$Directory -or $_.PSIsContainer) } |
+  Select -First $MaxResults
 }

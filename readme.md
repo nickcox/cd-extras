@@ -85,8 +85,8 @@ Use `Step-Between` (`cdb`) if you want to toggle between directories.
 
 ## Even faster
 
-`up`, `cd+` and `cd-` each take a single optional parameter: either a number, `n`,
-specifying how many steps to traverse...
+`up`, `cd+` and `cd-` each take a single optional parameter: either a number of steps,
+`n`...
 
 ```sh
 [C:/Windows/System32]> .. 2 # or `up 2`
@@ -98,17 +98,16 @@ specifying how many steps to traverse...
 
 ...or a string, `NamePart`, used to select the nearest matching directory from the
 available locations. Given a `NamePart`, _cd-extras_ will search from the current
-location for directories whose _leaf_ name contains the given string¹. If none is found
-then it will attempt to find a match within the full path of each candidate directory².
+location for directories whose _leaf_ name contains the given string (ex. ¹). If none is
+found then it will attempt to find a match within the full path of each candidate
+directory (ex. ²).
 
 ```sh
 [C:/Windows]> cd system32
 [C:/Windows/System32]> cd drivers
-[C:/Windows/System32/drivers]> cd- sys # [1] by leaf name
-[C:/Windows/System32]> cd+
-[C:/Windows/System32/drivers]> cd- win
-[C:/Windows/]> cd+ 32/dr # [2] by full name
-[C:/Windows/System32/drivers]> up win
+[C:/Windows/System32/drivers]> cd- win # [ex. 1] by leaf name
+[C:/Windows/]> cd+ 32/dr # [ex. 2] by full name
+[C:/Windows/System32/drivers]> up win # by leaf name again
 [C:/Windows]> █
 ```
 
@@ -119,9 +118,9 @@ Tab completions are provided for each of `cd-` (_aka_ `~`), `cd+` (_aka_ `~~`) a
 
 When the `MenuCompletion` option is set and more than one completion is available, the
 completions offered are the indexes of each corresponding directory; the name itself is
-displayed in the menu below along with the full directory path in the tooltip if you have
-`PSReadLine` tooltips enabled. _cd-extras_ will attempt to detect `PSReadLine` options in
-order to set `MenuCompletion` appropriately at start-up.
+displayed in the menu below. The full directory path is shown in the tooltip if you also
+have `PSReadLine` tooltips enabled. _cd-extras_ will attempt to detect `PSReadLine` options
+in order to set `MenuCompletion` appropriately at start-up.
 
 ```sh
 [C:/Windows/System32/drivers/etc]> up ⇥
@@ -133,7 +132,7 @@ order to set `MenuCompletion` appropriately at start-up.
 C:\Windows\System32\drivers
 ```
 
-It's also possible tab-complete these commands (`cd-`, `cd+`, `up`) using a partial
+It's also possible tab-complete each of these commands (`cd-`, `cd+`, `up`) using a partial
 directory name (i.e. the [`NamePart` parameter](#even-faster)).
 
 ```sh
@@ -272,9 +271,8 @@ PowerShell versions >= 6.0, where no-arg `cd` always navigates to `~`.)
 
 ## Two argument `cd`
 
-Replaces all instances of the first argument in the current path with the second
-argument, changing to the resulting directory if it exists, using the `Switch-LocationPart`
-function.
+Replaces all instances of the first argument in the current path with the second argument,
+changing to the resulting directory if it exists, using the `Switch-LocationPart` function.
 
 You can also use the alias `cd:` or the explicit `ReplaceWith` parameter of
 `Set-LocationEx`.

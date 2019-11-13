@@ -151,25 +151,34 @@ Function Set-LocationEx {
     }
 
     elseif ($PSCmdlet.ParameterSetName -eq 'Path') {
-      if ($Path -and !(Test-Path $Path) -or ($Path -match '^\.{3,}')) {
+      if ($Path -and !(Test-Path $Path -PathType Container -ErrorAction Ignore) -or ($Path -match '^\.{3,}')) {
         if (
           # cdable vars
           $cde.CDABLE_VARS -and
           ($vpath = Get-Variable $Path -ValueOnly -ErrorAction Ignore) -and
-          (Test-Path $vpath)
+          (Test-Path $vpath -PathType Container -ErrorAction Ignore)
         ) { $Path = $vpath }
         elseif (
           # expand-path
-          ($dirs = Expand-Path $Path -Directory) -and
+          ($dirs = $Path | RemoveTrailingSeparator | Expand-Path -Directory) -and
           (@($dirs).Count -eq 1 -or ($dirs = $dirs | Where Name -eq $Path).Count -eq 1)) {
-          $Path = $dirs | Resolve-Path -Relative
+          $Path = $dirs | Resolve-Path | Select -Expand ProviderPath
         }
       }
     }
 
     if ($Path -and !$myInvocation.ExpectingInput) {
-      $PSBoundParameters['Path'] = $Path
+      if (Resolve-Path $Path -ErrorAction Ignore) {
+        $PSBoundParameters['Path'] = $Path
+      }
+      elseif (Resolve-Path -LiteralPath $Path -ErrorAction Ignore) {
+        # the default Set-Location command doesn't support silently switching these parameters
+        # but it seems like the right thing to do here
+        $PSBoundParameters['LiteralPath'] = $Path
+        $null = $PSBoundParameters.Remove('Path')
+      }
     }
+
     $wrappedCmd = $ExecutionContext.InvokeCommand.GetCommand(
       'Microsoft.PowerShell.Management\Set-Location',
       [System.Management.Automation.CommandTypes]::Cmdlet

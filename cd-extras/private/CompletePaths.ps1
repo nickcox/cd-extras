@@ -8,7 +8,7 @@ function CompletePaths {
     $commandAst,
     $boundParameters = @{ }
   )
-  
+
   <#
     Given a full path, $_, return a fully formed completion result.
     Logic: use a relative path if the supplied word isn't rooted
@@ -38,11 +38,9 @@ function CompletePaths {
     $trailChar = if ($_.PSIsContainer) { ${/} }
 
     $completionText = $completionText |
-      RemoveTrailingSeparator |
-      SurroundAndTerminate $trailChar |
-      # this actually breaks on directories with wildcards like square brackets
-      # but the behaviour is the same in vanilla PowerShell so... meh
-      EscapeWildcards
+    RemoveTrailingSeparator |
+    SurroundAndTerminate $trailChar |
+    EscapeWildcards
 
     # hack to support registry provider
     if ($_.PSProvider.Name -eq 'Registry') {
@@ -71,26 +69,28 @@ function CompletePaths {
   $switches = @{
     File      = $boundParameters['File'] -or $filesOnly
     Directory = $boundParameters['Directory'] -or $dirsOnly
-    Force     = $boundParameters['Force'] -or $commandName -and (
-      (Get-Command $commandName -ea Ignore).Parameters.Keys -notcontains 'Force')
+    Force     = $boundParameters['Force'] -or (
+      # always force on *nix; on Windows dotted directories aren't automatically hidden
+      (Test-Path Variable:\IsWindows) -and !$IsWindows
+    ) -or (
+      # or if the command doesn't have a force switch
+      $commandName -and (Get-Command $commandName -ea Ignore).Parameters.Keys -notcontains 'Force')
   }
 
-  $escapedWord = $wordToComplete | EscapeWildcards
-
-  $completions = Expand-Path @switches $escapedWord -MaxResults $cde.MaxCompletions
+  $completions = Expand-Path @switches $wordToComplete -MaxResults $cde.MaxCompletions
 
   #replace cdable_vars
   $variCompletions = if (
     $cde.CDABLE_VARS -and
-    $wordToComplete -match '[^/\\]+' -and
+    $wordToComplete -match '[^/\\]+' -and # separate variable from slashes before or after it
     ($maybeVar = Get-Variable "$($Matches[0])*" -ValueOnly | where { Test-Path $_ -PathType Container })
   ) {
-    Expand-Path @switches ($escapedWord -replace $Matches[0], $maybeVar) -MaxResults $cde.MaxCompletions
+    Expand-Path @switches ($wordToComplete -replace $Matches[0], $maybeVar) -MaxResults $cde.MaxCompletions
   }
 
   @($completions) + @($variCompletions) |
-    select -Unique |
-    select -First $cde.MaxCompletions |
-    CompletionResult |
-    DefaultIfEmpty { $null }
+  select -Unique |
+  select -First $cde.MaxCompletions |
+  CompletionResult |
+  DefaultIfEmpty { $null }
 }

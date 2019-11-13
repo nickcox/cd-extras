@@ -1,5 +1,11 @@
 # Changes
 
+## [2.1.0]
+- Set-LocationEx will automatically `LiteralPath` in favour of `Path` if necessary
+- Main parameter of `Expand-Path` renamed to `Path`, with `Candidate` retained as an alias
+- `Expand-Path` handles square brackets as permissively as possible
+- Path completion should always use the `Force` switch on *nix
+
 ## [2.0.0]
 - Rename `Export-Up` to `Get-Ancestors`
 - Swap `Include-Root` for `Exclude-Root` in `Export-Ancestors`
