@@ -385,6 +385,11 @@ Describe 'cd-extras' {
     BeforeEach {
       Set-CdExtrasOption AUTO_CD $true
       $Global:__cdeUnderTest = $true
+      $error.Clear()
+    }
+
+    AfterEach {
+      $error.Count | Should -Be 0
     }
 
     It 'can change directory' {
@@ -422,6 +427,7 @@ Describe 'cd-extras' {
       Set-Location powershell
       { src } | Should Throw
       CurrentDir | Should -Be powershell
+      $error.Clear()
     }
 
     It 'supports the double dot operator' {
