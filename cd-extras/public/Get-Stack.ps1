@@ -3,10 +3,10 @@
 See the items in the cd-extras history stack.
 
 .PARAMETER Undo
-Show contents of the Undo stack.
+Show contents of the Undo stack only.
 
 .PARAMETER Redo
-Show contents of the Redo stack.
+Show contents of the Redo stack only.
 
 .EXAMPLE
 # Get contents of both stacks (default)
@@ -34,17 +34,21 @@ n Name      Path
 #>
 function Get-Stack {
 
-  [OutputType([System.Collections.Hashtable])]
-  [OutputType([String])]
-  [CmdletBinding()]
+  [OutputType([PSCustomObject], ParameterSetName = ('Undo', 'Redo'))]
+  [OutputType([System.Collections.Hashtable], ParameterSetName = 'Both')]
+  [CmdletBinding(DefaultParameterSetName = 'Both')]
   param(
     [Alias("l", "p", "v")]
+    [Parameter(Mandatory = $true, ParameterSetName = 'Undo')]
     [switch] $Undo,
+
+    [Parameter(Mandatory = $true, ParameterSetName = 'Redo')]
     [switch] $Redo
   )
 
-  if ($Undo -and -not $Redo) { IndexPaths $undoStack.ToArray() }
-  elseif ($Redo -and -not $Undo) { IndexPaths $redoStack.ToArray() }
+  if ($PSCmdlet.ParameterSetName -eq 'Undo') { IndexPaths $undoStack.ToArray() }
+  elseif ($PSCmdlet.ParameterSetName -eq 'Redo') { IndexPaths $redoStack.ToArray() }
+
   else {
     @{
       Undo = $undoStack

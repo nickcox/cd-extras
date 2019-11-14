@@ -5,9 +5,9 @@ Get-ChildItem $PSScriptRoot/public/*.ps1 | % { . $_.FullName }
 
 $defaults = [ordered]@{
   AUTO_CD         = $true
-  CD_PATH         = @()
   CDABLE_VARS     = $false
   NOARG_CD        = '~'
+  CD_PATH         = @()
   MaxCompletions  = 99
   MaxMenuLength   = 60
   DirCompletions  = @('Set-Location', 'Set-LocationEx', 'Push-Location')

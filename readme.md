@@ -531,7 +531,7 @@ Search additional locations for candidate directories.
 
 ```sh
 [~]> setocd CD_PATH ~/documents
-[~]> # or $cde.CD_PATH = @('~/documents')'
+[~]> # or $cde.CD_PATH = ,'~/documents'
 [~]> cd WindowsPowerShell
 [~/documents/WindowsPowerShell]> █
 ```
@@ -648,28 +648,28 @@ Import-Module cd-extras/cd-extras/cd-extras.psd1 # yep, three :D
 
 - _AUTO_CD_: `[bool] = $true`
   - Any truthy value enables auto_cd.
-- _CD_PATH_: `[string[]] = @()`
-  - Paths to be searched by `cd` and tab expansion. Note that this is an array, not a
-  delimited string.
 - _CDABLE_VARS_: `[bool] = $false`
   - `cd` and tab-expand into directory paths stored in variables without prefixing the
   variable name with `$`.
 - _NOARG_CD_: `[string] = '~'`
-  - If specified, `cd` command with no arguments will change to this directory.
+  - If specified, `cd` command with no arguments will change to the given directory.
+- _CD_PATH_: `[string[]] = @()`
+  - Paths to be searched by `cd` and tab expansion. Note that this is an array, not a
+  delimited string.
 - _MenuCompletion_: `[bool] = $true` (if PSReadLine available)
   - If truthy, indexes are offered as completions for `up`, `cd+` and `cd-` with full paths
     displayed in the menu.
-- _DirCompletions_: `[string[]] = @('Push-Location', 'Set-Location', 'Set-LocationEx')`
+- _DirCompletions_: `[string[]] = 'Set-Location', 'Set-LocationEx', 'Push-Location'`
   - Commands that participate in enhanced tab expansion for directories.
-- _PathCompletions_: `[string[]] = @('Get-ChildItem')`
+- _PathCompletions_: `[string[]] = 'Get-ChildItem', 'Get-Item', 'Invoke-Item', 'Expand-Path'`
   - Commands that participate in enhanced tab expansion for any type of path (files &
   directories).
 - _FileCompletions_: `[string[]] = @()`
   - Commands that participate in enhanced tab expansion for files.
 - _ColorCompletion_ : `[bool] = false`
   - If truthy, offered Dir/Path/File completions will be coloured by
-  `Format-ColorizedFilename`, if available.
-- MaxMenuLength : `[int] = 60`
+  `Format-ColorizedFilename`[1], if available.
+- _MaxMenuLength_ : `[int] = 60`
   - Truncate completion menu items to this length. Column layout may break below about 60
   characters.
 - _MaxCompletions_ : `[int] = 99`
@@ -682,7 +682,7 @@ importing it:
 ```sh
 $cde = @{
   AUTO_CD = $false
-  CD_PATH = @('~/Documents/', '~/Downloads')
+  CD_PATH = '~/Documents/', '~/Downloads'
 }
 
 Import-Module cd-extras

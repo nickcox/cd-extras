@@ -11,12 +11,15 @@ Clear contents of the Redo stack only.
 
 function Clear-Stack {
 
-  [CmdletBinding()]
+  [CmdletBinding(DefaultParameterSetName = 'Both')]
   param(
+    [Parameter(Mandatory = $true, ParameterSetName = 'Undo')]
     [switch] $Undo,
+
+    [Parameter(Mandatory = $true, ParameterSetName = 'Redo')]
     [switch] $Redo
   )
 
-  if ($Undo -or !($Undo -or $Redo)) { $undoStack.Clear() }
-  if ($Redo -or !($Undo -or $Redo)) { $redoStack.Clear() }
+  if ($PSCmdlet.ParameterSetName -in 'Undo', 'Both') { $undoStack.Clear() }
+  if ($PSCmdlet.ParameterSetName -in 'Redo', 'Both') { $redoStack.Clear() }
 }

@@ -41,7 +41,7 @@ function Get-Up {
   param(
     [Parameter(ParameterSetName = 'n', Position = 0)] [byte]$n = 1,
     [Parameter(ParameterSetName = 'named', Position = 0)] [string]$NamePart,
-    [parameter(ValueFromPipeline = $true)]
+    [Parameter(ValueFromPipeline = $true)]
     [string] $From = $PWD
   )
 

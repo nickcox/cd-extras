@@ -25,19 +25,8 @@ function Set-CdExtrasOption {
   [OutputType([void])]
   [CmdletBinding()]
   param (
+    [ArgumentCompleter( { $global:cde | Get-Member -Type NoteProperty | % Name })]
     [Parameter(Mandatory)]
-    [ValidateSet(
-      'AUTO_CD',
-      'CD_PATH',
-      'NOARG_CD',
-      'CDABLE_VARS',
-      'MenuCompletion',
-      'DirCompletions',
-      'FileCompletions',
-      'PathCompletions',
-      'ColorCompletion',
-      'MaxCompletions',
-      'MaxMenuLength')]
     $Option,
     $Value
   )
@@ -53,7 +42,13 @@ function Set-CdExtrasOption {
     $Value = $true
   }
 
-  if ($Option -in 'PathCompletions', 'DirCompletions', 'FileCompletions') {
+  $completionTypes = @(
+    'PathCompletions'
+    'DirCompletions'
+    'FileCompletions'
+  )
+
+  if ($Option -in $completionTypes) {
     if ($Global:cde.$option -notcontains $value) {
       $Global:cde.$option += $value
     }

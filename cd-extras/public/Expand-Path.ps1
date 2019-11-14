@@ -34,7 +34,7 @@ d-----       21/12/2017  11:50 PM                etc
 #>
 function Expand-Path {
 
-  [OutputType([object[]])]
+  [OutputType([object])]
   [CmdletBinding()]
   param (
     [alias("Candidate")]
