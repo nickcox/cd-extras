@@ -4,9 +4,9 @@
 cd-extras
 ===========
 
-:zap:
-superpowers for the Powershell `cd` command, mostly stolen from bash and zsh
-:zap:
+:point_right:
+**superpowers for the Powershell `cd` command, mostly stolen from bash and zsh**
+:point_left:
 
 
 <!-- TOC -->
@@ -21,6 +21,7 @@ superpowers for the Powershell `cd` command, mostly stolen from bash and zsh
   - [No argument `cd`](#no-argument-cd)
   - [Two argument `cd`](#two-argument-cd)
   - [Enhanced expansion for `cd` and others](#enhanced-expansion-for-cd-and-others)
+- [Additional-helpers) directly.](#additional-helpers-directly)
   - [Multi-dot and variable based expansions](#multi-dot-and-variable-based-expansions)
 - [AUTO CD](#auto-cd)
 - [CD PATH](#cd-path)
@@ -286,9 +287,9 @@ You can also use the alias `cd:` or the explicit `ReplaceWith` parameter of
 
 ## Enhanced expansion for `cd` and others
 
-`cd`, `pushd` and `ls` (by default) provide enhanced tab completion, expanding all path
-segments so that you don't have to individually tab (⇥) through each one (using the path
-shortening logic [described above](#path-shortening).)
+`cd`, `pushd`, `ls`, `Get-Item` and `Invoke-Item` (by default) provide enhanced completion,
+expanding all path segments in one go so that you don't have to individually tab (⇥) through
+each one. The path shortening logic is as [described above](#path-shortening).
 
 ```sh
 [~]> cd /w/s/dr⇥⇥
@@ -334,22 +335,20 @@ You can change the list of commands that participate in enhanced directory compl
 using the `DirCompletions` [option](#configure):
 
 ```sh
-[~]> $cde.DirCompletions += 'mkdir'
-[~]> # setocd DirCompletions mkdir, $cde.DirCompletions
+[~]> setocd DirCompletions mkdir
 [~]> mkdir ~/pow/src⇥
 [~]> mkdir ~\powershell\src\█
 ```
 
 Similarly, you opt into enhanced completion for files only or for both files and
 directories using the `FileCompletions` and `PathCompletions` options respectively.
-Note that the `FileCompletions` option is less useful as you won't be able to tab
-through directories to get to the file you're looking for.
+The `FileCompletions` option is less useful as you won't be able to tab through
+directories to get to the file you're looking for.
 
 ```sh
-[~]> $cde.PathCompletions += 'Invoke-Item'
-[~]> # or setocd PathCompletions $cde.PathCompletions, 'Invoke-Item'
-[~]> ii /t/⇥
-[~]> ii C:\temp\subdir\█
+[~]> setocd PathCompletions Copy-Item
+[~]> cp /t/⇥
+[~]> cp C:\temp\subdir\█
 subdir  txtFile.txt  txtFile2.txt
 ──────
 
@@ -364,26 +363,39 @@ Paths within `$cde.CD_PATH` are included for all completion types.
 [~]> ~\Documents\WindowsPowerShell\Modules\█
 ```
 
-In each case, expansions work against the target's `Path` parameter;
-if you want enhanced completion for a native executable or for a cmdlet without
-a `Path` parameter then you'll need to provide a wrapper. Either the wrapper
-or the target itself should handle expanding `~` where necessary.
+In each case, expansions work against the target's `Path` parameter; if you want enhanced
+completion for a native executable or for a cmdlet without a `Path` parameter then you'll
+need to provide a wrapper. Either the wrapper or the target itself should handle expanding
+`~` where necessary.
 
 ```sh
 [~]> function Invoke-VSCode($path) { &code (Resolve-Path $path) }
-[~]> $cde.DirCompletions += 'Invoke-VSCode'
+[~]> setocd DirCompletions Invoke-VSCode
 [~]> Set-Alias co Invoke-VSCode
 [~]> co ~/pr/po⇥
 [~]> co ~\projects\powershell\█
 ```
 
-An alternative to registering a bunch of aliases is to create a tiny wrapper to pipe
-input from `ls`.
+An alternative to registering a bunch of aliases is to create a tiny wrapper to pipe input
+from `ls` or `gi`.
 
 ```sh
 [~]> function to($target) { &$target $input }
 [~]> ls ~/pr/po/r.md⇥
 [~]> ls ~/projects/powershell/readme.md | to bat
+
+───────────────────────────────────────────────────────
+File: C:\Users\Nick\projects\PowerShell\README.md
+───────────────────────────────────────────────────────
+1 | ...
+2 | ...
+```
+
+Alternatively, you could skip tab completion altogether and use [Expand-Path](
+#Additional-helpers) directly.
+
+```sh
+[~]> xpa ~/pr/po/r.md | to bat
 
 ───────────────────────────────────────────────────────
 File: C:\Users\Nick\projects\PowerShell\README.md
@@ -570,9 +582,10 @@ CDABLE_VARS is off by default. Enable it with, [`setocd CDABLE_VARS`](#configure
 - Get-Stack (_dirs_)
   - view contents of undo (`cd-`) and redo (`cd+`) stacks.
   - use `dirs -u` for an indexed list of undo locations
-    or `dirs -r` for a corresponding list of redo locations
+    or `dirs -r` for a corresponding list of redo locations.
 - Expand-Path (_xpa_)
   - expand a candidate path by inserting wildcards between each segment.
+  - use a trailing slash to expand *children* of the matched path(s)
   - **note:** the expansion may match more than you expect. always test the output before
   piping it into a potentially destructive command.
 

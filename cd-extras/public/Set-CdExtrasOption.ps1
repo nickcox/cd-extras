@@ -53,7 +53,14 @@ function Set-CdExtrasOption {
     $Value = $true
   }
 
-  $Global:cde.$option = $value
+  if ($Option -in 'PathCompletions', 'DirCompletions', 'FileCompletions') {
+    if ($Global:cde.$option -notcontains $value) {
+      $Global:cde.$option += $value
+    }
+  }
+  else {
+    $Global:cde.$option = $value
+  }
 
   $isUnderTest = { $Global:__cdeUnderTest -and !($Global:__cdeUnderTest = $false) }
 

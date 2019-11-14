@@ -215,7 +215,7 @@ Describe 'cd-extras' {
   }
 
   Describe 'Path shortening cd' {
-    It 'can move up multiple directories' {
+    It 'can shorten directories' {
       cd ./pow/src/Mod
       CurrentDir | Should -Be Modules
     }
@@ -494,7 +494,7 @@ Describe 'cd-extras' {
     It 'searches CD_PATH for candidate directories' {
       Set-CdExtrasOption -Option CD_PATH -Value @(
         'TestDrive:\powershell\src\', 'TestDrive:\powershell\docs\')
-        
+
       cd ResGen
       CurrentDir | Should -Be resgen
     }
@@ -552,7 +552,7 @@ Describe 'cd-extras' {
     }
 
     It 'works in Windows registry' -Skip:(!$IsWindows) {
-      (Expand-Path HKLM:\Soft\Mic\).Count | Should -BeGreaterOrEqual 1
+      (Expand-Path HKLM:\Soft\Mic\*).Count | Should -BeGreaterOrEqual 1
     }
   }
 
@@ -817,6 +817,26 @@ Describe 'cd-extras' {
         xup | select -Last 1 | cd #do this twice to escape TestDrive
         $actual = CompleteAncestors -wordToComplete ''
         $actual | Should -Be $null
+      }
+    }
+
+    Describe 'Set-CdExtrasOption' {
+      It 'Setting a completion option extends existing completions' {
+        $pathCompletions = $cde.PathCompletions
+        $originalCount = $pathCompletions.Count
+        $originalCount | Should -BeGreaterThan 1
+        setocd PathCompletions 'xxx'
+
+        $cde.PathCompletions.Count | Should -Be ($originalCount + 1)
+      }
+
+      It 'Setting a completion option does not duplicate existing completions' {
+        $pathCompletions = $cde.PathCompletions
+        $originalCount = $pathCompletions.Count
+        $originalCount | Should -BeGreaterThan 1
+        setocd PathCompletions ($cde.PathCompletions | select -last 1)
+
+        $cde.PathCompletions.Count | Should -Be $originalCount
       }
     }
 
