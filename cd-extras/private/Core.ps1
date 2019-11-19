@@ -99,7 +99,7 @@ function IndexPaths(
   if (!$xs.Length) { return }
 
   1..$xs.Length | % {
-    [PSCustomObject] @{
+    [IndexedPath] @{
       n    = $_
       Name = $xs[$_ - 1] | Split-Path -Leaf | DefaultIfEmpty { $rootLabel }
       Path = $xs[$_ - 1]

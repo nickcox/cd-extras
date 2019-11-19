@@ -1,5 +1,6 @@
 $cdAlias = if ($x = (Get-Alias -Name 'cd' -ErrorAction ignore)) { $x.Definition }
 
+Get-ChildItem $PSScriptRoot/classes/*.ps1 | % { . $_.FullName }
 Get-ChildItem $PSScriptRoot/private/*.ps1 | % { . $_.FullName }
 Get-ChildItem $PSScriptRoot/public/*.ps1 | % { . $_.FullName }
 

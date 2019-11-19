@@ -58,7 +58,7 @@ function Get-Up {
   if ($PSCmdlet.ParameterSetName -eq 'named') {
 
     if ($result = $ancestors | where Name -like "$NamePart*") {
-      return $result | select -first 1 -Expand Path
+      return $result.Path | select -first 1
     }
 
     # if we couldn't match by leaf name then match by complete path

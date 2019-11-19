@@ -34,7 +34,7 @@ n Name      Path
 #>
 function Get-Stack {
 
-  [OutputType([PSCustomObject], ParameterSetName = ('Undo', 'Redo'))]
+  [OutputType([IndexedPath], ParameterSetName = ('Undo', 'Redo'))]
   [OutputType([System.Collections.Hashtable], ParameterSetName = 'Both')]
   [CmdletBinding(DefaultParameterSetName = 'Both')]
   param(

@@ -39,9 +39,7 @@ function Undo-Location {
     [Parameter(ParameterSetName = 'n', Position = 0)] [byte]$n = 1,
     [Parameter(ParameterSetName = 'named', Position = 0)] [string]$NamePart)
 
-  if ($PSCmdlet.ParameterSetName -eq 'n' -and $n -ge 0) {
-
-    if (!$n) { return }
+  if ($PSCmdlet.ParameterSetName -eq 'n' -and $n -ge 1) {
 
     1..$n | % {
       if ($undoStack.Count) {

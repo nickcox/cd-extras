@@ -1,7 +1,6 @@
 <#
 .SYNOPSIS
-Attempts to expand a given candidate path by appending a wildcard character (*)
-to the end of each path segment.
+Attempts to expand a given candidate path by appending a wildcard character (*) to the end of each path segment.
 
 .PARAMETER Path
 Candidate search string.
@@ -31,6 +30,21 @@ PS C:\> Expand-Path /w/s/d/etc
 Mode                LastWriteTime         Length Name
 ----                -------------         ------ ----
 d-----       21/12/2017  11:50 PM                etc
+
+.EXAMPLE
+# Expand the contents of a well-known Windows path
+PS C:\> Expand-Path /w/s/d/etc/
+
+    Directory: C:\Windows\System32\drivers\etc
+
+Mode                LastWriteTime         Length Name
+----                -------------         ------ ----
+-a----       19/03/2017   8:01 AM            824 hosts
+-a----       16/11/2019   9:10 AM            507 hosts.ics
+-a----       19/03/2019   3:49 PM           3683 lmhosts.sam
+-a----       19/03/2017   8:01 AM            407 networks
+-a----       19/03/2017   8:01 AM           1358 protocol
+-a----       19/03/2017   8:01 AM          17635 services
 #>
 function Expand-Path {
 
@@ -39,12 +53,12 @@ function Expand-Path {
   param (
     [alias("Candidate")]
     [parameter(ValueFromPipeline = $true)]
-    [string]    $Path = './',
-    [int]       $MaxResults = [int]::MaxValue,
-    [string[]]  $SearchPaths = $cde.CD_PATH,
-    [switch]    $File,
-    [switch]    $Directory,
-    [switch]    $Force
+    [String]    $Path = './',
+    [UInt16]    $MaxResults = [UInt16]::MaxValue,
+    [String[]]  $SearchPaths = $cde.CD_PATH,
+    [Switch]    $File,
+    [Switch]    $Directory,
+    [Switch]    $Force
   )
 
   # if we've been given an empty string then expand everything below $PWD

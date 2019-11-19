@@ -42,7 +42,7 @@ C:\projects\powershell\src\Microsoft.PowerShell.SDK> _
 #>
 function Get-Ancestors() {
 
-  [OutputType([PSCustomObject])]
+  [OutputType([IndexedPath])]
   [CmdletBinding()]
   param(
     [parameter(ValueFromPipeline = $true)]
