@@ -57,7 +57,7 @@ function Set-CdExtrasOption {
     $Global:cde.$option = $value
   }
 
-  $isUnderTest = { $Global:__cdeUnderTest -and !($Global:__cdeUnderTest = $false) }
+  $isUnderTest = { $Script:__cdeUnderTest -and !($Script:__cdeUnderTest = $false) }
 
   RegisterCompletions @('Step-Up') 'n' { CompleteAncestors @args }
   RegisterCompletions @('Undo-Location', 'Redo-Location') 'n' { CompleteStack @args }

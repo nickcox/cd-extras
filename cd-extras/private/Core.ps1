@@ -4,6 +4,8 @@ $Script:redoStack = [System.Collections.Stack]::new()
 enum CycleDirection { Undo; Redo }
 $Script:cycleDirection = [CycleDirection]::Undo # used by Step-Between
 
+$Script:logger = { Write-Verbose $args[0] }
+
 function DefaultIfEmpty([scriptblock] $default) {
   Begin { $any = $false }
   Process { if ($_) { $any = $true; $_ } }
@@ -112,8 +114,5 @@ function RegisterCompletions([string[]] $commands, $param, $target) {
 }
 
 function WriteLog($message) {
-  if ((Get-Variable cde) -and ($cde | Get-Member -MemberType ScriptMethod _logger)) {
-    $cde._logger($message)
-  }
-  else { Write-Verbose $message }
+  &$logger $message
 }

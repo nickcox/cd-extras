@@ -384,7 +384,7 @@ Describe 'cd-extras' {
 
     BeforeEach {
       Set-CdExtrasOption AUTO_CD $true
-      $Global:__cdeUnderTest = $true
+      &(Get-Module cd-extras) Set-Variable __cdeUnderTest -Scope Script $true
       $error.Clear()
     }
 
@@ -457,18 +457,19 @@ Describe 'cd-extras' {
 
   Describe 'CDABLE_VARS' {
     It 'can change directory using a variable name' {
+      Set-CdExtrasOption CDABLE_VARS
       $Global:psh = Resolve-Path ./pow*/src/Mod*/Shared/*.Host
-      Set-CdExtrasOption CDABLE_VARS $true
+
       cd psh
       CurrentDir | Should -Be 'Microsoft.PowerShell.Host'
     }
 
     It 'works with AUTO_CD' {
-      Set-CdExtrasOption CDABLE_VARS $true
-      Set-CdExtrasOption AUTO_CD $true
-
+      Set-CdExtrasOption CDABLE_VARS
+      Set-CdExtrasOption AUTO_CD
       $Global:psh = Resolve-Path ./pow*/src/Mod*/Shared/*.Host
-      $Global:__cdeUnderTest = $true
+
+      &(Get-Module cd-extras) Set-Variable __cdeUnderTest -Scope Script $true
       psh
       CurrentDir | Should -Be 'Microsoft.PowerShell.Host'
     }
