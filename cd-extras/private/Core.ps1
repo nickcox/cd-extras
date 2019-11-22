@@ -4,7 +4,7 @@ $Script:redoStack = [System.Collections.Stack]::new()
 enum CycleDirection { Undo; Redo }
 $Script:cycleDirection = [CycleDirection]::Undo # used by Step-Between
 
-$Script:logger = { Write-Verbose $args[0] }
+$Script:logger = { Write-Verbose ($args[0] | ConvertTo-Json) }
 
 function DefaultIfEmpty([scriptblock] $default) {
   Begin { $any = $false }
@@ -95,9 +95,10 @@ function IndexedComplete() {
 }
 
 function IndexPaths(
-  $xs,
+  [array]$xs,
   $rootLabel = 'root' # this on happens on *nix
 ) {
+  $xs = $xs | ? { $_ -ne '' }
   if (!$xs.Length) { return }
 
   1..$xs.Length | % {
