@@ -1,5 +1,10 @@
 # Changes
 
+## [2.2.0]
+- `Get-Ancestors` and `Get-Stack` now return a first class `IndexedPath` rather than an equivalent `PSCustomObject`
+- New default `PathCompletions`: `Get-Item`, `Invoke-Item`, `Expand-Path`
+- Fix issue navigating up into root directory in `WSMan` provider
+
 ## [2.1.0]
 - Set-LocationEx will automatically `LiteralPath` in favour of `Path` if necessary
 - Main parameter of `Expand-Path` renamed to `Path`, with `Candidate` retained as an alias
