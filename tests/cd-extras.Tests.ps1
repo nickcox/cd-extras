@@ -4,13 +4,14 @@ if (-not (Test-Path variable:IsWindows)) {
   $Global:IsWindows = $PSEdition -eq 'desktop' -or $env:OS -like "windows*"
 }
 
+$Script:xcde = if (Test-Path variable:cde) { $cde }
+$Global:cde = $null
+Push-Location $PSScriptRoot
+Import-Module ../cd-extras/cd-extras.psd1 -Force
+
 Describe 'cd-extras' {
 
   BeforeAll {
-    $Script:xcde = if (Test-Path variable:cde) { $cde }
-    $Global:cde = $null
-    Push-Location $PSScriptRoot
-    Import-Module ../cd-extras/cd-extras.psd1 -Force
     Get-Content sampleStructure.txt | New-Item -ItemType Directory -Path { "TestDrive:/$_" }
   }
 
@@ -583,7 +584,7 @@ Describe 'cd-extras' {
       cd src
       cd .SDK
 
-      Get-Stack -Undo | select -Expand n | Should -Be 1, 2, 3
+      Get-Stack -Undo | % n | Should -Be 1, 2, 3
     }
 
     It 'do not return duplicate indexes for duplicate paths' {
@@ -593,8 +594,8 @@ Describe 'cd-extras' {
       cd ..
 
       $undos = Get-Stack -Undo
-      $undos | where n -eq 1 | select -Expand Path | Should -Be (
-        $undos | where n -eq 3 | select -Expand Path)
+      $undos | where n -eq 1 | % Path | Should -Be (
+        $undos | where n -eq 3 | % Path)
     }
 
     It 'shows the redo stack' {

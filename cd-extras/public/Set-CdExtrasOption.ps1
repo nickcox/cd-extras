@@ -21,11 +21,13 @@ PS C:\> Set-CdExtrasOption -Option CD_PATH -Value @('/temp')
 Set the search paths to the single directory '/temp'
 #>
 function Set-CdExtrasOption {
+  [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]
+  [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidGlobalVars", "")]
 
   [OutputType([void])]
   [CmdletBinding()]
   param (
-    [ArgumentCompleter( { $global:cde | Get-Member -Type NoteProperty | % Name })]
+    [ArgumentCompleter( { $global:cde | Get-Member -Type Property -Name "$($args[2])*" | % Name })]
     [Parameter(Mandatory)]
     $Option,
     $Value

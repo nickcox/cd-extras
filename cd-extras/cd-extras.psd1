@@ -11,7 +11,7 @@
   FunctionsToExport = '*-*'
   VariablesToExport = 'cde'
   AliasesToExport   = '*'
-  ScriptsToProcess  = 'classes/*.ps1'
+  ScriptsToProcess  = 'public/_Classes.ps1'
 
   PrivateData       = @{
     PSData = @{
