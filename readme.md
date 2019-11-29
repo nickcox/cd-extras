@@ -1,13 +1,10 @@
 [![Coverage Status](https://coveralls.io/repos/github/nickcox/cd-extras/badge.svg?branch=master)
 ](https://coveralls.io/github/nickcox/cd-extras?branch=master)
+[![cd-extras](https://img.shields.io/powershellgallery/v/cd-extras.svg?style=flat&label=cd-extras)
+](https://www.powershellgallery.com/packages/cd-extras)
 
 cd-extras
 ===========
-
-:point_right:
-**superpowers for the Powershell `cd` command, mostly stolen from bash and zsh**
-:point_left:
-
 
 <!-- TOC -->
 
@@ -20,10 +17,15 @@ cd-extras
   - [Multi-dot `cd`](#multi-dot-cd)
   - [No argument `cd`](#no-argument-cd)
   - [Two argument `cd`](#two-argument-cd)
-  - [Enhanced expansion for `cd` and others](#enhanced-expansion-for-cd-and-others)
-- [Additional-helpers) directly.](#additional-helpers-directly)
-  - [Multi-dot and variable based expansions](#multi-dot-and-variable-based-expansions)
+- [Enhanced expansion for `cd` and others](#enhanced-expansion-for-cd-and-others)
+  - [Single and double periods](#single-and-double-periods)
+  - [Multi-dot expansions](#multi-dot-expansions)
+  - [Variable based expansions](#variable-based-expansions)
+  - [Extending expansion to other commands](#extending-expansion-to-other-commands)
+  - [Colourised expansions](#colourised-expansions)
 - [AUTO CD](#auto-cd)
+  - [Tilde](#tilde)
+  - [Multi-dot](#multi-dot)
 - [CD PATH](#cd-path)
 - [CDABLE VARS](#cdable-vars)
 - [Additional helpers](#additional-helpers)
@@ -40,15 +42,10 @@ cd-extras
 # Navigation helpers
 
 <details>
-<summary>
-  [<i>Watch</i>]
-  <p/>
-</summary>
-<p>
+<summary>[<i>Watch</i>]<p/></summary>
 
 ![Navigation Helpers](assets/navigation-helpers.svg)
 
-</p>
 </details>
 
 _cd-extras_ provides the following aliases (and corresponding functions):
@@ -65,12 +62,12 @@ _cd-extras_ provides the following aliases (and corresponding functions):
 [C:/Windows]> █
 ```
 
-Note that the aliases are `cd-` and `cd+`, without a space. `cd -` and `cd +` (with a 
-space) also work but you won't get [tab expansions](#navigation-helper-expansions).
+Note that the aliases are `cd-` and `cd+`, without a space. `cd -` and `cd +` (with a space)
+also work but you won't get [tab expansions](#navigation-helper-expansions).
 
-Repeated uses of `cd-`  keep moving backwards towards the beginning of the stack rather
-than toggling between the two most recent directories as in vanilla bash.
-Use `Step-Between` (`cdb`) if you want to toggle between directories.
+Repeated uses of `cd-`  keep moving backwards towards the beginning of the stack rather than
+toggling between the two most recent directories as in vanilla bash. Use `Step-Between` (`cdb`)
+if you want to toggle between directories.
 
 ```sh
 [C:/Windows/System32]> cd ..
@@ -86,8 +83,7 @@ Use `Step-Between` (`cdb`) if you want to toggle between directories.
 
 ## Even faster
 
-`up`, `cd+` and `cd-` each take a single optional parameter: either a number of steps,
-`n`...
+`up`, `cd+` and `cd-` each take a single optional parameter: either a number of steps, `n`...
 
 ```sh
 [C:/Windows/System32]> .. 2 # or `up 2`
@@ -97,11 +93,10 @@ Use `Step-Between` (`cdb`) if you want to toggle between directories.
 [C:/temp]> █
 ```
 
-...or a string, `NamePart`, used to select the nearest matching directory from the
-available locations. Given a `NamePart`, _cd-extras_ will search from the current
-location for directories whose _leaf_ name contains the given string (ex. ¹). If none is
-found then it will attempt to find a match within the full path of each candidate
-directory (ex. ²).
+...or a string, `NamePart`, used to select the nearest matching directory from the available
+locations. Given a `NamePart`, _cd-extras_ will search from the current location for directories
+whose _leaf_ name contains the given string (ex. ¹). If none is found then it will attempt to
+find a match within the full path of each candidate directory (ex. ²).
 
 ```sh
 [C:/Windows]> cd system32
@@ -170,35 +165,32 @@ n Name        Path
 1 Windows     C:\Windows
 2 drivers     C:\Windows\System32\drivers
 
+[C:/]> cd- 2
+[C:/Windows/System32/drivers]> █
 ```
 
 # `cd` enhancements
 
 <details>
-<summary>
-  [<i>Watch</i>]
-  <p/>
-</summary>
-<p>
+<summary>[<i>Watch</i>]<p/></summary>
 
 ![Navigation Helpers](assets/cd-enhancements.svg)
 
-</p>
 </details>
 
-`cd-extras` provides a proxy to `Set-Location`, called `Set-LocationEx` which is aliased
-to `cd` by default, giving it several new abilities:
+`cd-extras` provides a proxy to `Set-Location` - called `Set-LocationEx` - and aliases it to
+`cd` by default, giving it several new abilities:
 
-* Path shortening
-* Multi-dot `cd`
-* No argument `cd`
-* Two argument `cd`
+* [Path shortening](#Path-shortening)
+* [Multi-dot `cd`](#Multi-dot-cd)
+* [No argument `cd`](#No-argument-cd)
+* [Two argument `cd`](#Two-argument-cd)
+* [Enhanced tab expansions](#Enhanced-expansion-for-cd-and-others)
 
 ## Path shortening
 
-If an unambiguous match is available then `cd` can change directory using an abbreviated
-path. This effectively changes a path given as, `p` into `p*` or `~/pr/pow/src` into 
-`~/pr*/pow*/src*`.
+If an unambiguous match is available then `cd` can change directory using an abbreviated path.
+This effectively changes a path given as, `p` into `p*` or `~/pr/pow/src` into `~/pr*/pow*/src*`.
 
 ```sh
 [~]> cd pr
@@ -208,23 +200,21 @@ path. This effectively changes a path given as, `p` into `p*` or `~/pr/pow/src` 
 [~/projects/cd-extras]> █
 ```
 
-Periods (`.`) are expanded around so a segment containing `.sdk` is expanded into
-`*.sdk*`.
+Periods (`.`) are expanded around so a segment containing `.sdk` is expanded into `*.sdk*`.
 
 ```sh
 [~]> cd proj/pow/s/.sdk
 [~/projects/powershell/src/Microsoft.PowerShell.SDK]> █
 ```
 
-Pairs of periods are expanded between so a segment containing `s..32` is expanded into
-`s*32`.
+Pairs of periods are expanded between so a segment containing `s..32` is expanded into `s*32`.
 
 ```sh
 [~]> cd /w/s..32/d/et
 [C:/Windows/System32/drivers/etc]> █
 ```
 
-Directories in [`CD_PATH`](#cd_path) will be matched.
+Directories in [`CD_PATH`](#cd-path) will be matched.
 
 ```sh
 [C:/]> setocd CD_PATH ~/projects
@@ -232,23 +222,24 @@ Directories in [`CD_PATH`](#cd_path) will be matched.
 [~/projects/PowerShell/]> █
 ```
 
-[`AUTO_CD`](#auto_cd) uses the same expansion algorithm if enabled.
+[`AUTO_CD`](#auto-cd) uses the same expansion algorithm when enabled.
 
 ```sh
+[~]> # $cde.AUTO_CD -> True
 [~]> /w/s/d/et
 [C:/Windows/System32/drivers/etc]> ~/pr/pow/src
 [~/projects/PowerShell/src]> .sdk
 [~/projects/PowerShell/src/Microsoft.PowerShell.SDK]> █
 ```
 
-If you're not sure whether an unambiguous match is available then just hit tab to pick
-from a [list of potential matches](#enhanced-expansion-for-cd-and-others) instead.
+If you're not sure whether an unambiguous match is available then just hit tab to pick from
+a [list of potential matches](#enhanced-expansion-for-cd-and-others) instead.
 
 ## Multi-dot `cd`
 
-In the same way that you can navigate up one level with `cd ..`, `Set-LocationEx`
-supports navigating multiple levels by adding additional dots. [`AUTO_CD`](#auto_cd)
-works the same way if enabled.
+In the same way that you can navigate up one level with `cd ..`, `Set-LocationEx` supports
+navigating multiple levels by adding additional dots. [`AUTO_CD`](#auto-cd) works the same
+way if enabled.
 
 ```sh
 [C:/Windows/System32/drivers/etc]> cd ... # same as `up 2` or `.. 2`
@@ -259,9 +250,10 @@ works the same way if enabled.
 
 ## No argument `cd`
 
-If the `NOARG_CD` [option](#configure) is defined then `cd` without arguments navigates
-into that directory (`~` by default). This overrides the out of the box behaviour on
-PowerShell versions >= 6.0, where no-arg `cd` always navigates to `~`.)
+If the `NOARG_CD` [option](#configure) is defined then `cd` without arguments navigates into
+that directory (`~` by default). This overrides the out of the box behaviour on PowerShell>=
+6.0, where no-arg `cd` always navigates to `~` and PowerShell < 6.0, where no argument `cd`
+doesn't do anything at all.
 
 ```sh
 [~/projects/powershell]> cd
@@ -280,16 +272,17 @@ You can also use the alias `cd:` or the explicit `ReplaceWith` parameter of
 
 ```sh
 [~/Modules/Unix/Microsoft.PowerShell.Utility]> cd unix shared
-[~/Modules/Shared/Microsoft.PowerShell.Utility]> cd: shared unix
+[~/Modules/Shared/Microsoft.PowerShell.Utility]> cd: -Replace shared unix
 [~/Modules/Unix/Microsoft.PowerShell.Utility]> cd unix -ReplaceWith shared
 [~/Modules/Shared/Microsoft.PowerShell.Utility]> █
 ```
 
-## Enhanced expansion for `cd` and others
+# Enhanced expansion for `cd` and others
 
 `cd`, `pushd`, `ls`, `Get-Item` and `Invoke-Item` (by default) provide enhanced completion,
 expanding all path segments in one go so that you don't have to individually tab (⇥) through
-each one. The path shortening logic is as [described above](#path-shortening).
+each one. The path shortening logic is provided by `Expand-Path` and works as [described above
+](#path-shortening).
 
 ```sh
 [~]> cd /w/s/dr⇥⇥
@@ -301,8 +294,18 @@ drivers   DriverState   DriverStore
 C:\Windows\System32\DriverState
 ```
 
-Periods (`.`) are expanded around so, for example, a segment containing `.sdk`
-is expanded into `*.sdk*`.
+Paths within [`$cde.CD_PATH`](#cd-path) are included in the expansion results.
+
+```sh
+[~]> $cde.CD_PATH += '~\Documents\'
+[~]> cd win/mod⇥
+[~]> ~\Documents\WindowsPowerShell\Modules\█
+```
+
+## Single and double periods
+
+Periods (`.`) are expanded around so, for example, a segment containing `.sdk` is expanded
+into `*.sdk*`.
 
 ```sh
 [~]> cd proj/pow/s/.sdk⇥
@@ -321,18 +324,62 @@ or
 [~]>
 ```
 
-A double-dot (`..`) token indicates a section which begins with the characters to its
-left and continues with the characters to the right.
+A double-dot (`..`) token is expanded inside, so `s..32` becomes `s*32`.
 
 ```sh
-[~]> ls pr/pow/t/ins..psh.sh⇥
-
-.\tools\installpsh-amazonlinux.sh     .\tools\installpsh-osx.sh
-─────────────────────────────────
+[~]> ls /w/s..32⇥
+[~]> ls C:\Windows\System32\█
 ```
 
-You can change the list of commands that participate in enhanced directory completion
-using the `DirCompletions` [option](#configure):
+## Multi-dot expansions
+
+The [multi-dot syntax](#multi-dot-cd) provides tab completion into ancestor directories.
+
+```sh
+[~/projects/powershell/docs/git]> cd ...⇥
+[~/projects/powershell/docs/git]> cd ~\projects\powershell\█
+```
+
+```sh
+[C:/projects/powershell/docs/git]> cd .../⇥
+
+.git     .vscode    demos    docs   test
+─────
+.github    assets   docker   src    tools
+
+~\projects\powershell\.git
+```
+
+## Variable based expansions
+
+When [CDABLE_VARS](#cdable-vars) is enabled, expansions are available for the names of
+variables that contain file paths. This can be combined with the `-Export` option of
+`Get-Ancestors` (`xup`), which recursively exports each parent directory's path into a
+global variable with a corresponding name.
+
+```sh
+[C:/projects/powershell/src/Modules/Unix]> xup -Export -ExcludeRoot
+
+n Name        Path
+- ----        ----
+1 Modules     C:\projects\powershell\src\Modules
+2 src         C:\projects\powershell\src
+3 powershell  C:\projects\powershell
+4 projects    C:\projects
+
+[C:/projects/powershell/src/Modules/Unix]> up pow
+[C:/projects/powershell]> cd mod⇥
+[C:/projects/powershell]> cd .\src\modules\
+```
+
+## Extending expansion to other commands
+
+You can extend the list of commands that participate in enhanced completion for either
+directories, files, or both files and directories, using the `DirCompletions`
+`FileCompletions` and `PathCompletions` [options](#configure) respectively.
+
+(`FileCompletions` is generally the least useful of the three since you can't tab through
+intermediate directories to get to the file you're looking for.)
 
 ```sh
 [~]> setocd DirCompletions mkdir
@@ -340,10 +387,7 @@ using the `DirCompletions` [option](#configure):
 [~]> mkdir ~\powershell\src\█
 ```
 
-Similarly, you opt into enhanced completion for files only or for both files and
-directories using the `FileCompletions` and `PathCompletions` options respectively.
-The `FileCompletions` option is less useful as you won't be able to tab through
-directories to get to the file you're looking for.
+
 
 ```sh
 [~]> setocd PathCompletions Copy-Item
@@ -355,14 +399,6 @@ subdir  txtFile.txt  txtFile2.txt
 C:\temp\subdir
 ```
 
-Paths within `$cde.CD_PATH` are included for all completion types.
-
-```sh
-[~]> $cde.CD_PATH += '~\Documents\'
-[~]> cd win/mod⇥
-[~]> ~\Documents\WindowsPowerShell\Modules\█
-```
-
 In each case, expansions work against the target's `Path` parameter; if you want enhanced
 completion for a native executable or for a cmdlet without a `Path` parameter then you'll
 need to provide a wrapper. Either the wrapper or the target itself should handle expanding
@@ -370,7 +406,7 @@ need to provide a wrapper. Either the wrapper or the target itself should handle
 
 ```sh
 [~]> function Invoke-VSCode($path) { &code (Resolve-Path $path) }
-[~]> setocd DirCompletions Invoke-VSCode
+[~]> setocd PathCompletions Invoke-VSCode
 [~]> Set-Alias co Invoke-VSCode
 [~]> co ~/pr/po⇥
 [~]> co ~\projects\powershell\█
@@ -391,8 +427,8 @@ File: C:\Users\Nick\projects\PowerShell\README.md
 2 | ...
 ```
 
-Alternatively, you could skip tab completion altogether and use [Expand-Path](
-#Additional-helpers) directly.
+You could skip tab completion altogether and use [Expand-Path](#Additional-helpers)
+directly if you're feeling confident.
 
 ```sh
 [~]> xpa ~/pr/po/r.md | to bat
@@ -404,76 +440,19 @@ File: C:\Users\Nick\projects\PowerShell\README.md
 2 | ...
 ```
 
-Expansions in the filesystem provider can be colourised via [DirColors][1] by setting
-the `ColorCompletion` option (`setocd ColorCompletion`). Alternatively, you can implement
-your own colourisation by creating a global `Format-ColorizedFilename` function.
+## Colourised expansions
 
-## Multi-dot and variable based expansions
-
-The [multi-dot syntax](#multi-dot-cd) provides tab completion into ancestor directories.
-
-```sh
-[~/projects/powershell/docs/git]> cd ...⇥
-[~/projects/powershell/docs/git]> cd ~\projects\powershell\█
-```
-
-```sh
-[C:/projects/powershell/docs/git]> cd .../⇥
-
-.git     .vscode    demos    docs   test
-─────
-.github    assets   docker   src    tools
-
-~\projects\powershell\.git
-```
-
-When used with the `-Export` option, `Get-Ancestors` (`xup`) recursively expands
-each parent directory's path into a global variable with a corresponding name.
-This can be useful in combination with [CDABLE_VARS](#cdable_vars) for navigating
-a deeply nested folder structure.
-
-```sh
-[C:/projects/powershell/src/Modules/Unix]> xup -Export -ExcludeRoot
-
-n Name        Path
-- ----        ----
-1 Unix        C:\projects\powershell\src\Modules\Unix
-2 Modules     C:\projects\powershell\src\Modules
-3 src         C:\projects\powershell\src
-4 powershell  C:\projects\powershell
-5 projects    C:\projects
-
-[C:/projects/powershell/src/Modules/Unix]> cd po⇥
-[C:/projects/powershell/src/Modules/Unix]> cd C:\projects\powershell\_
-```
-
-might be easier than:
-
-```sh
-[C:/projects/powershell/src/Modules/Unix]> cd ....⇥ # or cd ../../../⇥
-[C:/projects/powershell/src/Modules/Unix]> cd C:\projects\powershell\█
-```
-
-You can combine `CDABLE_VARS` with [AUTO_CD](#auto_cd) for great good:
-
-```sh
-[C:/projects/powershell/src/Modules/Unix]> projects
-[C:/projects]> src
-[C:/projects/powershell/src]> █
-```
+Expansions in the filesystem provider can be colourised via [DirColors][1] by setting the
+`ColorCompletion` option (`setocd ColorCompletion`). Alternatively, you can implement your
+own colourisation by creating a global `Format-ColorizedFilename` function.
 
 # AUTO CD
 
 <details>
-<summary>
-  [<i>Watch</i>]
-  <p/>
-</summary>
-<p>
+<summary>[<i>Watch</i>]<p/></summary>
 
 ![AUTO_CD](assets/auto-cd.svg)
 
-</p>
 </details>
 
 Change directory without typing `cd`.
@@ -486,7 +465,7 @@ Change directory without typing `cd`.
 ```
 
 As with the [enhanced `cd`](#cd-enhancements) command, [abbreviated paths](#path-shortening)
-and multi-dot syntax are supported.
+and [multi-dot syntax](#multi-dot-cd) are supported.
 
 ```sh
 [~]> pr
@@ -496,9 +475,11 @@ and multi-dot syntax are supported.
 [~/projects/cd-extras]> █
 ```
 
-`AUTO_CD` also supports a shorthand syntax for `cd-` using tilde (`~`). You can
-use this with or without a space between tilde and the number, although [tab
-completion](#Enhanced-expansion-for-built-ins) only works after a space (`~ ⇥`).
+## Tilde
+
+`AUTO_CD` supports a shorthand syntax for `cd-` using tilde (`~`). You can use this with or
+without a space between tilde and the number, although [tab completion
+](#navigation-helper-expansions) only works after a space (`~ ⇥`).
 
 ```sh
 [C:/Windows/System32]> /
@@ -516,7 +497,9 @@ n Name      Path
 [C:/temp]> █
 ```
 
-Multi-dot syntax also works with `AUTO_CD` as an alternative to `up [n]`.
+## Multi-dot
+
+Multi-dot syntax works with `AUTO_CD` as an alternative to `up [n]`.
 
 ```sh
 [C:/Windows/System32/drivers/etc]> ... # same as `up 2` or `.. 2`
@@ -536,24 +519,24 @@ Search additional locations for candidate directories.
 [~/documents/WindowsPowerShell]> █
 ```
 
-[Tab-expansion](#enhanced-expansion-for-built-ins) and [path shortening](#path-shortening)
-work with `CD_PATH` directories. Note that `CD_PATH`s are _not_ searched when an absolute
-or relative path is given.
+[Tab-expansion](#enhanced-expansion-for-cd-and-others) and [path shortening](#path-shortening)
+work with `CD_PATH` directories. Note that `CD_PATH`s are _not_ searched when an absolute or
+relative path is given.
 
 ```sh
-[~]> setocd CD_PATH '~/documents'
+[~]> setocd CD_PATH ~/documents
 [~]> cd ./WindowsPowerShell
-Set-Location : Cannot find path '~\WindowsPowerShell' because it does not exist.
+Set-Location : Cannot find path '~\WindowsPowerShell'...
 ```
 
 # CDABLE VARS
 
-Save yourself a `$` when cding into folders using a variable name and enable
-[expansion](#multi-dot-and-variable-based-expansions) for child directories.
+Save yourself a `$` when cding into folders using a variable name and enable [expansion
+](#variable-based-expansions) for child directories.
 
 Given a variable containing the path to a folder (configured in your `$PROFILE`, perhaps,
-or by invoking [`Get-Ancestors`](#multi-dot-and-variable-based-expansions)),
-you can `cd` into it using the name of the variable.
+or by invoking [`Get-Ancestors`](#variable-based-expansions)), you can `cd` into it using
+the name of the variable.
 
 ```sh
 [~]> $power = '~/projects/powershell'
@@ -561,8 +544,8 @@ you can `cd` into it using the name of the variable.
 [~/projects/powershell]> █
 ```
 
-This works with relative paths too, so if you find yourself frequently `cd`ing into the
-same subdirectories you could create a corresponding variable.
+This works with relative paths too, so if you find yourself frequently `cd`ing into the same
+subdirectories you could create a corresponding variable.
 
 ```sh
 [~/projects/powershell]> $gh = './.git/hooks'
@@ -572,17 +555,26 @@ same subdirectories you could create a corresponding variable.
 
 CDABLE_VARS is off by default. Enable it with, [`setocd CDABLE_VARS`](#configure).
 
+You can combine `CDABLE_VARS` with [AUTO_CD](#auto-cd) for great good:
+
+```sh
+[C:/projects/powershell/src/Modules/Unix]> xup -Export | out-null
+[C:/projects/powershell/src/Modules/Unix]> projects
+[C:/projects]> src
+[C:/projects/powershell/src]> █
+```
+
 # Additional helpers
 
 - Get-Up (_gup_)
   - get the path of an ancestor directory, either by name or by `n` levels.
   - returns the parent of the current directory by default.
-- Clear-Stack (_dirsc_)
-  - clear contents of undo (`cd-`) and/or redo (`cd+`) stacks.
 - Get-Stack (_dirs_)
   - view contents of undo (`cd-`) and redo (`cd+`) stacks.
   - use `dirs -u` for an indexed list of undo locations
     or `dirs -r` for a corresponding list of redo locations.
+- Clear-Stack (_dirsc_)
+  - clear contents of undo (`cd-`) and/or redo (`cd+`) stacks.
 - Expand-Path (_xpa_)
   - expand a candidate path by inserting wildcards between each segment.
   - use a trailing slash to expand *children* of the matched path(s)
@@ -593,8 +585,8 @@ CDABLE_VARS is off by default. Enable it with, [`setocd CDABLE_VARS`](#configure
 
 ## Alternative providers
 
-_cd-extras_ is primarily intended to work against the filesystem provider but things
-should work with other providers too.
+_cd-extras_ is primarily intended to work against the filesystem provider but it should work
+fine with other providers too.
 
 ```sh
 [~]> cd hklm:\
@@ -607,9 +599,9 @@ should work with other providers too.
 
 ## OS X & Linux
 
-Everything should work on non-Windows operating systems. Note that the `MenuCompletion`
-option may be off be default unless you configure PSReadLine with a `MenuComplete`
-keybinding _before_ importing `cd-extras`.
+`cd-extras` works on non-Windows operating systems. Note that the `MenuCompletion` option
+may be off be default unless you configure PSReadLine with a `MenuComplete` keybinding _before_
+importing `cd-extras`.
 
 ```sh
 Set-PSReadLineKeyHandler -Key Tab -Function MenuComplete
@@ -634,7 +626,7 @@ Import-Module cd-extras
 Add-Content $PROFILE `n, 'Import-Module cd-extras'
 ```
 
-or from get the latest from github
+or get the latest from github
 
 ```sh
 git clone git@github.com:nickcox/cd-extras.git
@@ -649,13 +641,13 @@ Import-Module cd-extras/cd-extras/cd-extras.psd1 # yep, three :D
 - _AUTO_CD_: `[bool] = $true`
   - Any truthy value enables auto_cd.
 - _CDABLE_VARS_: `[bool] = $false`
-  - `cd` and tab-expand into directory paths stored in variables without prefixing the
-  variable name with `$`.
+  - `cd` and tab-expand into directory paths stored in variables without prefixing the variable
+  name with `$`.
 - _NOARG_CD_: `[string] = '~'`
   - If specified, `cd` command with no arguments will change to the given directory.
 - _CD_PATH_: `[string[]] = @()`
-  - Paths to be searched by `cd` and tab expansion. Note that this is an array, not a
-  delimited string.
+  - Paths to be searched by `cd` and tab expansion. Note that this is an array, not a delimited
+  string.
 - _MenuCompletion_: `[bool] = $true` (if PSReadLine available)
   - If truthy, indexes are offered as completions for `up`, `cd+` and `cd-` with full paths
     displayed in the menu.
@@ -673,8 +665,8 @@ Import-Module cd-extras/cd-extras/cd-extras.psd1 # yep, three :D
   - Truncate completion menu items to this length. Column layout may break below about 60
   characters.
 - _MaxCompletions_ : `[int] = 99`
-  - Limit the number of Dir/Path/File completions offered. Should probably be at least one
-  less than `(Get-PSReadLineOption).CompletionQueryItems`.
+  - Limit the number of Dir/Path/File completions offered. Should probably be at least one less
+  than `(Get-PSReadLineOption).CompletionQueryItems`.
 
 To configure _cd-extras_ create a hashtable, `cde`, with one or more of these keys _before_
 importing it:
@@ -693,12 +685,13 @@ or call the `Set-CdExtrasOption` (`setocd`) function after importing the module:
 ```sh
 Import-Module cd-extras
 
-setocd CDABLE_VARS
-setocd AUTO_CD $false
-setocd NOARG_CD '/'
+setocd PathCompletions Invoke-VSCode # appends PathCompletions
+setocd CDABLE_VARS # turns CDABLE_VARS on
+setocd AUTO_CD $false # turns AUTO_CD off
+setocd NOARG_CD /
 ```
 
-Note: if you want to opt out of the default [path completions](#Enhanced-expansion-for-built-ins)
+Note: if you want to opt out of the default [expansions](#enhanced-expansion-for-cd-and-others)
 then you should do it before _cd-extras_ is loaded since PowerShell doesn't provide any way of
 unregistering argument completers.
 
@@ -712,8 +705,8 @@ Import-Module cd-extras
 
 ## Using a different alias
 
-_cd-extras_ aliases `cd` to its proxy command, `Set-LocationEx`, by default. If you want to use a
-different alias then you'll probably want to restore the default `cd` alias at the same time.
+_cd-extras_ aliases `cd` to its proxy command, `Set-LocationEx`, by default. If you want to use
+a different alias then you'll probably want to restore the default `cd` alias at the same time.
 
 ```sh
 [~]> set-alias cd set-location -Option AllScope
