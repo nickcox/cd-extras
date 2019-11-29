@@ -50,7 +50,7 @@ function Set-CdExtrasOption {
 
   if ($Option -in $completionTypes) {
     if ($Global:cde.$option -notcontains $value) {
-      $Global:cde.$option += $value
+      $value | ? { $Global:cde.$option -notcontains $_ } | % { $Global:cde.$option += $_ }
     }
   }
   else {
