@@ -1,5 +1,9 @@
 # Changes
 
+## [2.3.0]
+- Make `$cde` an instance of `CdeOptions` class for appropriately constrained properties
+- Fix issue with completion of `setocd` option parameter when partial value given
+
 ## [2.2.0]
 - `Get-Ancestors` and `Get-Stack` now return a first class `IndexedPath` rather than an equivalent `PSCustomObject`
 - New default `PathCompletions`: `Get-Item`, `Invoke-Item`, `Expand-Path`
