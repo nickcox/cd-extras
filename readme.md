@@ -35,6 +35,7 @@ cd-extras
 - [Install](#install)
 - [Configure](#configure)
   - [cd-extras options](#cd-extras-options)
+  - [Navigation helper key handlers](#navigation-helper-key-handlers)
   - [Using a different alias](#using-a-different-alias)
 
 <!-- /TOC -->
@@ -58,7 +59,7 @@ _cd-extras_ provides the following aliases (and corresponding functions):
 ```sh
 [C:/Windows/System32]> up # or ..
 [C:/Windows]> cd- # or ~
-[C:/Windows/System32]> cd+
+[C:/Windows/System32]> cd+ # or ~~
 [C:/Windows]> █
 ```
 
@@ -375,11 +376,11 @@ n Name        Path
 ## Extending expansion to other commands
 
 You can extend the list of commands that participate in enhanced completion for either
-directories, files, or both files and directories, using the `DirCompletions`
+*directories* or *files*, or for both *files and directories*, using the `DirCompletions`
 `FileCompletions` and `PathCompletions` [options](#configure) respectively.
 
-(`FileCompletions` is generally the least useful of the three since you can't tab through
-intermediate directories to get to the file you're looking for.)
+(`FileCompletions` is the least useful of the three since you can't tab through intermediate
+directories to get to the file you're looking for.)
 
 ```sh
 [~]> setocd DirCompletions mkdir
@@ -659,7 +660,7 @@ Import-Module cd-extras/cd-extras/cd-extras.psd1 # yep, three :D
   - Commands that participate in enhanced tab expansion for files.
 - _ColorCompletion_ : `[bool] = false`
   - If truthy, offered Dir/Path/File completions will be coloured by
-  `Format-ColorizedFilename`[1], if available.
+  `Format-ColorizedFilename`, if available.
 - _MaxMenuLength_ : `[int] = 60`
   - Truncate completion menu items to this length. Column layout may break below about 60
   characters.
@@ -702,6 +703,29 @@ $cde = @{
 Import-Module cd-extras
 ```
 
+## Navigation helper key handlers
+
+If you want to bind [navigation helpers](#navigation-helpers) to `PSReadLine` [key handlers][2]
+then you'll probably want to redraw the prompt after navigation. For example:
+
+```
+Set-PSReadLineKeyHandler -Chord Alt+[ -ScriptBlock {
+  if (dirs -u) {
+    cd-; [Microsoft.PowerShell.PSConsoleReadLine]::InvokePrompt() 
+  }
+}
+Set-PSReadLineKeyHandler -Chord Alt+] -ScriptBlock { 
+  if (dirs -r) {
+    cd+; [Microsoft.PowerShell.PSConsoleReadLine]::InvokePrompt() 
+  }
+}
+Set-PSReadLineKeyHandler -Chord Alt+^ -ScriptBlock { 
+  if (gup) {
+    up; [Microsoft.PowerShell.PSConsoleReadLine]::InvokePrompt() 
+  }
+}
+```
+
 ## Using a different alias
 
 _cd-extras_ aliases `cd` to its proxy command, `Set-LocationEx`, by default. If you want to use
@@ -718,3 +742,4 @@ a different alias then you'll probably want to restore the default `cd` alias at
 `cd-extras` will only remember locations visited via `Set-LocationEx` or its alias.
 
 [1]: https://github.com/DHowett/DirColors
+[2]: https://docs.microsoft.com/powershell/module/psreadline/set-psreadlinekeyhandler
