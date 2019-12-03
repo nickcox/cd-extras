@@ -128,8 +128,8 @@ in order to set `MenuCompletion` appropriately at start-up.
 C:\Windows\System32\drivers
 ```
 
-It's also possible tab-complete each of these commands (`cd-`, `cd+`, `up`) using a partial
-directory name (i.e. the [`NamePart` parameter](#even-faster)).
+It's also possible tab-complete `cd-`, `cd+` and `up` using a partial directory name (i.e.
+the [`NamePart` parameter](#even-faster)).
 
 ```sh
 [~/projects/PowerShell/src/Modules/Shared]> up pr⇥
@@ -405,7 +405,7 @@ need to provide a wrapper. Either the wrapper or the target itself should handle
 `~` where necessary.
 
 ```sh
-[~]> function Invoke-VSCode($path) { &code (Resolve-Path $path) }
+[~]> function Invoke-VSCode($path) { &code (xpa $path) }
 [~]> setocd PathCompletions Invoke-VSCode
 [~]> Set-Alias co Invoke-VSCode
 [~]> co ~/pr/po⇥
@@ -553,9 +553,8 @@ subdirectories you could create a corresponding variable.
 [~/projects/powershell/.git/hooks]> █
 ```
 
-CDABLE_VARS is off by default. Enable it with, [`setocd CDABLE_VARS`](#configure).
-
-You can combine `CDABLE_VARS` with [AUTO_CD](#auto-cd) for great good:
+CDABLE_VARS is off by default; enable it with, [`setocd CDABLE_VARS`](#configure). You can
+combine it with [AUTO_CD](#auto-cd) for great good:
 
 ```sh
 [C:/projects/powershell/src/Modules/Unix]> xup -Export | out-null
