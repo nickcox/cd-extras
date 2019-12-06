@@ -34,17 +34,20 @@ Redo-Location
 Get-Stack
 #>
 function Undo-Location {
+  [OutputType([void], [Management.Automation.PathInfo])]
   [CmdletBinding(DefaultParameterSetName = 'n')]
   param(
     [Parameter(ParameterSetName = 'n', Position = 0)] [byte]$n = 1,
-    [Parameter(ParameterSetName = 'named', Position = 0)] [string]$NamePart)
+    [Parameter(ParameterSetName = 'named', Position = 0)] [string]$NamePart,
+    [switch]$PassThru
+  )
 
   if ($PSCmdlet.ParameterSetName -eq 'n' -and $n -ge 1) {
 
     1..$n | % {
       if ($undoStack.Count) {
         $redoStack.Push($PWD)
-        $undoStack.Pop() | EscapeWildcards | Set-Location
+        $undoStack.Pop() | EscapeWildcards | Set-Location -PassThru:$PassThru
       }
     }
   }

@@ -40,7 +40,7 @@ C:\projects\powershell\
 
 C:\projects\powershell\src\Microsoft.PowerShell.SDK> _
 #>
-function Get-Ancestors() {
+function Get-Ancestors {
 
   [OutputType([IndexedPath])]
   [CmdletBinding()]

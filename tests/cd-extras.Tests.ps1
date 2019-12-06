@@ -137,6 +137,12 @@ Describe 'cd-extras' {
       cd-
       CurrentDir | Should -Be powershell
     }
+
+    It 'supports the PassThru switch' {
+      cd powershell; cd src
+      $path = cd- -PassThru
+      $path | Split-Path -Leaf | Should -Be Powershell
+    }
   }
 
   Describe 'Redo-Location' {
@@ -181,6 +187,12 @@ Describe 'cd-extras' {
       cd+
       CurrentDir | Should -Be one
     }
+
+    It 'supports the PassThru switch' {
+      cd powershell; cd src; cd-
+      $path = cd+ -PassThru
+      $path | Split-Path -Leaf | Should -Be src
+    }
   }
 
   Describe 'Step-Between' {
@@ -191,6 +203,15 @@ Describe 'cd-extras' {
       CurrentDir | Should -Be Modules
       cdb
       CurrentDir | Should -Be Apache
+    }
+
+    It 'supports the PassThru switch' {
+      cd ./powershell/src/Modules
+      cd ../../demos/Apache
+      $path = cdb -PassThru
+      $path | SPlit-Path -Leaf | Should -Be Modules
+      $path = cdb -PassThru
+      $path | SPlit-Path -Leaf | Should -Be Apache
     }
   }
 
@@ -326,6 +347,12 @@ Describe 'cd-extras' {
     It 'throws if the given name part is not found' {
       Set-Location powershell\src\Modules\Shared\
       { Step-Up zrc } | Should Throw
+    }
+
+    It 'supports the PassThru switch' {
+      Set-Location p*\src\Sys*\Format*\common\Utilities
+      $path = Step-Up -PassThru
+      $path | Split-Path -Leaf | Should -Be common
     }
   }
 

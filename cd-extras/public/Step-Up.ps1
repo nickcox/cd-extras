@@ -26,14 +26,19 @@ C:\Windows> _
 #>
 function Step-Up {
 
-  [OutputType([void])]
+  [OutputType([void], [Management.Automation.PathInfo])]
   [CmdletBinding(DefaultParameterSetName = 'n')]
   param(
     [Parameter(ParameterSetName = 'n', Position = 0)] [byte]$n = 1,
-    [Parameter(ParameterSetName = 'named', Position = 0)] [string]$NamePart
+    [Parameter(ParameterSetName = 'named', Position = 0)] [string]$NamePart,
+    [switch]$PassThru
   )
 
+  if ($PSBoundParameters.ContainsKey('PassThru')) {
+    $PSBoundParameters.Remove('PassThru') | out-null
+  }
+
   if ($target = Get-Up @PSBoundParameters) {
-    Set-LocationEx -LiteralPath $target
+    Set-LocationEx -LiteralPath $target -PassThru:$PassThru
   }
 }

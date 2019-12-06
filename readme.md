@@ -108,6 +108,26 @@ find a match within the full path of each candidate directory (ex. ²).
 [C:/Windows]> █
 ```
 
+Each helper includes a `-PassThru` switch which returns a `PathInfo` value in case you need a
+reference to the resulting directory. The value will be `$null` if the action wasn't completed
+(for example, because there was nothing in the stack).
+
+```sh
+[C:/Windows/System32]> up -PassThru
+
+Path
+----
+C:\Windows
+
+[C:/Windows]> cd- -PassThru
+
+Path
+----
+C:\Windows\System32
+
+[C:/Windows/System32]> █
+```
+
 ## Navigation helper expansions
 
 Tab completions are provided for each of `cd-` (_aka_ `~`), `cd+` (_aka_ `~~`) and `up`
@@ -706,36 +726,28 @@ Import-Module cd-extras
 ## Navigation helper key handlers
 
 If you want to bind [navigation helpers](#navigation-helpers) to `PSReadLine` [key handlers][2]
-then you'll probably want to redraw the prompt after navigation. For example:
+then you'll probably want to redraw the prompt after navigation.
 
 ```
-Set-PSReadLineKeyHandler -Chord Alt+[ -ScriptBlock {
-  if (dirs -u) {
-    cd-; [Microsoft.PowerShell.PSConsoleReadLine]::InvokePrompt() 
-  }
-}
-Set-PSReadLineKeyHandler -Chord Alt+] -ScriptBlock { 
-  if (dirs -r) {
-    cd+; [Microsoft.PowerShell.PSConsoleReadLine]::InvokePrompt() 
-  }
-}
-Set-PSReadLineKeyHandler -Chord Alt+^ -ScriptBlock { 
-  if (gup) {
-    up; [Microsoft.PowerShell.PSConsoleReadLine]::InvokePrompt() 
-  }
-}
+function invokePrompt() { [Microsoft.PowerShell.PSConsoleReadLine]::InvokePrompt() }
+@{
+  'Alt+^'         = { if (up  -PassThru) { invokePrompt } }
+  'Alt+['         = { if (cd- -PassThru) { invokePrompt } }
+  'Alt+]'         = { if (cd+ -PassThru) { invokePrompt } }
+  'Alt+Backspace' = { if (cdb -PassThru) { invokePrompt } }
+}.GetEnumerator() | % { Set-PSReadLineKeyHandler $_.Name $_.Value }
 ```
 
 ## Using a different alias
 
-_cd-extras_ aliases `cd` to its proxy command, `Set-LocationEx`, by default. If you want to use
-a different alias then you'll probably want to restore the default `cd` alias at the same time.
+_cd-extras_ aliases `cd` to its proxy command, `Set-LocationEx`. If you want to use a different
+alias then you'll probably want to restore the original `cd` alias too.
 
 ```sh
 [~]> set-alias cd set-location -Option AllScope
 [~]> set-alias cde set-locationex
 [~]> cde /w/s/d/et
-[C:/Windows/System32/drivers/etc]> cd- # note: still cd-, not cde-
+[C:/Windows/System32/drivers/etc]> cd- # still cd-, not cde-
 [~]> █
 ```
 
