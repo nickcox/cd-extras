@@ -31,6 +31,10 @@ n Name      Path
 0 System32  C:\Windows\system32
 1 Windows   C:\Windows
 2 C:\       C:\
+
+.LINK
+Undo-Location
+Redo-Location
 #>
 function Get-Stack {
 

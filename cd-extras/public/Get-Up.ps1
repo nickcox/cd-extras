@@ -33,7 +33,7 @@ C:\Windows
 C:\Windows\System32\drivers\etc> _
 
 .LINK
-Undo-Location
+Step-Up
 #>
 function Get-Up {
   [OutputType([String])]
