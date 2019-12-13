@@ -97,9 +97,9 @@ Describe 'cd-extras' {
       CurrentDir | Should -Be src
     }
 
-    It 'moves back to a named location' {
+    It 'moves back to a named location, regardless of case' {
       cd powershell; cd src; cd Modules; cd Shared
-      cd- src
+      cd- Src
       CurrentDir | Should -Be src
     }
 

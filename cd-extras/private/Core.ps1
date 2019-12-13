@@ -68,7 +68,7 @@ function GetStackIndex([array]$stack, [string]$namepart) {
   ) -or (
     $items = $stack | ? { ($_ | Split-Path -Leaf) -eq $namepart } # full leaf match
   ) -or (
-    $items = $stack | ? { ($_ | Split-Path -Leaf).StartsWith($namepart) } # leaf starts with
+    $items = $stack | ? { ($_ | Split-Path -Leaf) -Match "^$namepart" } # leaf starts with
   ) -or (
     $items = $stack -match ($namepart | NormaliseAndEscape) # anything...
   ) | Out-Null
