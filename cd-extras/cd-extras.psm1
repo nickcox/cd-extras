@@ -3,6 +3,9 @@ $cdAlias = if ($x = (Get-Alias -Name 'cd' -ErrorAction ignore)) { $x.Definition 
 Get-ChildItem $PSScriptRoot/private/*.ps1 | % { . $_.FullName }
 Get-ChildItem $PSScriptRoot/public/*.ps1 | % { . $_.FullName }
 
+# remove stupid phantom module
+Get-Module | ? Path -eq ("$PSScriptRoot/public/_Classes.ps1" | Resolve-Path) | Remove-Module
+
 $global:cde = if ((Test-Path variable:cde) -and $cde -is [System.Collections.IDictionary]) {
   New-Object -Type CdeOptions -Property $global:cde
 }
