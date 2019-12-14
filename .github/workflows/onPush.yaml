@@ -19,13 +19,15 @@ jobs:
         id: cache
         with:
           path: ps_modules
-          key: ${{ runner.os }}-PSModules
+          key: ${{ runner.os }}-PSModules-2
 
-      - name: Install Pester
+      - name: Install Modules
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
-          mkdir ps_modules
-          Find-Module Pester | Save-Module -Path ./ps_modules/
+          $modulePath = './ps_modules/'
+          mkdir $modulePath
+          Find-Module Pester | Save-Module -Path $modulePath
+          Find-Module PSCodeCovIo | Save-Module -Path $modulePath
         shell: pwsh
 
       - name: Run the tests
@@ -33,14 +35,13 @@ jobs:
         run: |
           echo 'Running tests...'
           Import-Module ./ps_modules/Pester
+          Import-Module ./ps_modules/PSCodeCovIo
           Get-Module | select name, path | Out-Host
           $outDir = New-Item ./_reports/ -ItemType Directory
           $reportPath = "$outDir/testResults.xml"
-          $coveragePath = "$outDir/coverage.xml"
           $src = Get-ChildItem ./cd-extras -Recurse -File -Include *.ps1
-          cd tests
-          Invoke-Pester -OutputFormat JUnitXml -OutputFile $reportPath `
-            -CodeCoverage $src -CodeCoverageOutputFile $coveragePath -EnableExit
+          $out = Invoke-Pester ./tests/cd-extras.Tests.ps1 -OutputFormat JUnitXml -OutputFile $reportPath -CodeCoverage $src -PassThru -EnableExit
+          Export-CodeCovIoJson -CodeCoverage $out.CodeCoverage -RepoRoot $pwd -Path $outDir/coverage.json
         shell: pwsh
 
       - name: Upload test report
@@ -48,3 +49,10 @@ jobs:
         with:
           name: Test Report (${{ matrix.os }})
           path: _reports
+
+      - name: Upload coverage to Codecov  
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./_reports/coverage.json
+          flags: ${{ runner.os }}
