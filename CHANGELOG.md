@@ -1,5 +1,9 @@
 # Changes
 
+## [2.4.0]
+- Implement `PassThru` switch for navigation helpers
+- Navigate forward, backward or upward by leaf name shouldn't be case sensitive
+
 ## [2.3.0]
 - Make `$cde` an instance of `CdeOptions` class for appropriately constrained properties
 - Fix issue with completion of `setocd` option parameter when partial value given
