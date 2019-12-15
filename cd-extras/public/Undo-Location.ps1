@@ -37,8 +37,12 @@ function Undo-Location {
   [OutputType([void], [Management.Automation.PathInfo])]
   [CmdletBinding(DefaultParameterSetName = 'n')]
   param(
-    [Parameter(ParameterSetName = 'n', Position = 0)] [byte]$n = 1,
-    [Parameter(ParameterSetName = 'named', Position = 0)] [string]$NamePart,
+    [Parameter(ParameterSetName = 'n', Position = 0)]
+    [byte]$n = 1,
+
+    [Parameter(ParameterSetName = 'named', Mandatory, Position = 0, ValueFromPipeline = $true)]
+    [string]$NamePart,
+
     [switch]$PassThru
   )
 

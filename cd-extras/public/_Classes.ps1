@@ -5,10 +5,10 @@ class IndexedPath {
 }
 
 class CdeOptions {
+  [array] $CD_PATH = @()
   [bool] $AUTO_CD = $true
   [bool] $CDABLE_VARS = $false
   [string] $NOARG_CD = '~'
-  [array]  $CD_PATH = @()
   [UInt16] $MaxCompletions = 99
   [UInt16] $MaxMenuLength = 60
   [array] $DirCompletions = @('Set-Location', 'Set-LocationEx', 'Push-Location')

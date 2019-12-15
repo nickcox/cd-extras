@@ -30,6 +30,8 @@ function Set-CdExtrasOption {
     [ArgumentCompleter( { $global:cde | Get-Member -Type Property -Name "$($args[2])*" | % Name })]
     [Parameter(Mandatory)]
     $Option,
+
+    [parameter(ValueFromPipeline = $true)]
     $Value
   )
 

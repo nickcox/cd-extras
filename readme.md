@@ -1,5 +1,5 @@
-[![Coverage Status](https://coveralls.io/repos/github/nickcox/cd-extras/badge.svg?branch=master)
-](https://coveralls.io/github/nickcox/cd-extras?branch=master)
+[![codecov](https://codecov.io/gh/nickcox/cd-extras/branch/master/graph/badge.svg)
+](https://codecov.io/gh/nickcox/cd-extras)
 [![cd-extras](https://img.shields.io/powershellgallery/v/cd-extras.svg?style=flat&label=cd-extras)
 ](https://www.powershellgallery.com/packages/cd-extras)
 
@@ -12,6 +12,7 @@ cd-extras
 
 - [Navigation helpers](#navigation-helpers)
   - [Even faster](#even-faster)
+  - [Return a result](#return-a-result)
   - [Navigation helper completions](#navigation-helper-completions)
   - [Viewing available locations](#viewing-available-locations)
 - [`cd` enhancements](#cd-enhancements)
@@ -48,6 +49,8 @@ cd-extras
 
 # Navigation helpers
 
+**Quickly navigate backwards, forwards or upwards**
+
 <details>
 <summary>[<i>Watch</i>]<p/></summary>
 
@@ -55,12 +58,12 @@ cd-extras
 
 </details>
 
-_cd-extras_ provides the following aliases (and corresponding functions):
+_cd-extras_ provides the following navigation helper functions (and corresponding aliases):
 
-- `cd-`, `~`, (`Undo-Location`)
-- `cd+`, `~~`, (`Redo-Location`)
-- `up`, `..` (`Step-Up`)
-- `cdb` (`Step-Between`)
+- `Undo-Location`, (`cd-`, `~`)
+- `Redo-Location`, (`cd+`, `~~`)
+- `Step-Up`, (`up`, `..`)
+- `Step-Between`, (`cdb`)
 
 ```pwsh
 [C:/Windows/System32]> up # or ..
@@ -69,12 +72,14 @@ _cd-extras_ provides the following aliases (and corresponding functions):
 [C:/Windows]> █
 ```
 
-Note that the aliases are `cd-` and `cd+`, without a space. `cd -` and `cd +` (with a space)
-also work but you won't get [tab completions](#navigation-helper-completions).
+:point_right:
+The aliases are `cd-` and `cd+`, without a space. `cd -` and `cd +` (with a space) also work
+but you won't get [tab completions](#navigation-helper-completions).
+:point_left:
 
 Repeated uses of `cd-`  keep moving backwards towards the beginning of the stack rather than
-toggling between the two most recent directories as in vanilla bash. Use `Step-Between` (`cdb`)
-if you want to toggle between directories.
+toggling between the two most recent directories as in vanilla bash. Use `Step-Between`
+(`cdb`) if you want to toggle between directories.
 
 ```pwsh
 [C:/Windows/System32]> cd ..
@@ -114,7 +119,9 @@ find a match within the full path of each candidate directory (ex. ²).
 [C:/Windows]> █
 ```
 
-Each helper includes a `-PassThru` switch which returns a `PathInfo` value in case you need a
+## Return a result
+
+Each helper includes a `-PassThru` switch to return a `PathInfo` value in case you need a
 reference to the resulting directory. The value will be `$null` if the action wasn't completed
 (for example, because there was nothing in the stack).
 
@@ -136,8 +143,7 @@ C:\Windows\System32
 
 ## Navigation helper completions
 
-Tab completions are provided for each of `cd-` (_aka_ `~`), `cd+` (_aka_ `~~`) and `up`
-(_aka_ `..`).
+Tab completions are provided for each of `cd-` (or `~`), `cd+` (or `~~`) and `up` (or `..`).
 
 When the `MenuCompletion` option is set and more than one completion is available, the
 completions offered are the indexes of each corresponding directory; the name itself is
@@ -195,6 +201,8 @@ n Name        Path
 ```
 
 # `cd` enhancements
+
+**Shortcuts and tab completions for the `cd` command**
 
 <details>
 <summary>[<i>Watch</i>]<p/></summary>
@@ -263,7 +271,7 @@ a [list of potential matches](#enhanced-completion-for-cd-and-others) instead.
 ## Multi-dot `cd`
 
 In the same way that you can navigate up one level with `cd ..`, `Set-LocationEx` supports
-navigating multiple levels by adding additional dots. [`AUTO_CD`](#auto-cd) works the same
+navigating multiple levels by adding additional dots. [`AUTO_CD`](#multi-dot) works the same
 way if enabled.
 
 ```pwsh
@@ -438,12 +446,12 @@ need to provide a wrapper. Either the wrapper or the target itself should handle
 ```
 
 An alternative to registering a bunch of aliases is to create a tiny wrapper to pipe input
-from `ls` or `gi`.
+from `ls`, `gi` or `xpa`.
 
 ```pwsh
 [~]> function to($target) { &$target $input }
-[~]> ls ~/pr/po/r.md⇥
-[~]> ls ~/projects/powershell/readme.md | to bat
+[~]> xpa ~/pr/po/r.md⇥
+[~]> xpa ~/projects/powershell/readme.md | to bat
 
 ───────────────────────────────────────────────────────
 File: C:\Users\Nick\projects\PowerShell\README.md
@@ -452,8 +460,10 @@ File: C:\Users\Nick\projects\PowerShell\README.md
 2 | ...
 ```
 
-You could skip tab completion altogether and use [Expand-Path](#Additional-helpers)
-directly if you're feeling confident.
+:point_right:
+You can skip tab completion altogether and use [Expand-Path](#Additional-helpers) directly if
+you know exactly what you're looking for.
+:point_left:
 
 ```pwsh
 [~]> xpa ~/pr/po/r.md | to bat
@@ -473,14 +483,14 @@ function.
 
 # AUTO CD
 
+**Change directory without typing `cd`**
+
 <details>
 <summary>[<i>Watch</i>]<p/></summary>
 
 ![AUTO_CD](assets/auto-cd.svg)
 
 </details>
-
-Change directory without typing `cd`.
 
 ```pwsh
 [~]> projects
@@ -524,7 +534,7 @@ n Name      Path
 
 ## Multi-dot
 
-Multi-dot syntax works with `AUTO_CD` as an alternative to `up [n]`.
+[Multi-dot syntax](#multi-dot-cd) works with `AUTO_CD` as an alternative to `up [n]`.
 
 ```pwsh
 [C:/Windows/System32/drivers/etc]> ... # same as `up 2` or `.. 2`
@@ -535,7 +545,7 @@ Multi-dot syntax works with `AUTO_CD` as an alternative to `up [n]`.
 
 # CD PATH
 
-Search additional locations for candidate directories.
+**Additional base directories for the `cd` command**
 
 ```pwsh
 [~]> setocd CD_PATH ~/documents
@@ -545,8 +555,9 @@ Search additional locations for candidate directories.
 ```
 
 [Tab-completion](#enhanced-completion-for-cd-and-others) and [path shortening](#path-shortening)
-work with `CD_PATH` directories. Note that `CD_PATH`s are _not_ searched when an absolute or
-relative path is given.
+work with `CD_PATH` directories.
+
+`CD_PATH`s are _not_ searched when an absolute or relative path is given.
 
 ```pwsh
 [~]> setocd CD_PATH ~/documents
@@ -554,16 +565,44 @@ relative path is given.
 Set-Location : Cannot find path '~\WindowsPowerShell'...
 ```
 
+:point_right:
+Unlike bash, the current directory is always included when a relative path is used. If a child
+with the same name exists in both the current directory and a `CD_PATH` directory then the `cd`
+command will prefer the former.
+:point_left:
+
+```pwsh
+[~]> mkdir -f child, someDir/child
+[~]> resolve-path someDir | setocd CD_PATH
+[~]> cd child
+[~/child]> cd child
+[~/someDir/child]> █
+```
+
+:point_right:
+Also note that the value of `CD_PATH` is an array, not a delimited string as in bash.
+:point_left:
+```pwsh
+[~]> setocd CD_PATH ~/Documents/, ~/Downloads
+[~]> $cde.CD_PATH
+~/Documents
+~/Downloads
+```
+
 # CDABLE VARS
 
-Save yourself a `$` when cding into folders using a variable name and enable [completion
-](#variable-based-completions) for child directories.
+**`cd` into variables without the `$` and enable tab completion into child directories**
 
 Given a variable containing the path to a folder (configured in your `$PROFILE`, perhaps,
 or by invoking [`Get-Ancestors`](#variable-based-completions)), you can `cd` into it using
 the name of the variable.
 
+:point_right:
+CDABLE_VARS is off by default; enable it with, [`setocd CDABLE_VARS`](#configure).
+:point_left:
+
 ```pwsh
+[~]> setocd CDABLE_VARS
 [~]> $power = '~/projects/powershell'
 [~]> cd power
 [~/projects/powershell]> █
@@ -578,8 +617,7 @@ subdirectories you could create a corresponding variable.
 [~/projects/powershell/.git/hooks]> █
 ```
 
-CDABLE_VARS is off by default; enable it with, [`setocd CDABLE_VARS`](#configure). You can
-combine it with [AUTO_CD](#auto-cd) for great good:
+You can combine it with [AUTO_CD](#auto-cd) for great good:
 
 ```pwsh
 [C:/projects/powershell/src/Modules/Unix]> xup -Export | out-null
@@ -610,10 +648,12 @@ Clear contents of undo (`cd-`) and/or redo (`cd+`) stacks.
 
 ## Expand-Path (_xpa_)
 Expands a candidate path by inserting wildcards between each segment. Use a trailing slash to
-expand *children* of the matched path(s).
+expand *children* of the matched path(s). Contents of `CD_PATH` will be included.
 
-**note:** the expansion may match more than you expect. always test the output before piping it
+:point_right:
+The expansion may match more than you expect. Always test the output before piping it
 into a potentially destructive command.
+:point_left:
 
 
 # Compatibility
@@ -621,7 +661,7 @@ into a potentially destructive command.
 ## Alternative providers
 
 _cd-extras_ is primarily intended to work against the filesystem provider but it should work
-fine with other providers too.
+with other providers too.
 
 ```pwsh
 [~]> cd hklm:\
@@ -634,9 +674,9 @@ fine with other providers too.
 
 ## OS X & Linux
 
-`cd-extras` works on non-Windows operating systems. Note that the `MenuCompletion` option
-may be off be default unless you configure PSReadLine with a `MenuComplete` keybinding _before_
-importing `cd-extras`.
+`cd-extras` works on non-Windows operating systems. The `MenuCompletion` option may be off by
+default unless you configure PSReadLine with a `MenuComplete` keybinding _before_ importing
+`cd-extras`.
 
 ```pwsh
 Set-PSReadLineKeyHandler -Key Tab -Function MenuComplete
@@ -674,33 +714,30 @@ Import-Module cd-extras/cd-extras/cd-extras.psd1 # yep, three :D
 ## _cd-extras_ options
 
 - _AUTO_CD_: `[bool] = $true`
-  - Any truthy value enables auto_cd.
+  - Enables auto_cd.
 - _CDABLE_VARS_: `[bool] = $false`
-  - `cd` and tab-complete into directory paths stored in variables without prefixing the variable
-  name with `$`.
+  - Enables cdable_vars.
 - _NOARG_CD_: `[string] = '~'`
-  - If specified, `cd` command with no arguments will change to the given directory.
+  - If specified, `cd` with no arguments will change into the given directory.
 - _CD_PATH_: `[string[]] = @()`
-  - Paths to be searched by `cd` and tab completion. Note that this is an array, not a delimited
-  string.
-- _MenuCompletion_: `[bool] = $true` (if PSReadLine available)
+  - Paths to be searched by `cd` and tab completion. An array, not a delimited string.
+- _MenuCompletion_: `[bool] = $true (if MenuComplete key bound)`
   - If truthy, indexes are offered as completions for `up`, `cd+` and `cd-` with full paths
     displayed in the menu.
 - _DirCompletions_: `[string[]] = 'Set-Location', 'Set-LocationEx', 'Push-Location'`
   - Commands that participate in enhanced tab completion for directories.
 - _PathCompletions_: `[string[]] = 'Get-ChildItem', 'Get-Item', 'Invoke-Item', 'Expand-Path'`
-  - Commands that participate in enhanced tab completion for any type of path (files &
-  directories).
+  - Commands that participate in enhanced tab completion for any path (files or directories).
 - _FileCompletions_: `[string[]] = @()`
   - Commands that participate in enhanced tab completion for files.
 - _ColorCompletion_ : `[bool] = false`
-  - If truthy, offered Dir/Path/File completions will be coloured by
-  `Format-ColorizedFilename`, if available.
+  - When truthy, dir/path/file completions will be coloured by `Format-ColorizedFilename`, if
+    available.
 - _MaxMenuLength_ : `[int] = 60`
   - Truncate completion menu items to this length. Column layout may break below about 60
   characters.
 - _MaxCompletions_ : `[int] = 99`
-  - Limit the number of Dir/Path/File completions offered. Should probably be at least one less
+  - Limit the number of dir/path/file completions offered. Should probably be at least one less
   than `(Get-PSReadLineOption).CompletionQueryItems`.
 
 To configure _cd-extras_ create a hashtable, `cde`, with one or more of these keys _before_
@@ -726,15 +763,14 @@ setocd AUTO_CD $false # turns AUTO_CD off
 setocd NOARG_CD /
 ```
 
-Note: if you want to opt out of the default [completions](#enhanced-completion-for-cd-and-others)
-then you should do it before _cd-extras_ is loaded since PowerShell doesn't provide any way of
-unregistering argument completers.
+:point_right:
+If you want to opt out of the default [completions](#enhanced-completion-for-cd-and-others)
+then you should do it before _cd-extras_ is loaded since PowerShell doesn't provide a way to
+unregister argument completers.
+:point_left:
 
 ```pwsh
-$cde = @{
-  DirCompletions = @()
-}
-
+$cde = @{ DirCompletions = @() }
 Import-Module cd-extras
 ```
 
@@ -755,8 +791,8 @@ function invokePrompt() { [Microsoft.PowerShell.PSConsoleReadLine]::InvokePrompt
 
 ## Using a different alias
 
-_cd-extras_ aliases `cd` to its proxy command, `Set-LocationEx`. If you want to use a different
-alias then you'll probably want to restore the original `cd` alias too.
+_cd-extras_ aliases `cd` to its proxy command, `Set-LocationEx`. If you want a different alias
+then you'll probably want to restore the original `cd` alias too.
 
 ```pwsh
 [~]> set-alias cd set-location -Option AllScope
@@ -766,7 +802,9 @@ alias then you'll probably want to restore the original `cd` alias too.
 [~]> █
 ```
 
+:point_right:
 `cd-extras` will only remember locations visited via `Set-LocationEx` or its alias.
+:point_left:
 
 [1]: https://github.com/DHowett/DirColors
 [2]: https://docs.microsoft.com/powershell/module/psreadline/set-psreadlinekeyhandler
