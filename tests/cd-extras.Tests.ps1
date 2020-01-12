@@ -105,8 +105,9 @@ Describe 'cd-extras' {
 
     It 'prefers an exact match if available' {
       cd powershell; cd src; cd libpsl-native; cd test; cd googletest
-      cd- TestDrive:${/}powershell${/}src
-      CurrentDir | Should -Be src
+      $backThreePath = "Testdrive:${/}powershell${/}src"
+      cd- $backThreePath
+      $PWD.Path | Should -Be $backThreePath
     }
 
     It 'throws if the named location cannot be found' {

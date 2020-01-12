@@ -64,11 +64,11 @@ filter EscapeWildcards {
 
 function GetStackIndex([array]$stack, [string]$namepart) {
   (
-    $items = $stack -eq $namepart # full path match
+    $items = $stack -eq ($namepart | Normalise | RemoveTrailingSeparator) # full path match
   ) -or (
     $items = $stack | ? { ($_ | Split-Path -Leaf) -eq $namepart } # full leaf match
   ) -or (
-    $items = $stack | ? { ($_ | Split-Path -Leaf) -Match "^$namepart" } # leaf starts with
+    $items = $stack | ? { ($_ | Split-Path -Leaf) -Match "^$($namepart | NormaliseAndEscape)" } # leaf starts with
   ) -or (
     $items = $stack -match ($namepart | NormaliseAndEscape) # anything...
   ) | Out-Null
@@ -81,14 +81,21 @@ function IndexedComplete() {
   Process { $items += $_ }
   End {
     $items | % {
-      $itemText = if ($cde.MenuCompletion -and @($items).Count -gt 1) { "$($_.n)" }
-      else { $_.path | SurroundAndTerminate }
+
+      $completionText = 
+        if ($cde.MenuCompletion -and @($items).Count -gt 1) { "$($_.n)" }
+        else { $_.path | SurroundAndTerminate }
+
+      $listItemText = "$($_.n). $($_.name)"
+      $tooltip =
+        if ($_.name -ne $_.path) { "$($_.n). $($_.path)" }
+        else { "$($_.n). ($($_.path))" }
 
       [Management.Automation.CompletionResult]::new(
-        $itemText,
-        "$($_.n). $($_.name)",
-        [Management.Automation.CompletionResultType]::ParameterValue,
-        "$($_.n). $($_.path)"
+        $completionText,
+        $listItemText,
+        'ParameterValue',
+        $tooltip
       )
     }
   }
