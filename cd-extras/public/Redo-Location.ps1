@@ -42,7 +42,7 @@ function Redo-Location {
   if ($PSCmdlet.ParameterSetName -eq 'n' -and $n -ge 1) {
     1..$n | % {
       if ($redoStack.Count) {
-        $undoStack.Push($PWD)
+        $undoStack.Push($PWD.Path)
         $redoStack.Pop() | EscapeWildcards | Set-Location -PassThru:$PassThru
       }
     }
