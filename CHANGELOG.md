@@ -1,5 +1,12 @@
 # Changes
 
+## [2.5.0]
+- Enable piping into `setocd`, `Undo-Location` and `Redo-Location`
+- Disable AUTO_CD when run as part of pipeline
+- Make `NamePart` parameter mandatory when using `named` parameter set
+- Ensure string paths, not `PathInfo` objects pushed onto stack
+- Ensure tooltip displayed for root paths
+
 ## [2.4.0]
 - Implement `PassThru` switch for navigation helpers
 - Navigate forward, backward or upward by leaf name shouldn't be case sensitive
