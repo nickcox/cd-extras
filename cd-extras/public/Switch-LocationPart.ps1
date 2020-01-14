@@ -28,13 +28,8 @@ function Switch-LocationPart {
     Write-Error "String '$normalised' isn't in '$PWD'" -ErrorAction Stop
   }
 
-  if (Test-Path (
-      $path = $PWD.Path -replace $normalised, $With
-    ) -PathType Container) {
+  $path = $PWD.Path -replace $normalised, $With
 
-    Set-LocationEx $path
-  }
-  else {
-    Write-Error "No such directory: '$path'" -ErrorAction Stop
-  }
+  if (Test-Path $path -PathType Container) { Set-LocationEx $path }
+  else { Write-Error "No such directory: '$path'" -ErrorAction Stop }
 }

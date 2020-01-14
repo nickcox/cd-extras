@@ -78,8 +78,8 @@ but you won't get [tab completions](#navigation-helper-completions).
 :point_left:
 
 Repeated uses of `cd-`  keep moving backwards towards the beginning of the stack rather than
-toggling between the two most recent directories as in vanilla bash. Use `Step-Between`
-(`cdb`) if you want to toggle between directories.
+toggling between the two most recent directories as in vanilla bash. Use `Step-Between` (`cdb`)
+if you want to toggle between directories.
 
 ```pwsh
 [C:/Windows/System32]> cd ..
@@ -122,8 +122,8 @@ find a match within the full path of each candidate directory (ex. ²).
 ## Return a result
 
 Each helper includes a `-PassThru` switch to return a `PathInfo` value in case you need a
-reference to the resulting directory. The value will be `$null` if the action wasn't completed
-(for example, because there was nothing in the stack).
+reference to the resulting directory. The value will be `$null` if the action wasn't completed.
+(For example, if there was nothing in the stack or you attempted to navigate up from the root.)
 
 ```pwsh
 [C:/Windows/System32]> up -PassThru
@@ -146,10 +146,10 @@ C:\Windows\System32
 Tab completions are provided for each of `cd-` (or `~`), `cd+` (or `~~`) and `up` (or `..`).
 
 When the `MenuCompletion` option is set and more than one completion is available, the
-completions offered are the indexes of each corresponding directory; the name itself is
-displayed in the menu below. The full directory path is shown in the tooltip if you also
-have `PSReadLine` tooltips enabled. _cd-extras_ will attempt to detect `PSReadLine` options
-in order to set `MenuCompletion` appropriately at start-up.
+completions offered are the indexes of each corresponding directory; the directory name is
+displayed in the menu below. The full directory path is shown in the tooltip if you also have
+`PSReadLine` tooltips enabled. _cd-extras_ will attempt to detect `PSReadLine` options in order
+to set `MenuCompletion` appropriately at start-up.
 
 ```pwsh
 [C:/Windows/System32/drivers/etc]> up ⇥
@@ -161,8 +161,8 @@ in order to set `MenuCompletion` appropriately at start-up.
 C:\Windows\System32\drivers
 ```
 
-It's also possible tab-complete `cd-`, `cd+` and `up` using a partial directory name (i.e.
-the [`NamePart` parameter](#even-faster)).
+It's also possible tab-complete `cd-`, `cd+` and `up` using a partial directory name (i.e. the
+[`NamePart` parameter](#even-faster)).
 
 ```pwsh
 [~/projects/PowerShell/src/Modules/Shared]> up pr⇥
@@ -211,8 +211,8 @@ n Name        Path
 
 </details>
 
-`cd-extras` provides a proxy to `Set-Location` - called `Set-LocationEx` - and aliases it to
-`cd` by default, giving it several new abilities:
+`cd-extras` provides a proxy to `Set-Location` - called `Set-LocationEx` - and aliases it to `cd`
+by default, giving it several new abilities:
 
 * [Path shortening](#Path-shortening)
 * [Multi-dot `cd`](#Multi-dot-cd)
@@ -265,14 +265,14 @@ Directories in [`CD_PATH`](#cd-path) will be matched.
 [~/projects/PowerShell/src/Microsoft.PowerShell.SDK]> █
 ```
 
-If you're not sure whether an unambiguous match is available then just hit tab to pick from
-a [list of potential matches](#enhanced-completion-for-cd-and-others) instead.
+If you're not sure whether an unambiguous match is available then just hit tab to pick from a
+[list of potential matches](#enhanced-completion-for-cd-and-others) instead.
 
 ## Multi-dot `cd`
 
 In the same way that you can navigate up one level with `cd ..`, `Set-LocationEx` supports
-navigating multiple levels by adding additional dots. [`AUTO_CD`](#multi-dot) works the same
-way if enabled.
+navigating multiple levels by adding additional dots. [`AUTO_CD`](#multi-dot) works the same way
+if enabled.
 
 ```pwsh
 [C:/Windows/System32/drivers/etc]> cd ... # same as `up 2` or `.. 2`
@@ -283,10 +283,10 @@ way if enabled.
 
 ## No argument `cd`
 
-If the `NOARG_CD` [option](#configure) is defined then `cd` without arguments navigates into
-that directory (`~` by default). This overrides the out of the box behaviour on PowerShell>=
-6.0, where no-arg `cd` always navigates to `~` and PowerShell < 6.0, where no argument `cd`
-doesn't do anything at all.
+If the `NOARG_CD` [option](#configure) is defined then `cd` without arguments navigates into that
+directory (`~` by default). This overrides the out of the box behaviour on PowerShell>=6.0, where
+no-arg `cd` always navigates to `~` and PowerShell < 6.0, where no argument `cd` doesn't do
+anything at all.
 
 ```pwsh
 [~/projects/powershell]> cd
@@ -300,12 +300,11 @@ doesn't do anything at all.
 Replaces all instances of the first argument in the current path with the second argument,
 changing to the resulting directory if it exists, using the `Switch-LocationPart` function.
 
-You can also use the alias `cd:` or the explicit `ReplaceWith` parameter of
-`Set-LocationEx`.
+You can also use the alias `cd:` or the explicit `ReplaceWith` parameter of `Set-LocationEx`.
 
 ```pwsh
 [~/Modules/Unix/Microsoft.PowerShell.Utility]> cd unix shared
-[~/Modules/Shared/Microsoft.PowerShell.Utility]> cd: -Replace shared unix
+[~/Modules/Shared/Microsoft.PowerShell.Utility]> cd: -Replace shared -With unix
 [~/Modules/Unix/Microsoft.PowerShell.Utility]> cd unix -ReplaceWith shared
 [~/Modules/Shared/Microsoft.PowerShell.Utility]> █
 ```
@@ -337,8 +336,8 @@ Paths within [`$cde.CD_PATH`](#cd-path) are included in the completion results.
 
 ## Single and double periods
 
-Periods (`.`) are expanded around so, for example, a segment containing `.sdk` is expanded
-into `*.sdk*`.
+Periods (`.`) are expanded around so, for example, a segment containing `.sdk` is expanded into
+`*.sdk*`.
 
 ```pwsh
 [~]> cd proj/pow/s/.sdk⇥
@@ -385,10 +384,10 @@ The [multi-dot syntax](#multi-dot-cd) provides tab completion into ancestor dire
 
 ## Variable based completions
 
-When [CDABLE_VARS](#cdable-vars) is enabled, completions are available for the names of
-variables that contain file paths. This can be combined with the `-Export` option of
-`Get-Ancestors` (`xup`), which recursively exports each parent directory's path into a
-global variable with a corresponding name.
+When [CDABLE_VARS](#cdable-vars) is enabled, completions are available for the names of variables
+that contain file paths. This can be combined with the `-Export` option of `Get-Ancestors` (`xup`),
+which recursively exports each parent directory's path into a global variable with a corresponding
+name.
 
 ```pwsh
 [C:/projects/powershell/src/Modules/Unix]> xup -Export -ExcludeRoot

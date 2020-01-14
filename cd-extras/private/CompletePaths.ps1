@@ -27,11 +27,8 @@ function CompletePaths {
     elseif (!($wordToComplete | IsRooted) -and ($fullPath | IsDescendedFrom ..)) {
       $fullPath | Resolve-Path -Relative
     }
-    elseif ($homeDir = (Get-Location).Provider.Home) {
-      $fullPath -replace "^$($homeDir | NormaliseAndEscape)", "~"
-    }
     else {
-      $fullPath
+      $fullPath -replace "^$($HOME | NormaliseAndEscape)", "~"
     }
 
     # add normalised trailing directory separator; quote if contains spaces

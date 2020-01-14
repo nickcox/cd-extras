@@ -658,7 +658,7 @@ Describe 'cd-extras' {
         $actual | Should HaveCount 3
 
         function ShouldContain($likeStr) {
-          $actual | Where-Object { $_ -like $likeStr } | Should -Not -BeNullOrEmpty
+          $actual |? { $_ -like $likeStr } | Should -Not -BeNullOrEmpty
         }
 
         ShouldContain "*test${/}csharp${/}"
@@ -738,20 +738,20 @@ Describe 'cd-extras' {
       }
 
       It 'colourises output only if option set' {
-        function Format-ColorizedFilename () { ($script:called = $true).ToString() }
+        function Format-ColorizedFilename () { ($script:colorized = $true).ToString() }
 
         function InvokeCompletion() {
-          $script:called = $false
+          $script:colorized = $false
           $null = CompletePaths -wordToComplete './pow/s/.SDK'
         }
 
         setocd ColorCompletion $true
         InvokeCompletion
-        $called | Should -BeTrue
+        $colorized | Should -BeTrue
 
         setocd ColorCompletion $false
         InvokeCompletion
-        $called | Should -BeFalse
+        $colorized | Should -BeFalse
       }
 
       It 'returns $null result if no completions available' {
@@ -759,7 +759,7 @@ Describe 'cd-extras' {
         $actual | Should -Be $null
       }
 
-      It 'uses the force switch when the command being completed does not have one' {
+      It 'uses the `force` switch when the command being completed does not have one' {
         $git = Get-Item powershell/.git/
         $git.Attributes = "Hidden"
         $actual = CompletePaths -wordToComplete 'pow/.git' -commandName 'Get-Date' | Select -Expand ListItemText
@@ -861,18 +861,19 @@ Describe 'cd-extras' {
         $pathCompletions = $cde.PathCompletions
         $originalCount = $pathCompletions.Count
         $originalCount | Should -BeGreaterThan 1
-        setocd PathCompletions 'xxx'
+        setocd PathCompletions xxx
 
         $cde.PathCompletions.Count | Should -Be ($originalCount + 1)
       }
 
       It 'Setting a completion option does not duplicate existing completions' {
-        $pathCompletions = $cde.PathCompletions
-        $originalCount = $pathCompletions.Count
-        $originalCount | Should -BeGreaterThan 1
-        setocd PathCompletions ($cde.PathCompletions | select -last 1)
+        setocd FileCompletions xxx
+        $fileCompletions = $cde.fileCompletions
+        $originalCount = $fileCompletions.Count
+        $originalCount | Should -BeGreaterThan 0
+        setocd FileCompletions xxx
 
-        $cde.PathCompletions.Count | Should -Be $originalCount
+        $cde.FileCompletions.Count | Should -Be $originalCount
       }
     }
 
