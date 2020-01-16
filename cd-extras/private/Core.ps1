@@ -83,13 +83,13 @@ function IndexedComplete() {
     $items | % {
 
       $completionText = 
-        if ($cde.MenuCompletion -and @($items).Count -gt 1) { "$($_.n)" }
-        else { $_.path | SurroundAndTerminate }
+      if ($cde.IndexedCompletion -and @($items).Count -gt 1) { "$($_.n)" }
+      else { $_.path | SurroundAndTerminate }
 
       $listItemText = "$($_.n). $($_.name)"
       $tooltip =
-        if ($_.name -ne $_.path) { "$($_.n). $($_.path)" }
-        else { "$($_.n). ($($_.path))" }
+      if ($_.name -ne $_.path) { "$($_.n). $($_.path)" }
+      else { "$($_.n). ($($_.path))" }
 
       [Management.Automation.CompletionResult]::new(
         $completionText,

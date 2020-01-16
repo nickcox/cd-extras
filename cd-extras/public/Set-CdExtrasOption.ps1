@@ -42,7 +42,7 @@ function Set-CdExtrasOption {
     'AUTO_CD',
     'CDABLE_VARS'
     'ColorCompletion'
-    'MenuCompletion'
+    'IndexedCompletion'
   )
 
   if ($null -eq $Value -and $Option -in $flags) {

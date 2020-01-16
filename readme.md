@@ -14,7 +14,7 @@ cd-extras
   - [Even faster](#even-faster)
   - [Return a result](#return-a-result)
   - [Navigation helper completions](#navigation-helper-completions)
-  - [Viewing available locations](#viewing-available-locations)
+  - [Viewing available navigation targets](#viewing-available-navigation-targets)
 - [`cd` enhancements](#cd-enhancements)
   - [Path shortening](#path-shortening)
   - [Multi-dot `cd`](#multi-dot-cd)
@@ -47,6 +47,7 @@ cd-extras
 
 <!-- /TOC -->
 
+
 # Navigation helpers
 
 **Quickly navigate backwards, forwards or upwards**
@@ -73,9 +74,8 @@ _cd-extras_ provides the following navigation helper functions (and correspondin
 ```
 
 :point_right:
-That's `cd-` and `cd+`, without a space. `cd -` and `cd +` (with a space) work but you won't get
-[tab completions](#navigation-helper-completions).
-:point_left:
+That's `cd-` and `cd+`, without a space. `cd -` and `cd +` (with a space) also work but you won't
+get [autocompletions](#navigation-helper-completions).
 
 Repeated uses of `cd-`  keep moving backwards towards the beginning of the stack rather than
 toggling between the two most recent directories as in vanilla bash. Use `Step-Between` (`cdb`)
@@ -92,6 +92,7 @@ if you want to toggle between directories.
 [C:/Windows]> cdb
 [C:/]> █
 ```
+
 
 ## Even faster
 
@@ -119,6 +120,7 @@ find a match within the full path of each candidate directory (ex. ²).
 [C:/Windows]> █
 ```
 
+
 ## Return a result
 
 Each helper includes a `-PassThru` switch to return a `PathInfo` value in case you need a
@@ -141,25 +143,57 @@ C:\Windows\System32
 [C:/Windows/System32]> █
 ```
 
+
 ## Navigation helper completions
 
-Tab completions are provided for each of `cd-`, `cd+`, and `up`.
+Auto-completions are provided for each of `cd-`, `cd+`, and `up`.
 
-When the `MenuCompletion` option is set and more than one completion is available, the
-completions offered are the indexes of each corresponding directory; the directory name
-is displayed in the menu below. The full directory path is shown in the tooltip if you have
-`PSReadLine` tooltips enabled. _cd-extras_ will attempt to detect `PSReadLine` options in order
-to set `MenuCompletion` appropriately at start-up.
+Assuming the [`PSReadLine`][0] `MenuComplete` function is bound to tab...
 
 ```pwsh
-[C:/Windows/System32/drivers/etc]> up ⇥
+[C:]> Get-PSReadLineKeyHandler -Bound | Where Function -eq MenuComplete
+  
+Completion functions
+====================
+
+Key           Function     Description
+---           --------     -----------
+Tab           MenuComplete Complete the input if there is a single completion ...
+...
+```
+
+then tabbing (`⇥`) through any of the navigation helpers will display a menu based completion.
+
+```pwsh
+[C:/Windows/System32/drivers/etc]> up ⇥⇥
 [C:/Windows/System32/drivers/etc]> up 1
 
 1. drivers  2. System32  3. Windows  4. C:\
-───────────
+            ────────────
 
-C:\Windows\System32\drivers
+C:\Windows\System32
 ```
+
+The `cd-extras` `IndexedCompletion` option controls how the completion text is displayed. When
+`IndexedCompletion` is on and more than one completion is available, the completions offered are
+the *indexes* of each corresponding directory; the directory name is displayed in the menu below.
+The full directory path is given in the tooltip if you have `PSReadLine` tooltips enabled.
+
+_cd-extras_ attempts to detect `PSReadLine` options in order to set `IndexedCompletion` at
+startup. If the `PSReadLine` `MenuComplete` option is bound to at least one key combination then
+`IndexedCompletion` is turned on by default. You can turn it off if it's not your thing.
+
+```pwsh
+[C:/Windows/System32/drivers/etc]> setocd IndexedCompletion 0
+[C:/Windows/System32/drivers/etc]> up ⇥⇥
+[C:/Windows/System32/drivers/etc]> up C:\Windows\System32 <--- full path shown
+
+1. drivers  2. System32  3. Windows  4. C:\
+            ────────────
+
+C:\Windows\System32
+```
+
 
 It's also possible to tab-complete `cd-`, `cd+` and `up` using a partial directory name (i.e. the
 [`NamePart` parameter](#even-faster)).
@@ -170,9 +204,10 @@ It's also possible to tab-complete `cd-`, `cd+` and `up` using a partial directo
 [~/projects]> █
 ```
 
-## Viewing available locations
 
-As an alternative to menu completion you retrieve a list of available navigation targets with:
+## Viewing available navigation targets
+
+As an alternative to menu completion you retrieve a list of available targets with:
 
 - `Get-Stack -Undo` (`dirs -u`)
 - `Get-Stack -Redo` (`dirs -r`)
@@ -200,6 +235,7 @@ n Name        Path
 [C:/Windows/System32/drivers]> █
 ```
 
+
 # `cd` enhancements
 
 **Shortcuts and tab completions for the `cd` command**
@@ -219,6 +255,7 @@ by default, giving it several new abilities:
 * [No argument `cd`](#No-argument-cd)
 * [Two argument `cd`](#Two-argument-cd)
 * [Enhanced tab completions](#Enhanced-completion-for-cd-and-others)
+
 
 ## Path shortening
 
@@ -270,6 +307,7 @@ True
 If you're not sure whether an unambiguous match is available then just hit tab to pick from a
 [list of potential matches](#enhanced-completion-for-cd-and-others) instead.
 
+
 ## Multi-dot `cd`
 
 In the same way that you can navigate up one level with `cd ..`, `Set-LocationEx` supports
@@ -282,6 +320,7 @@ if enabled.
 [C:/Windows/System32/drivers/etc>] cd .... # same as `up 3` or `.. 3`
 [C:/Windows]> █
 ```
+
 
 ## No argument `cd`
 
@@ -297,6 +336,7 @@ anything at all.
 [C:/]>
 ```
 
+
 ## Two argument `cd`
 
 Replaces all instances of the first argument in the current path with the second argument,
@@ -311,6 +351,7 @@ You can also use the alias `cd:` or the explicit `ReplaceWith` parameter of `Set
 [~/Modules/Shared/Microsoft.PowerShell.Utility]> █
 ```
 
+
 # Enhanced completion for `cd` and others
 
 `cd`, `pushd`, `ls`, `Get-Item` and `Invoke-Item` (by default) provide enhanced completion,
@@ -320,7 +361,7 @@ each one. The path shortening logic is provided by `Expand-Path` and works as [d
 
 ```pwsh
 [~]> cd /w/s/dr⇥⇥
-[~]> cd C:/Windows/System32/DriverState/
+[~]> cd C:\Windows\System32\DriverState\
 
 drivers   DriverState   DriverStore
           ───────────
@@ -335,6 +376,7 @@ Paths within [`$cde.CD_PATH`](#cd-path) are included in the completion results.
 [~]> cd win/mod⇥
 [~]> ~\Documents\WindowsPowerShell\Modules\█
 ```
+
 
 ## Single and double periods
 
@@ -365,6 +407,7 @@ A double-dot (`..`) token is expanded inside, so `s..32` becomes `s*32`.
 [~]> ls C:\Windows\System32\█
 ```
 
+
 ## Multi-dot completions
 
 The [multi-dot syntax](#multi-dot-cd) provides tab completion into ancestor directories.
@@ -383,6 +426,7 @@ The [multi-dot syntax](#multi-dot-cd) provides tab completion into ancestor dire
 
 ~\projects\powershell\.git
 ```
+
 
 ## Variable based completions
 
@@ -406,6 +450,7 @@ n Name        Path
 [C:/projects/powershell]> cd .\src\modules\
 ```
 
+
 ## Extending completion to other commands
 
 You can extend the list of commands that participate in enhanced completion for either
@@ -419,11 +464,6 @@ directories to get to the file you're looking for.)
 [~]> setocd DirCompletions mkdir
 [~]> mkdir ~/pow/src⇥
 [~]> mkdir ~\powershell\src\█
-```
-
-
-
-```pwsh
 [~]> setocd PathCompletions Copy-Item
 [~]> cp /t/⇥
 [~]> cp C:\temp\subdir\█
@@ -464,7 +504,6 @@ File: C:\Users\Nick\projects\PowerShell\README.md
 :point_right:
 You can skip tab completion altogether and use [Expand-Path](#Additional-helpers) directly if
 you know exactly what you're looking for.
-:point_left:
 
 ```pwsh
 [~]> xpa ~/pr/po/r.md | to bat
@@ -476,11 +515,13 @@ File: C:\Users\Nick\projects\PowerShell\README.md
 2 | ...
 ```
 
+
 ## Colourised completions
 
 The `ColorCompletion` option (`setocd ColorCompletion`) enables colourisation of completions
 in the filesystem provider via [DirColors][1] or via your own global `Format-ColorizedFilename`
 function.
+
 
 # AUTO CD
 
@@ -511,6 +552,7 @@ and [multi-dot syntax](#multi-dot-cd) are supported.
 [~/projects/cd-extras]> █
 ```
 
+
 ## Tilde
 
 `AUTO_CD` supports a shorthand syntax for `cd-` using tilde (`~`). You can use this with or
@@ -533,6 +575,7 @@ n Name      Path
 [C:/temp]> █
 ```
 
+
 ## Multi-dot
 
 [Multi-dot syntax](#multi-dot-cd) works with `AUTO_CD` as an alternative to `up [n]`.
@@ -543,6 +586,7 @@ n Name      Path
 [C:/Windows/System32/drivers/etc>] .... # same as `up 3` or `.. 3`
 [C:/Windows]>  █
 ```
+
 
 # CD PATH
 
@@ -570,7 +614,6 @@ Set-Location : Cannot find path '~\WindowsPowerShell'...
 Unlike bash, the current directory is always included when a relative path is used. If a child
 with the same name exists in both the current directory and a `CD_PATH` directory then the `cd`
 command will prefer the former.
-:point_left:
 
 ```pwsh
 [~]> mkdir -f child, someDir/child
@@ -582,13 +625,13 @@ command will prefer the former.
 
 :point_right:
 Also note that the value of `CD_PATH` is an array, not a delimited string as in bash.
-:point_left:
 ```pwsh
 [~]> setocd CD_PATH ~/Documents/, ~/Downloads
 [~]> $cde.CD_PATH
 ~/Documents
 ~/Downloads
 ```
+
 
 # CDABLE VARS
 
@@ -600,7 +643,6 @@ the name of the variable.
 
 :point_right:
 CDABLE_VARS is off by default; enable it with, [`setocd CDABLE_VARS`](#configure).
-:point_left:
 
 ```pwsh
 [~]> setocd CDABLE_VARS
@@ -627,6 +669,7 @@ You can combine it with [AUTO_CD](#auto-cd) for great good:
 [C:/projects/powershell/src]> █
 ```
 
+
 # Additional helpers
 
 ## Get-Up (_gup_)
@@ -642,6 +685,7 @@ C:\projects\cd-extras
 C:\projects\work\app
 ...
 ```
+
 
 ## Get-Stack (_dirs_)
 
@@ -662,7 +706,6 @@ expand *children* of the matched path(s). Contents of `CD_PATH` will be included
 :point_right:
 The expansion may match more than you expect. Always test the output before piping it
 into a potentially destructive command.
-:point_left:
 
 
 # Compatibility
@@ -681,9 +724,10 @@ with other providers too.
 [~]> █
 ```
 
+
 ## OS X & Linux
 
-`cd-extras` works on non-Windows operating systems. The `MenuCompletion` option may be off by
+`cd-extras` works on non-Windows operating systems. The `IndexedCompletion` option may be off by
 default unless you configure PSReadLine with a `MenuComplete` keybinding _before_ importing
 `cd-extras`.
 
@@ -694,8 +738,9 @@ Set-PSReadLineKeyHandler -Key Tab -Function MenuComplete
 Otherwise you can enable `cd-extras` menu completions manually with:
 
 ```pwsh
-setocd MenuCompletion
+setocd IndexedCompletion
 ```
+
 
 # Install
 
@@ -718,6 +763,7 @@ Import-Module cd-extras/cd-extras/cd-extras.psd1 # yep, three :D
 
 ```
 
+
 # Configure
 
 ## _cd-extras_ options
@@ -730,7 +776,7 @@ Import-Module cd-extras/cd-extras/cd-extras.psd1 # yep, three :D
   - If specified, `cd` with no arguments will change into the given directory.
 - _CD_PATH_: `[string[]] = @()`
   - Paths to be searched by `cd` and tab completion. An array, not a delimited string.
-- _MenuCompletion_: `[bool] = $true (if MenuComplete key bound)`
+- _IndexedCompletion_: `[bool] = $true (if MenuComplete key bound)`
   - If truthy, indexes are offered as completions for `up`, `cd+` and `cd-` with full paths
     displayed in the menu.
 - _DirCompletions_: `[string[]] = 'Set-Location', 'Set-LocationEx', 'Push-Location'`
@@ -768,7 +814,7 @@ Import-Module cd-extras
 
 setocd PathCompletions Invoke-VSCode # appends PathCompletions
 setocd CDABLE_VARS # turns CDABLE_VARS on
-setocd AUTO_CD $false # turns AUTO_CD off
+setocd AUTO_CD 0 # turns AUTO_CD off
 setocd NOARG_CD /
 ```
 
@@ -776,12 +822,12 @@ setocd NOARG_CD /
 If you want to opt out of the default [completions](#enhanced-completion-for-cd-and-others)
 then you should do it before _cd-extras_ is loaded since PowerShell doesn't provide a way to
 unregister argument completers.
-:point_left:
 
 ```pwsh
 $cde = @{ DirCompletions = @() }
 Import-Module cd-extras
 ```
+
 
 ## Navigation helper key handlers
 
@@ -798,6 +844,7 @@ function invokePrompt() { [Microsoft.PowerShell.PSConsoleReadLine]::InvokePrompt
 }.GetEnumerator() | % { Set-PSReadLineKeyHandler $_.Name $_.Value }
 ```
 
+
 ## Using a different alias
 
 _cd-extras_ aliases `cd` to its proxy command, `Set-LocationEx`. If you want a different alias
@@ -813,7 +860,7 @@ then you'll probably want to restore the original `cd` alias too.
 
 :point_right:
 `cd-extras` will only remember locations visited via `Set-LocationEx` or its alias.
-:point_left:
 
+[0]: https://github.com/PowerShell/PSReadLine
 [1]: https://github.com/DHowett/DirColors
 [2]: https://docs.microsoft.com/powershell/module/psreadline/set-psreadlinekeyhandler

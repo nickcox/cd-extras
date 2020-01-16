@@ -15,7 +15,7 @@ class CdeOptions {
   [array] $PathCompletions = @('Get-ChildItem', 'Get-Item', 'Invoke-Item', 'Expand-Path')
   [array] $FileCompletions = @()
   [bool] $ColorCompletion = $false
-  [bool] $MenuCompletion = $null -ne (Get-Module PSReadLine) -and (
+  [bool] $IndexedCompletion = $null -ne (Get-Module PSReadLine) -and (
     Get-PSReadLineKeyHandler -Bound | ? Function -eq MenuComplete
   )
 }

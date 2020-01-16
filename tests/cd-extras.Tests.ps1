@@ -799,7 +799,7 @@ Describe 'cd-extras' {
       It 'uses index completion when menu completion is on' {
         Set-LocationEx powershell
         Set-LocationEx src
-        $cde.MenuCompletion = $true
+        $cde.IndexedCompletion = $true
         $actual = CompleteStack -wordToComplete '' -commandName 'Undo'
         $actual[0].CompletionText | Should -Be 1
       }
@@ -807,14 +807,14 @@ Describe 'cd-extras' {
       It 'uses the full path when menu completion is off' {
         Set-LocationEx powershell
         Set-LocationEx src
-        $cde.MenuCompletion = $false
+        $cde.IndexedCompletion = $false
         $actual = CompleteStack -wordToComplete '' -commandName 'Undo'
         $actual[0].CompletionText | Should -BeLike "TestDrive:${/}powershell"
       }
 
       It 'uses the full path when only one completion is available' {
         Set-LocationEx powershell
-        $cde.MenuCompletion = $true
+        $cde.IndexedCompletion = $true
         $actual = CompleteStack -wordToComplete '' -commandName 'Undo'
         $actual[0].CompletionText | Should -BeLike "testdrive:${/}"
       }
@@ -835,14 +835,14 @@ Describe 'cd-extras' {
 
       It 'uses index completion when menu completion is on' {
         Set-Location ./powershell/demos/Apache
-        $cde.MenuCompletion = $true
+        $cde.IndexedCompletion = $true
         $actual = CompleteAncestors -wordToComplete ''
         $actual[0].CompletionText | Should -Be 1
       }
 
       It 'uses the full path when menu completion is off' {
         Set-Location ./powershell/demos/Apache
-        $cde.MenuCompletion = $false
+        $cde.IndexedCompletion = $false
         $actual = CompleteAncestors -wordToComplete ''
         $actual[0].CompletionText | Should -BeLike "*powershell${/}demos"
       }

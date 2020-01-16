@@ -77,7 +77,7 @@ function Get-Up {
       }
 
       # if we couldn't match by leaf name then match by complete path
-      # this is mainly used for completion when MenuCompletion is off
+      # this is mainly for completion when IndexedCompletion is off
       if ($result = $ancestors.Path -eq $NamePart) {
         return $result | select -first 1
       }
