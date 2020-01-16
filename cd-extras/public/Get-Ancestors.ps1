@@ -45,32 +45,36 @@ function Get-Ancestors {
   [OutputType([IndexedPath])]
   [CmdletBinding()]
   param(
-    [parameter(ValueFromPipeline = $true)]
+    [Alias('FullName', 'Path')]
+    [Parameter(ValueFromPipeline, ValueFromPipelineByPropertyName)]
     [string] $From = $PWD,
     [switch] $ExcludeRoot,
     [switch] $Export,
     [switch] $Force
   )
 
-  $start = Resolve-Path -LiteralPath $From -ErrorAction Ignore
-  $root = $start.Drive.Root
+  Process {
 
-  if (!$start -or ($start.Path -eq $root)) { return }
+    $start = Resolve-Path -LiteralPath $From -ErrorAction Ignore
+    $root = $start.Drive.Root
 
-  $next = $start.Path
-  $paths = @(while ($next -and ($next = $next | Split-Path) -and ($next -ne $root)) { $next })
+    if (!$start -or ($start.Path -eq $root)) { return }
 
-  # on Unix there's a weird empty path returned for the root directory
-  # so we add it explicitly here instead of inside the loop
-  if (!$ExcludeRoot -and $From -ne $root) { $paths += $root }
+    $next = $start.Path
+    $paths = @(while ($next -and ($next = $next | Split-Path) -and ($next -ne $root)) { $next })
 
-  $output = IndexPaths $paths
+    # on Unix there's a weird empty path returned for the root directory
+    # so we add it explicitly here instead of inside the loop
+    if (!$ExcludeRoot -and $From -ne $root) { $paths += $root }
 
-  if ($Export) {
-    @($output) | % {
-      New-Variable $_.name $_.path -Scope Global -Force:$Force -ErrorAction SilentlyContinue
+    $output = IndexPaths $paths
+
+    if ($Export) {
+      @($output) | % {
+        New-Variable $_.name $_.path -Scope Global -Force:$Force -ErrorAction SilentlyContinue
+      }
     }
-  }
 
-  $output
+    $output
+  }
 }

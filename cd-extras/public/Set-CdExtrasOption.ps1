@@ -9,16 +9,19 @@ The option to update.
 The new value.
 
 .EXAMPLE
-PS C:\> Set-CdExtrasOption AUTO_CD
-Enables flag AUTO_CD
+C:\> setocd AUTO_CD
+
+Enables AUTO_CD
 
 .EXAMPLE
-PS C:\> Set-CdExtrasOption AUTO_CD $false
-Disables flag AUTO_CD
+C:\> setocd AUTO_CD $false
+
+Disables AUTO_CD
 
 .EXAMPLE
-PS C:\> Set-CdExtrasOption -Option CD_PATH -Value @('/temp')
-Set the search paths to the single directory '/temp'
+C:\> Set-CdExtrasOption -Option CD_PATH -Value @('/temp')
+
+Set the directory search paths to the single directory, '/temp'
 #>
 function Set-CdExtrasOption {
   [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]
@@ -31,7 +34,7 @@ function Set-CdExtrasOption {
     [Parameter(Mandatory)]
     $Option,
 
-    [parameter(ValueFromPipeline = $true)]
+    [parameter(ValueFromPipeline)]
     $Value
   )
 

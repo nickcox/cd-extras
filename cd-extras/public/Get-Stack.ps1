@@ -10,6 +10,7 @@ Show contents of the Redo stack only.
 
 .EXAMPLE
 # Get contents of both stacks (default)
+
 C:\> cd windows
 C:\Windows> cd system32
 C:\Windows\System32> cd-
@@ -22,13 +23,13 @@ Undo                           C:\
 
 .EXAMPLE
 # Get indexed contents of undo stack
+
 C:\> cd windows
 C:\Windows> cd system32
-C:\Windows\system32> Get-Stack -u
+C:\Windows\system32> dirs -u
 
 n Name      Path
 - ----      ----
-0 System32  C:\Windows\system32
 1 Windows   C:\Windows
 2 C:\       C:\
 
@@ -43,10 +44,10 @@ function Get-Stack {
   [CmdletBinding(DefaultParameterSetName = 'Both')]
   param(
     [Alias("l", "p", "v")]
-    [Parameter(Mandatory = $true, ParameterSetName = 'Undo')]
+    [Parameter(ParameterSetName = 'Undo')]
     [switch] $Undo,
 
-    [Parameter(Mandatory = $true, ParameterSetName = 'Redo')]
+    [Parameter(ParameterSetName = 'Redo')]
     [switch] $Redo
   )
 

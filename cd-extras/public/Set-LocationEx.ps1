@@ -98,7 +98,7 @@ Function Set-LocationEx {
     HelpUri = 'https://go.microsoft.com/fwlink/?LinkID=113397')
   ]
  	param(
-    [Parameter(ParameterSetName = 'Path', Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
+    [Parameter(ParameterSetName = 'Path', Position = 0, ValueFromPipeline, ValueFromPipelineByPropertyName)]
     [string]
     ${Path},
 
@@ -106,7 +106,7 @@ Function Set-LocationEx {
     [string]
     ${ReplaceWith},
 
-    [Parameter(ParameterSetName = 'LiteralPath', Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
+    [Parameter(ParameterSetName = 'LiteralPath', Mandatory, ValueFromPipelineByPropertyName)]
     [Alias('PSPath')]
     [string]
     ${LiteralPath},
@@ -114,7 +114,7 @@ Function Set-LocationEx {
     [switch]
     ${PassThru},
 
-    [Parameter(ParameterSetName = 'Stack', ValueFromPipelineByPropertyName = $true)]
+    [Parameter(ParameterSetName = 'Stack', ValueFromPipelineByPropertyName)]
     [string]
     ${StackName})
 

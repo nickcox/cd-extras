@@ -73,8 +73,8 @@ _cd-extras_ provides the following navigation helper functions (and correspondin
 ```
 
 :point_right:
-The aliases are `cd-` and `cd+`, without a space. `cd -` and `cd +` (with a space) also work
-but you won't get [tab completions](#navigation-helper-completions).
+That's `cd-` and `cd+`, without a space. `cd -` and `cd +` (with a space) work but you won't get
+[tab completions](#navigation-helper-completions).
 :point_left:
 
 Repeated uses of `cd-`  keep moving backwards towards the beginning of the stack rather than
@@ -143,11 +143,11 @@ C:\Windows\System32
 
 ## Navigation helper completions
 
-Tab completions are provided for each of `cd-` (or `~`), `cd+` (or `~~`) and `up` (or `..`).
+Tab completions are provided for each of `cd-`, `cd+`, and `up`.
 
 When the `MenuCompletion` option is set and more than one completion is available, the
-completions offered are the indexes of each corresponding directory; the directory name is
-displayed in the menu below. The full directory path is shown in the tooltip if you also have
+completions offered are the indexes of each corresponding directory; the directory name
+is displayed in the menu below. The full directory path is shown in the tooltip if you have
 `PSReadLine` tooltips enabled. _cd-extras_ will attempt to detect `PSReadLine` options in order
 to set `MenuCompletion` appropriately at start-up.
 
@@ -161,7 +161,7 @@ to set `MenuCompletion` appropriately at start-up.
 C:\Windows\System32\drivers
 ```
 
-It's also possible tab-complete `cd-`, `cd+` and `up` using a partial directory name (i.e. the
+It's also possible to tab-complete `cd-`, `cd+` and `up` using a partial directory name (i.e. the
 [`NamePart` parameter](#even-faster)).
 
 ```pwsh
@@ -258,7 +258,9 @@ Directories in [`CD_PATH`](#cd-path) will be matched.
 [`AUTO_CD`](#auto-cd) uses the same expansion algorithm when enabled.
 
 ```pwsh
-[~]> # $cde.AUTO_CD -> True
+[~]> $cde.AUTO_CD
+True
+
 [~]> /w/s/d/et
 [C:/Windows/System32/drivers/etc]> ~/pr/pow/src
 [~/projects/PowerShell/src]> .sdk
@@ -629,16 +631,24 @@ You can combine it with [AUTO_CD](#auto-cd) for great good:
 
 ## Get-Up (_gup_)
 
-Gets the path of an ancestor directory, either by name or by `n` levels.
-Returns the parent of the current directory by default.
+Gets the path of an ancestor directory, either by name or by `n` levels, returning the parent
+of the current directory by default. Supports consuming values from the pipeline so you can do
+things like:
 
+```pwsh
+[C:/projects]> # find directories with a git repository
+[C:/projects]> ls .git -Force -Recurse -Depth 2 | gup
+C:\projects\cd-extras
+C:\projects\work\app
+...
+```
 
 ## Get-Stack (_dirs_)
 
 View contents of undo (`cd-`) and redo (`cd+`) stacks.
 
-Use `dirs -u` for an indexed list of undo locations or `dirs -r` for a corresponding list of
-redo locations.
+Use `dirs -u` for an indexed list of undo locations, `dirs -r` for a corresponding list of
+redo locations, or just `dirs` to see both.
 
 
 ## Clear-Stack (_dirsc_)

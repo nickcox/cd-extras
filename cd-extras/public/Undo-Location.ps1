@@ -40,7 +40,7 @@ function Undo-Location {
     [Parameter(ParameterSetName = 'n', Position = 0)]
     [byte]$n = 1,
 
-    [Parameter(ParameterSetName = 'named', Mandatory, Position = 0, ValueFromPipeline = $true)]
+    [Parameter(ParameterSetName = 'named', Position = 0, Mandatory, ValueFromPipeline)]
     [string]$NamePart,
 
     [switch]$PassThru

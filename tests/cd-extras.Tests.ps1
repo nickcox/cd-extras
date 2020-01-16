@@ -112,7 +112,7 @@ Describe 'cd-extras' {
 
     It 'throws if the named location cannot be found' {
       cd powershell/src
-      { Undo-Location doesnotexist } | Should Throw "Could not find"
+      { Undo-Location doesnotexist } | Should -Throw "Could not find"
     }
 
     It 'matches more than one segment if necessary' {
@@ -180,7 +180,7 @@ Describe 'cd-extras' {
     It 'throws if the named location cannot be found' {
       cd powershell/src
       cd-
-      { Redo-Location doesnotexist } | Should Throw
+      { Redo-Location doesnotexist } | Should -Throw
     }
 
     It 'pops a directory with square brackets' {
@@ -287,12 +287,12 @@ Describe 'cd-extras' {
 
     It 'throws if the replaceable text is not in the current directory name' {
       Set-Location powershell\src\Modules\Shared\Microsoft.PowerShell.Utility
-      { cd: shard Unix } | Should Throw "String 'shard'"
+      { cd: shard Unix } | Should -Throw "String 'shard'"
     }
 
     It 'throws if the replacement results in a path which does not exist' {
       Set-Location powershell\src\Modules\Shared\Microsoft.PowerShell.Utility
-      { cd: Shared unice } | Should Throw "No such directory"
+      { cd: Shared unice } | Should -Throw "No such directory"
     }
   }
 
@@ -347,7 +347,7 @@ Describe 'cd-extras' {
 
     It 'throws if the given name part is not found' {
       Set-Location powershell\src\Modules\Shared\
-      { Step-Up zrc } | Should Throw
+      { Step-Up zrc } | Should -Throw
     }
 
     It 'supports the PassThru switch' {
@@ -379,6 +379,11 @@ Describe 'cd-extras' {
 
     It 'should return -From when n is 0' {
       Get-Up -n 0 | should -Be $PWD.Path
+    }
+
+    It 'supports pipelines' {
+      (Get-Item powershell\src\Modules\), (Get-Item powershell\demos\install\) |
+      Get-Up | should -Be @((Get-Item powershell\src).FullName, (Get-Item powershell\demos).FullName)
     }
   }
 
@@ -454,7 +459,7 @@ Describe 'cd-extras' {
     It 'does nothing when turned off' {
       Set-CdExtrasOption -Option AUTO_CD -Value $false
       Set-Location powershell
-      { src } | Should Throw
+      { src } | Should -Throw
       CurrentDir | Should -Be powershell
       $error.Clear()
     }
@@ -543,13 +548,13 @@ Describe 'cd-extras' {
 
     It 'does not search CD_PATH when given directory is rooted or relative' {
       Set-CdExtrasOption -Option CD_PATH -Value @('TestDrive:\powershell\src\')
-      { cd ./resgen -ErrorAction Stop } | Should Throw "Cannot find path"
+      { cd ./resgen -ErrorAction Stop } | Should -Throw "Cannot find path"
     }
   }
 
   Describe 'Expand-Path' {
     It 'returns expected expansion Windows style' {
-      Expand-Path p/s/m/U |
+      Expand-Path p/s/m/UN |
       Should -Be (Join-Path $TestDrive powershell\src\Modules\Unix)
     }
 
@@ -585,6 +590,14 @@ Describe 'cd-extras' {
     It 'supports the double dot operator' {
       Expand-Path pow/src/Typ..Gen |
       Should -Be (Join-Path $TestDrive powershell\src\TypeCatalogGen)
+    }
+
+    It 'supports pipelines' {
+      'pow/src/Typ..Gen', 'p/s/m/UN' | Expand-Path |
+      Should -Be @(
+        (Join-Path $TestDrive powershell\src\TypeCatalogGen)
+        (Join-Path $TestDrive powershell\src\Modules\Unix)
+      )
     }
 
     It 'works in Windows registry' -Skip:(!$IsWindows) {
@@ -658,7 +671,7 @@ Describe 'cd-extras' {
         $actual | Should HaveCount 3
 
         function ShouldContain($likeStr) {
-          $actual |? { $_ -like $likeStr } | Should -Not -BeNullOrEmpty
+          $actual | ? { $_ -like $likeStr } | Should -Not -BeNullOrEmpty
         }
 
         ShouldContain "*test${/}csharp${/}"

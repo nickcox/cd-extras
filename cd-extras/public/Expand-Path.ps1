@@ -52,7 +52,7 @@ function Expand-Path {
   [CmdletBinding()]
   param (
     [alias("Candidate")]
-    [parameter(ValueFromPipeline = $true)]
+    [parameter(ValueFromPipeline)]
     [String]    $Path = './',
     [UInt16]    $MaxResults = [UInt16]::MaxValue,
     [String[]]  $SearchPaths = $cde.CD_PATH,
@@ -61,31 +61,34 @@ function Expand-Path {
     [Switch]    $Force
   )
 
-  # if we've been given an empty string then expand everything below $PWD
-  if (!$Path) { $Path = './' }
+  Process {
 
-  $multiDot = [regex]::Match($Path, '^\.{3,}')
-  $match = $multiDot.Value
-  $replacement = ('../' * [Math]::Max(0, $match.LastIndexOf('.'))) -replace '.$'
+    # if we've been given an empty string then expand everything below $PWD
+    if (!$Path) { $Path = './' }
 
-  [string]$wildcardedPath = $Path `
-    -replace [Regex]::Escape($match), $replacement `
-    -replace '`?\[|`?\]', '?' <# be as permissive as possible about square brackets #> `
-    -replace '\w/|\w\\|\w$|\?$', '$0*' <# asterisks around slashes and at end #> `
-    -replace '/\*|\\\*', "*${/}" <# /* or \* --> */ #> `
-    -replace '/$|\\$', '$0*' <# append trailing aster if ends with slash #> `
-    -replace '(\w)\.\.(\w)', '$1*' <# support double dot operator #> `
-    -replace '\.\w|\w\.$', '*$0' <# expand around dots #>
+    $multiDot = [regex]::Match($Path, '^\.{3,}')
+    $match = $multiDot.Value
+    $replacement = ('../' * [Math]::Max(0, $match.LastIndexOf('.'))) -replace '.$'
 
-  $wildcardedPaths = if ($SearchPaths -and -not ($Path | IsRootedOrRelative)) {
-    # always include the local path, regardless of whether it was passed
-    # in the searchPaths parameter (this differs from the behaviour in bash)
-    @($wildcardedPath) + ($SearchPaths | Join-Path -ChildPath $wildcardedPath)
+    [string]$wildcardedPath = $Path `
+      -replace [Regex]::Escape($match), $replacement `
+      -replace '`?\[|`?\]', '?' <# be as permissive as possible about square brackets #> `
+      -replace '\w/|\w\\|\w$|\?$', '$0*' <# asterisks around slashes and at end #> `
+      -replace '/\*|\\\*', "*${/}" <# /* or \* --> */ #> `
+      -replace '/$|\\$', '$0*' <# append trailing aster if ends with slash #> `
+      -replace '(\w)\.\.(\w)', '$1*' <# support double dot operator #> `
+      -replace '\.\w|\w\.$', '*$0' <# expand around dots #>
+
+    $wildcardedPaths = if ($SearchPaths -and -not ($Path | IsRootedOrRelative)) {
+      # always include the local path, regardless of whether it was passed
+      # in the searchPaths parameter (this differs from the behaviour in bash)
+      @($wildcardedPath) + ($SearchPaths | Join-Path -ChildPath $wildcardedPath)
+    }
+    else { $wildcardedPath }
+
+    WriteLog "`nExpanding $Path to: $wildcardedPaths"
+    Get-Item $wildcardedPaths -Force:$Force -ErrorAction Ignore |
+    Where { (!$File -or !$_.PSIsContainer) -and (!$Directory -or $_.PSIsContainer) } |
+    Select -First $MaxResults
   }
-  else { $wildcardedPath }
-
-  WriteLog "`nExpanding $Path to: $wildcardedPaths"
-  Get-Item $wildcardedPaths -Force:$Force -ErrorAction Ignore |
-  Where { (!$File -or !$_.PSIsContainer) -and (!$Directory -or $_.PSIsContainer) } |
-  Select -First $MaxResults
 }
