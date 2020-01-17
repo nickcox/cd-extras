@@ -1,5 +1,9 @@
 # Changes
 
+## [2.6.0]
+- Enable pipelining for `Expand-Path` and `Get-Up`
+- Rename `MenuCompletion` option to `IndexedCompletion`
+
 ## [2.5.0]
 - Enable piping into `setocd`, `Undo-Location` and `Redo-Location`
 - Disable AUTO_CD when run as part of pipeline
