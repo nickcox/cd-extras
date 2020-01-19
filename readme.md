@@ -270,11 +270,29 @@ This effectively changes a path given as, `p` into `p*` or `~/pr/pow/src` into `
 [~/projects/cd-extras]> █
 ```
 
-Periods (`.`) are expanded around so a segment containing `.sdk` is expanded into `*.sdk*`.
+Word delimiters (`.`, `_`, `-` by [default](#configure)) are expanded around so a segment
+containing `.sdk` is expanded into `*.sdk*`.
 
 ```pwsh
 [~]> cd proj/pow/s/.sdk
 [~/projects/powershell/src/Microsoft.PowerShell.SDK]> █
+```
+
+Note that Powershell interprets a hyphen at the *start* of an argument as a parameter name so while
+you *can* do this...
+
+```pwsh
+[~/projects/powershell]> cd src/-unix
+[~/projects/PowerShell/src/powershell-unix]> █
+```
+
+... you need to escape this:
+```pwsh
+[~/projects/powershell/src]> cd -unix
+Set-LocationEx: A parameter cannot be found that matches parameter name 'unix'.
+
+[~/projects/powershell/src]> cd `-unix # backtick escapes the hypen
+[~/projects/PowerShell/src/powershell-unix]> █
 ```
 
 Pairs of periods are expanded between so a segment containing `s..32` is expanded into `s*32`.
@@ -380,8 +398,8 @@ Paths within [`$cde.CD_PATH`](#cd-path) are included in the completion results.
 
 ## Single and double periods
 
-Periods (`.`) are expanded around so, for example, a segment containing `.sdk` is expanded into
-`*.sdk*`.
+Word delimiters (`.`, `_`, `-` [by default](#configure)) are expanded around so, for example, a
+segment containing `.sdk` is expanded into `*.sdk*`.
 
 ```pwsh
 [~]> cd proj/pow/s/.sdk⇥
@@ -776,6 +794,8 @@ Import-Module cd-extras/cd-extras/cd-extras.psd1 # yep, three :D
   - If specified, `cd` with no arguments will change into the given directory.
 - _CD_PATH_: `[string[]] = @()`
   - Paths to be searched by `cd` and tab completion. An array, not a delimited string.
+- _WordDelimiters_ : `[string[]] = '.', '_', '-'`
+  - Word boundaries within path segments. For example, `.foo` will be expanded into `*.foo*`.
 - _IndexedCompletion_: `[bool] = $true (if MenuComplete key bound)`
   - If truthy, indexes are offered as completions for `up`, `cd+` and `cd-` with full paths
     displayed in the menu.

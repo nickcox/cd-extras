@@ -558,11 +558,6 @@ Describe 'cd-extras' {
       Should -Be (Join-Path $TestDrive powershell\src\Modules\Unix)
     }
 
-    It 'expands $PWD if given an empty string' {
-      # last result Should -Be powershell/powershell
-      Expand-Path '' | Select -last 1 -Expand Name | Should -Be 'powershell'
-    }
-
     It 'returns expected expansion relative style' {
       Expand-Path ./p/s/m/U |
       Should -Be (Join-Path $TestDrive powershell\src\Modules\Unix)
@@ -583,6 +578,7 @@ Describe 'cd-extras' {
     }
 
     It 'expands around periods' {
+      $cde.WordDelimiters | should -Contain '.'
       Expand-Path p/s/.Con |
       Should -Be (Join-Path $TestDrive powershell\src\Microsoft.PowerShell.ConsoleHost)
     }
@@ -680,8 +676,29 @@ Describe 'cd-extras' {
       }
 
       It 'expands around periods' {
+        $cde.WordDelimiters | should -Contain '.'
         $actual = CompletePaths -wordToComplete './pow/s/.SDK'
         $actual.CompletionText | Should -BeLike "*powershell${/}src${/}Microsoft.PowerShell.SDK${/}"
+      }
+
+      It 'expands around underscores' {
+        $cde.WordDelimiters | should -Contain '_'
+        cd powershell\tools\releaseBuild\Images
+        $actual = CompletePaths -wordToComplete '_centos'
+        $actual.CompletionText |
+        Should -BeLike "*powershell${/}tools${/}releaseBuild${/}Images${/}microsoft_powershell_centos7${/}"
+      }
+
+      It 'expands around hyphens' {
+        $cde.WordDelimiters | should -Contain '-'
+        cd powershell\src
+        $actual = CompletePaths -wordToComplete '-native'
+        $actual | SHould -HaveCount 2
+
+        $actual[0].CompletionText |
+        Should -BeLike "*powershell${/}src${/}libpsl-native${/}"
+        $actual[1].CompletionText |
+        Should -BeLike "*powershell${/}src${/}powershell-native${/}"
       }
 
       It 'completes directories with spaces correctly' {
