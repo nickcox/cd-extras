@@ -13,7 +13,25 @@ function DefaultIfEmpty([scriptblock] $default) {
 }
 
 filter Truncate([int] $maxLength = $cde.MaxMenuLength) {
-  $_.Substring(0, [Math]::Min($maxLength, $_.length))
+  if (!$_ -or $_.Length -le $maxLength) { return $_ }
+
+  if ($_.StartsWith([char]27)) {
+    TruncatedColoured $_ $maxLength
+  } else {
+    $_.Substring(0, $maxLength - 1) + '…'
+  }
+}
+
+function TruncatedColoured([string]$string, $maxLen) {
+  $textStart = $string.IndexOf('m') + 1
+  $startFinalEscapeSequence = $string.LastIndexOf([char]27)
+  $text = $string.Substring($textStart, $startFinalEscapeSequence - $textStart)
+
+  if ($text.Length -le $maxLen) {
+    $string
+  } else {
+    $string.Substring(0, $textStart) + ($text | Truncate) + "$([char]27)[0m"
+  }
 }
 
 filter IsRootedOrRelative {

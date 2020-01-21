@@ -17,6 +17,17 @@ function CompletePaths {
 
     For absolute paths, replace home dir location with tilde.
   #>
+  filter Colourise {
+    if (
+      ($cde.ColorCompletion) -and
+      ($_.PSProvider.Name -eq 'FileSystem') -and
+      (Test-Path Function:\Format-ColorizedFilename)) {
+      Format-ColorizedFilename $_
+    }
+    else {
+      $_.PSChildName
+    }
+  }
   filter CompletionResult {
 
     $fullPath = $_ | Convert-Path
@@ -44,20 +55,9 @@ function CompletePaths {
       $completionText = $completionText -replace $_.PSDrive.Root, "$($_.PSDrive.Name):"
     }
 
-    # dirColors support
-    $listItemText = if (
-      ($cde.ColorCompletion) -and
-      ($_.PSProvider.Name -eq 'FileSystem') -and
-      (Test-Path Function:\Format-ColorizedFilename)) {
-      Format-ColorizedFilename $_
-    }
-    else {
-      $_.PSChildName
-    }
-
     [Management.Automation.CompletionResult]::new(
       $completionText,
-      ($listItemText | Truncate),
+      ($_ | Colourise | Truncate),
       [Management.Automation.CompletionResultType]::ParameterValue,
       $($fullPath)
     )
@@ -74,7 +74,10 @@ function CompletePaths {
       $commandName -and (Get-Command $commandName -ea Ignore).Parameters.Keys -notcontains 'Force')
   }
 
-  $completions = Expand-Path @switches $wordToComplete -MaxResults $cde.MaxCompletions
+  $wordToExpand = if ($wordToComplete) { $wordToComplete } else { './' }
+
+  $completions = Expand-Path @switches $wordToExpand -MaxResults $cde.MaxCompletions
+
 
   #replace cdable_vars
   $variCompletions = if (
@@ -82,7 +85,7 @@ function CompletePaths {
     $wordToComplete -match '[^/\\]+' -and # separate variable from slashes before or after it
     ($maybeVar = Get-Variable "$($Matches[0])*" -ValueOnly | where { Test-Path $_ -PathType Container })
   ) {
-    Expand-Path @switches ($wordToComplete -replace $Matches[0], $maybeVar) -MaxResults $cde.MaxCompletions
+    Expand-Path @switches ($wordToExpand -replace $Matches[0], $maybeVar) -MaxResults $cde.MaxCompletions
   }
 
   @($completions) + @($variCompletions) |
