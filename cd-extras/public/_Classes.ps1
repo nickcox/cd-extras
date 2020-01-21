@@ -11,7 +11,7 @@ class CdeOptions {
   [string] $NOARG_CD = '~'
   [Char[]] $WordDelimiters = '.', '_', '-'
   [UInt16] $MaxCompletions = 99
-  [UInt16] $MaxMenuLength = 60
+  [UInt16] $MaxMenuLength = 35
   [String[]] $DirCompletions = @('Set-Location', 'Set-LocationEx', 'Push-Location')
   [String[]] $PathCompletions = @('Get-ChildItem', 'Get-Item', 'Invoke-Item', 'Expand-Path')
   [String[]] $FileCompletions = @()

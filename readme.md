@@ -261,6 +261,8 @@ by default, giving it several new abilities:
 
 If an unambiguous match is available then `cd` can change directory using an abbreviated path.
 This effectively changes a path given as, `p` into `p*` or `~/pr/pow/src` into `~/pr*/pow*/src*`.
+If you're not sure whether an unambiguous match is available then just hit tab to pick from a
+[list of potential matches](#enhanced-completion-for-cd-and-others) instead.
 
 ```pwsh
 [~]> cd pr
@@ -278,8 +280,9 @@ containing `.sdk` is expanded into `*.sdk*`.
 [~/projects/powershell/src/Microsoft.PowerShell.SDK]> █
 ```
 
-Note that Powershell interprets a hyphen at the *start* of an argument as a parameter name so while
-you *can* do this...
+:point_right:
+Powershell interprets a hyphen at the start of an argument as a parameter name. So while you can
+do this...
 
 ```pwsh
 [~/projects/powershell]> cd src/-unix
@@ -287,6 +290,7 @@ you *can* do this...
 ```
 
 ... you need to escape this:
+
 ```pwsh
 [~/projects/powershell/src]> cd -unix
 Set-LocationEx: A parameter cannot be found that matches parameter name 'unix'.
@@ -295,14 +299,15 @@ Set-LocationEx: A parameter cannot be found that matches parameter name 'unix'.
 [~/projects/PowerShell/src/powershell-unix]> █
 ```
 
-Pairs of periods are expanded between so a segment containing `s..32` is expanded into `s*32`.
+Pairs of periods are expanded between so, for example, a segment containing `s..32` is expanded
+into `s*32`.
 
 ```pwsh
 [~]> cd /w/s..32/d/et
 [C:/Windows/System32/drivers/etc]> █
 ```
 
-Directories in [`CD_PATH`](#cd-path) will be matched.
+Directories in [`CD_PATH`](#cd-path) will be also be shortened.
 
 ```pwsh
 [C:/]> setocd CD_PATH ~/projects
@@ -321,9 +326,6 @@ True
 [~/projects/PowerShell/src]> .sdk
 [~/projects/PowerShell/src/Microsoft.PowerShell.SDK]> █
 ```
-
-If you're not sure whether an unambiguous match is available then just hit tab to pick from a
-[list of potential matches](#enhanced-completion-for-cd-and-others) instead.
 
 
 ## Multi-dot `cd`
@@ -372,10 +374,10 @@ You can also use the alias `cd:` or the explicit `ReplaceWith` parameter of `Set
 
 # Enhanced completion for `cd` and others
 
-`cd`, `pushd`, `ls`, `Get-Item` and `Invoke-Item` (by default) provide enhanced completion,
-expanding all path segments in one go so that you don't have to individually tab (⇥) through
-each one. The path shortening logic is provided by `Expand-Path` and works as [described above
-](#path-shortening).
+`cd-extras` provides enhanced completion for `cd`, `pushd`, `ls`, `Get-Item` and `Invoke-Item`
+by default, expanding all path segments in one go so that you don't have to individually tab (⇥)
+through each one. The path shortening logic is provided by `Expand-Path` and works as
+[described above](#path-shortening).
 
 ```pwsh
 [~]> cd /w/s/dr⇥⇥
@@ -520,8 +522,8 @@ File: C:\Users\Nick\projects\PowerShell\README.md
 ```
 
 :point_right:
-You can skip tab completion altogether and use [Expand-Path](#Additional-helpers) directly if
-you know exactly what you're looking for.
+You can skip tab completion altogether and use [Expand-Path](#expand-path-xpa) directly if you
+know exactly what you're looking for.
 
 ```pwsh
 [~]> xpa ~/pr/po/r.md | to bat
@@ -536,9 +538,11 @@ File: C:\Users\Nick\projects\PowerShell\README.md
 
 ## Colourised completions
 
-The `ColorCompletion` option (`setocd ColorCompletion`) enables colourisation of completions
-in the filesystem provider via [DirColors][1] or via your own global `Format-ColorizedFilename`
-function.
+The `ColorCompletion` [option](#configure) enables colourisation of completions in the filesystem
+provider via [DirColors][1] or via your own global `Format-ColorizedFilename` function.
+
+:point_right:
+`ColorCompletion` is off by default. Enable it on with `setocd ColorCompletion`.
 
 
 # AUTO CD
@@ -617,8 +621,8 @@ n Name      Path
 [~/documents/WindowsPowerShell]> █
 ```
 
-[Tab-completion](#enhanced-completion-for-cd-and-others) and [path shortening](#path-shortening)
-work with `CD_PATH` directories.
+[Tab-completion](#enhanced-completion-for-cd-and-others), [path shortening](#path-shortening) and
+[Expand-Path](#expand-path-xpa) work with `CD_PATH` directories.
 
 `CD_PATH`s are _not_ searched when an absolute or relative path is given.
 
@@ -642,7 +646,7 @@ command will prefer the former.
 ```
 
 :point_right:
-Also note that the value of `CD_PATH` is an array, not a delimited string as in bash.
+The value of `CD_PATH` is an array, not a delimited string as in bash.
 ```pwsh
 [~]> setocd CD_PATH ~/Documents/, ~/Downloads
 [~]> $cde.CD_PATH
@@ -808,9 +812,8 @@ Import-Module cd-extras/cd-extras/cd-extras.psd1 # yep, three :D
 - _ColorCompletion_ : `[bool] = false`
   - When truthy, dir/path/file completions will be coloured by `Format-ColorizedFilename`, if
     available.
-- _MaxMenuLength_ : `[int] = 60`
-  - Truncate completion menu items to this length. Column layout may break below about 60
-  characters.
+- _MaxMenuLength_ : `[int] = 35`
+  - Truncate completion menu items to this length.
 - _MaxCompletions_ : `[int] = 99`
   - Limit the number of dir/path/file completions offered. Should probably be at least one less
   than `(Get-PSReadLineOption).CompletionQueryItems`.
