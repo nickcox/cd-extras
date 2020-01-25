@@ -107,7 +107,7 @@ if you want to toggle between directories.
 ```
 
 ...or a string, `NamePart`, used to select the nearest matching directory from the available
-locations. Given a `NamePart`, _cd-extras_ will search from the current location for directories
+locations. Given a `NamePart`, _cd&#8209;extras_ will search from the current location for directories
 whose _leaf_ name contains the given string (ex. ¹). If none is found then it will attempt to
 find a match within the full path of each candidate directory (ex. ²).
 
@@ -174,10 +174,10 @@ then tabbing (`⇥`) through any of the navigation helpers will display a menu b
 C:\Windows\System32
 ```
 
-The `cd-extras` `IndexedCompletion` option controls how the completion text is displayed. When
-`IndexedCompletion` is on and more than one completion is available, the completions offered are
-the *indexes* of each corresponding directory; the directory name is displayed in the menu below.
-The full directory path is given in the tooltip if you have `PSReadLine` tooltips enabled.
+The `IndexedCompletion` option controls how completion text is displayed. When `IndexedCompletion`
+is on and more than one completion is available, the completions offered are the *indices* of each
+corresponding directory; the directory name is displayed in the menu below. The full directory path
+is given in the tooltip if you have `PSReadLine` tooltips enabled.
 
 _cd-extras_ attempts to detect `PSReadLine` options in order to set `IndexedCompletion` at
 startup. If the `PSReadLine` `MenuComplete` option is bound to at least one key combination then
@@ -499,7 +499,7 @@ need to provide a wrapper. Either the wrapper or the target itself should handle
 `~` where necessary.
 
 ```pwsh
-[~]> function Invoke-VSCode($path) { &code (xpa $path) }
+[~]> function Invoke-VSCode($path) { &code (rvpa $path) }
 [~]> setocd PathCompletions Invoke-VSCode
 [~]> Set-Alias co Invoke-VSCode
 [~]> co ~/pr/po⇥

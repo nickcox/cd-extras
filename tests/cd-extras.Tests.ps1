@@ -583,6 +583,16 @@ Describe 'cd-extras' {
       Should -Be (Join-Path $TestDrive powershell\src\Microsoft.PowerShell.ConsoleHost)
     }
 
+    It 'does not expand around periods when no delimiters are set' {
+      $delimiters = $cde.WordDelimiters
+      $cde.WordDelimiters = $null
+
+      Expand-Path p/s/.Con |
+      Should -BeNullOrEmpty
+
+      $cde.WordDelimiters = $delimiters
+    }
+
     It 'supports the double dot operator' {
       Expand-Path pow/src/Typ..Gen |
       Should -Be (Join-Path $TestDrive powershell\src\TypeCatalogGen)
@@ -761,10 +771,52 @@ Describe 'cd-extras' {
         $actual.CompletionText | Should -BeLike "*src${/}TypeCatalogGen${/}"
       }
 
+      It 'completes items in the current directory by default' {
+        cd pow/demos
+        $actual = CompletePaths -wordToComplete ''
+        $actual | % CompletionText | Should -HaveCount 12
+      }
+
       It 'truncates long menu items' {
+        setocd ColorCompletion 0
         $actual = CompletePaths -wordToComplete 'pow/reallyreally..long'
         $actual.ListItemText.Length | Should -BeLessThan ($actual.CompletionText | Split-Path -Leaf).Length
         $actual.ListItemText.Length | Should -Be $cde.MaxMenuLength
+      }
+
+      It 'truncates long coloured menu items' {
+        function Format-ColorizedFilename ($file) { "$([char]27)[32m$($file.Name)$([char]27)[0m" }
+
+        setocd ColorCompletion 1
+        $actual = CompletePaths -wordToComplete 'pow/reallyreally..long'
+        $actual.ListItemText.LastIndexOf([char]27) | Should -BeGreaterThan 0
+
+        $actualTextStart = $actual.ListItemText.IndexOf('m') + 1
+        $startFinalEscapeSequence = $actual.ListItemText.LastIndexOf([char]27)
+        $actualText = $actual.ListItemText.Substring($actualTextStart, $startFinalEscapeSequence - $actualTextStart)
+
+        $actualText.Length | Should -BeLessThan ($actual.CompletionText | Split-Path -Leaf).Length
+        $actualText.Length | Should -Be $cde.MaxMenuLength
+
+        setocd ColorCompletion 0
+      }
+
+      It 'does not truncate short coloured menu items' {
+        function Format-ColorizedFilename ($file) { "$([char]27)[32m$($file.Name)$([char]27)[0m" }
+
+        setocd ColorCompletion 1
+        setocd MaxMenuLength 'WindowsPowerShellModules'.Length
+        $actual = CompletePaths -wordToComplete 'powershell\demos\WindowsPowerShellMod'
+        $actual.ListItemText.LastIndexOf([char]27) | Should -BeGreaterThan 0
+
+        $actualTextStart = $actual.ListItemText.IndexOf('m') + 1
+        $startFinalEscapeSequence = $actual.ListItemText.LastIndexOf([char]27)
+        $actualText = $actual.ListItemText.Substring($actualTextStart, $startFinalEscapeSequence - $actualTextStart)
+
+        $actualText | Should -Be 'WindowsPowerShellModules'
+        $actual.ListItemText.Length | Should -BeGreaterThan $cde.MaxMenuLength
+
+        setocd ColorCompletion 0
       }
 
       It 'colourises output only if option set' {
@@ -840,6 +892,14 @@ Describe 'cd-extras' {
         dirsc
         $actual = CompleteStack -wordToComplete '' -commandName 'Undo'
         $actual | Should -Be $null
+      }
+
+      It 'puts parens around tooltip when name and path are the same' -Skip:(!$IsWindows) {
+        Set-Location $PSScriptRoot
+        cd (Get-Location).Drive.Root
+        cd-
+        $actual = CompleteStack -wordToComplete '' -commandName 'Redo'
+        $actual.ToolTip | Should -BeLike '1. (*)'
       }
     }
 
