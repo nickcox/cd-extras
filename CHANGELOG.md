@@ -1,5 +1,10 @@
 # Changes
 
+## [2.7.0]
+- Implement customisable word delimiters
+- Fix inconsistent formatting when truncating coloured menu items
+- Reduce default `MaxMenuLength`
+
 ## [2.6.0]
 - Enable pipelining for `Expand-Path` and `Get-Up`
 - Rename `MenuCompletion` option to `IndexedCompletion`

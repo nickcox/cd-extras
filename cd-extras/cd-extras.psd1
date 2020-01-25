@@ -1,6 +1,6 @@
 @{
   RootModule        = 'cd-extras.psm1'
-  ModuleVersion     = '2.6.0'
+  ModuleVersion     = '2.7.0'
   GUID              = '206fccbd-dc96-4b23-908c-5ac821372e16'
 
   Author            = 'Nick Cox'
@@ -15,9 +15,10 @@
 
   PrivateData       = @{
     PSData = @{
-      ReleaseNotes = '[2.6.0]
-      - Enable pipelining for `Expand-Path` and `Get-Up`
-      - Rename `MenuCompletion` option to `IndexedCompletion`'
+      ReleaseNotes = '[2.7.0]
+- Implement customisable word delimiters
+- Fix inconsistent formatting when truncating coloured menu items
+- Reduce default `MaxMenuLength`'
 
       Tags         = @('cd+', 'cd-', 'AUTO_CD', 'CD_PATH', 'CDABLE_VARS', 'bash', 'zsh')
       LicenseUri   = 'https://github.com/nickcox/cd-extras/blob/master/LICENSE'
