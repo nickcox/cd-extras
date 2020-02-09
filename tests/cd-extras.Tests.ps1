@@ -847,6 +847,14 @@ Describe 'cd-extras' {
         $actual = CompletePaths -wordToComplete 'pow/.git' -commandName 'Get-Date' | Select -Expand ListItemText
         $actual | Should -Be @('.git', '.github')
       }
+
+      It 'truncates the list of available completions' {
+        $x = $cde.MaxCompletions
+        $cde.MaxCompletions = 5
+        $actual = CompletePaths -wordToComplete 'powershell/src/System.Management.Automation/'
+        $actual.Length | SHould -Be 5
+        $cde.MaxCompletions = $x
+      }
     }
 
     Describe 'Stack expansion' {

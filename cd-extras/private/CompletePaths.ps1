@@ -76,8 +76,7 @@ function CompletePaths {
 
   $wordToExpand = if ($wordToComplete) { $wordToComplete } else { './' }
 
-  $completions = Expand-Path @switches $wordToExpand -MaxResults $cde.MaxCompletions
-
+  $completions = Expand-Path @switches $wordToExpand -MaxResults ($cde.MaxCompletions + 1)
 
   #replace cdable_vars
   $variCompletions = if (
@@ -88,7 +87,12 @@ function CompletePaths {
     Expand-Path @switches ($wordToExpand -replace $Matches[0], $maybeVar) -MaxResults $cde.MaxCompletions
   }
 
-  @($completions) + @($variCompletions) |
+  $allCompletions = @($completions) + @($variCompletions)
+  if ($allCompletions.Length -gt $cde.MaxCompletions) {
+    [System.Console]::Beep() # audible warning if list of completions has been truncated
+  }
+
+  $allCompletions |
   select -Unique |
   select -First $cde.MaxCompletions |
   CompletionResult |
