@@ -51,7 +51,7 @@ function Undo-Location {
     1..$n | % {
       if ($undoStack.Count) {
         $redoStack.Push($PWD.Path)
-        $undoStack.Pop() | EscapeWildcards | Set-Location -PassThru:$PassThru
+        $undoStack.Pop() | EscapeWildcards | Set-Location -PassThru:$PassThru -ErrorAction Ignore
       }
     }
   }
