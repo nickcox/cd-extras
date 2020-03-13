@@ -66,12 +66,7 @@ function CompletePaths {
   $switches = @{
     File      = $boundParameters['File'] -or $filesOnly
     Directory = $boundParameters['Directory'] -or $dirsOnly
-    Force     = $boundParameters['Force'] -or (
-      # always force on *nix; on Windows dotted directories aren't automatically hidden
-      (Test-Path Variable:\IsWindows) -and !$IsWindows
-    ) -or (
-      # or if the command doesn't have a force switch
-      $commandName -and (Get-Command $commandName -ea Ignore).Parameters.Keys -notcontains 'Force')
+    Force     = $true
   }
 
   $wordToExpand = if ($wordToComplete) { $wordToComplete } else { './' }
