@@ -782,7 +782,6 @@ or get the latest from github
 ```pwsh
 git clone git@github.com:nickcox/cd-extras.git
 Import-Module cd-extras/cd-extras/cd-extras.psd1 # yep, three :D
-
 ```
 
 

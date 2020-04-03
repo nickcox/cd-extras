@@ -17,7 +17,8 @@ filter Truncate([int] $maxLength = $cde.MaxMenuLength) {
 
   if ($_.StartsWith([char]27)) {
     TruncatedColoured $_ $maxLength
-  } else {
+  }
+  else {
     $_.Substring(0, $maxLength - 1) + '…'
   }
 }
@@ -29,7 +30,8 @@ function TruncatedColoured([string]$string, $maxLen) {
 
   if ($text.Length -le $maxLen) {
     $string
-  } else {
+  }
+  else {
     $string.Substring(0, $textStart) + ($text | Truncate) + "$([char]27)[0m"
   }
 }
@@ -100,7 +102,7 @@ function IndexedComplete() {
   End {
     $items | % {
 
-      $completionText = 
+      $completionText =
       if ($cde.IndexedCompletion -and @($items).Count -gt 1) { "$($_.n)" }
       else { $_.path | SurroundAndTerminate }
 
@@ -123,7 +125,7 @@ function IndexPaths(
   [array]$xs,
   $rootLabel = 'root' # this on happens on *nix
 ) {
-  $xs = $xs | ? { $_ -ne '' }
+  $xs = $xs -ne ''
   if (!$xs.Length) { return }
 
   1..$xs.Length | % {

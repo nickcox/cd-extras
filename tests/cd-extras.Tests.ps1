@@ -569,7 +569,7 @@ Describe 'cd-extras' {
     }
 
     It 'can return multiple expansions' {
-      (Expand-Path ./p/s/m/s/M).Length | Should -Be 2
+      (Expand-Path ./p/s/m/s/M) | Should -HaveCount 2
     }
 
     It 'considers CD_PATH for expansion' {
@@ -677,7 +677,7 @@ Describe 'cd-extras' {
         $actual | Should HaveCount 3
 
         function ShouldContain($likeStr) {
-          $actual | ? { $_ -like $likeStr } | Should -Not -BeNullOrEmpty
+          $actual -like $likeStr | Should -Not -BeNullOrEmpty
         }
 
         ShouldContain "*test${/}csharp${/}"
@@ -696,7 +696,10 @@ Describe 'cd-extras' {
         cd powershell\tools\releaseBuild\Images
         $actual = CompletePaths -wordToComplete '_centos'
         $actual.CompletionText |
-        Should -BeLike "*powershell${/}tools${/}releaseBuild${/}Images${/}microsoft_powershell_centos7${/}"
+        Should -BeLike "*Images${/}microsoft_powershell_centos7${/}"
+
+        $actual = CompletePaths -wordToComplete 'microsoft_'
+        $actual | Should -HaveCount 4
       }
 
       It 'expands around hyphens' {
@@ -852,7 +855,7 @@ Describe 'cd-extras' {
         $x = $cde.MaxCompletions
         $cde.MaxCompletions = 5
         $actual = CompletePaths -wordToComplete 'powershell/src/System.Management.Automation/'
-        $actual.Length | SHould -Be 5
+        $actual | Should -HaveCount 5
         $cde.MaxCompletions = $x
       }
     }

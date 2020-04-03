@@ -67,8 +67,7 @@ function Expand-Path {
 
   Process {
     $delimiterGroup = if ($WordDelimiters) {
-      # this is fugly but we need to special case some characters
-      '[{0}]' -f ([Regex]::Escape($WordDelimiters -join '') -replace '[\]\}\-]', '\$0')
+      '[{0}]' -f [Regex]::Escape($WordDelimiters -join '')
     }
     else { '$^' } # no delimiters
 
@@ -81,7 +80,7 @@ function Expand-Path {
       -replace '`?\[|`?\]', '?' <# be as permissive as possible about square brackets #> `
       -replace '\w(?=[/\\])|[\w/\\]$', '$0*' <# asterisks around slashes and at end #> `
       -replace '(\w)\.\.(\w)', '$1*' <# support double dot operator #> `
-      -replace "$delimiterGroup\w", '*$0' <# expand around dots, etc. #>
+      -replace "$delimiterGroup\w+", '*$0' <# expand around dots, etc. #>
 
     $wildcardedPaths = if ($SearchPaths -and -not ($Path | IsRootedOrRelative)) {
       # always include the local path, regardless of whether it was passed
