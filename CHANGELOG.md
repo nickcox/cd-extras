@@ -1,5 +1,12 @@
 # Changes
 
+## [2.8.0]
+- Emit a warning beep if list of path completions has been truncated
+- Don't invoke auto_cd unless at least one alphanumeric is given
+- Always use `-Force` for path completion
+- Fix issue where unable to complete into directories with surrounding quotes
+- Fix issue where `Undo-Location` and `Redo-Location` throw error when intermediate directories have been deleted
+
 ## [2.7.0]
 - Implement customisable word delimiters
 - Fix inconsistent formatting when truncating coloured menu items
