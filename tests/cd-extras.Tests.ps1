@@ -719,6 +719,11 @@ Describe 'cd-extras' {
         $actual.CompletionText | Should -BeLike "'*${/}child one${/}'"
       }
 
+      It 'drops surrounding quotes' {
+        $actual = CompletePaths  -wordToComplete "'pow/directory with spaces/child one'"
+        $actual.CompletionText | Should -BeLike "'*${/}child one${/}'"
+      }
+
       It 'completes relative directories with spaces correctly' {
         $actual = CompletePaths -wordToComplete './pow/directory with spaces/child one'
         $actual.CompletionText | Should -BeLike "'*${/}child one${/}'"

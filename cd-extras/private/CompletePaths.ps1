@@ -69,7 +69,7 @@ function CompletePaths {
     Force     = $true
   }
 
-  $wordToExpand = if ($wordToComplete) { $wordToComplete } else { './' }
+  $wordToExpand = if ($wordToComplete) { $wordToComplete | RemoveSurroundingQuotes } else { './' }
 
   $completions = Expand-Path @switches $wordToExpand -MaxResults ($cde.MaxCompletions + 1)
 
