@@ -107,9 +107,9 @@ if you want to toggle between directories.
 ```
 
 ...or a string, `NamePart`, used to select the nearest matching directory from the available
-locations. Given a `NamePart`, _cd&#8209;extras_ will search from the current location for directories
-whose _leaf_ name contains the given string (ex. ¹). If none is found then it will attempt to
-find a match within the full path of each candidate directory (ex. ²).
+locations. Given a `NamePart`, _cd&#8209;extras_ will search from the current location for
+directories whose _leaf_ name contains the given string (ex. ¹). If none is found then it will
+attempt to find a match within the full path of each candidate directory (ex. ²).
 
 ```pwsh
 [C:/Windows]> cd system32
@@ -148,7 +148,7 @@ C:\Windows\System32
 
 Auto-completions are provided for each of `cd-`, `cd+`, and `up`.
 
-Assuming the [`PSReadLine`][0] `MenuComplete` function is bound to tab...
+Assuming the [_PSReadLine_][0] `MenuComplete` function is bound to tab...
 
 ```pwsh
 [C:]> Get-PSReadLineKeyHandler -Bound | Where Function -eq MenuComplete
@@ -166,7 +166,7 @@ then tabbing (`⇥`) through any of the navigation helpers will display a menu b
 
 ```pwsh
 [C:/Windows/System32/drivers/etc]> up ⇥⇥
-[C:/Windows/System32/drivers/etc]> up 1
+[C:/Windows/System32/drivers/etc]> up 2
 
 1. drivers  2. System32  3. Windows  4. C:\
             ────────────
@@ -174,14 +174,14 @@ then tabbing (`⇥`) through any of the navigation helpers will display a menu b
 C:\Windows\System32
 ```
 
-The `IndexedCompletion` option controls how completion text is displayed. When `IndexedCompletion`
+The _`IndexedCompletion`_ option controls how completion text is displayed. When _IndexedCompletion_
 is on and more than one completion is available, the completions offered are the *indices* of each
 corresponding directory; the directory name is displayed in the menu below. The full directory path
-is given in the tooltip if you have `PSReadLine` tooltips enabled.
+is given in the tooltip if you have _PSReadLine_ tooltips enabled.
 
-_cd-extras_ attempts to detect `PSReadLine` options in order to set `IndexedCompletion` at
-startup. If the `PSReadLine` `MenuComplete` option is bound to at least one key combination then
-`IndexedCompletion` is turned on by default. You can turn it off if it's not your thing.
+_cd-extras_ attempts to detect _PSReadLine_ options in order to set _IndexedCompletion_ at
+startup. If the _PSReadLine_ `MenuComplete` option is bound to at least one key combination then
+_IndexedCompletion_ is turned on by default. You can turn it off if it's not your thing.
 
 ```pwsh
 [C:/Windows/System32/drivers/etc]> setocd IndexedCompletion 0
@@ -344,10 +344,10 @@ if enabled.
 
 ## No argument `cd`
 
-If the `NOARG_CD` [option](#configure) is defined then `cd` without arguments navigates into that
+If the _`NOARG_CD`_ [option](#configure) is defined then `cd` without arguments navigates into that
 directory (`~` by default). This overrides the out of the box behaviour on PowerShell>=6.0, where
-no-arg `cd` always navigates to `~` and PowerShell < 6.0, where no argument `cd` doesn't do
-anything at all.
+no-arg `cd` _always_ navigates to `~` and PowerShell < 6.0, where no-argument `cd` does nothing at
+all.
 
 ```pwsh
 [~/projects/powershell]> cd
@@ -538,11 +538,11 @@ File: C:\Users\Nick\projects\PowerShell\README.md
 
 ## Colourised completions
 
-The `ColorCompletion` [option](#configure) enables colourisation of completions in the filesystem
-provider via [DirColors][1] or via your own global `Format-ColorizedFilename` function.
+The _`ColorCompletion`_ [option](#configure) enables colourisation of completions in the filesystem
+provider via [_DirColors_][1] or via your own global `Format-ColorizedFilename` function.
 
 :point_right:
-`ColorCompletion` is off by default. Enable it on with `setocd ColorCompletion`.
+_ColorCompletion_ is off by default. Enable it on with `setocd ColorCompletion`.
 
 
 # AUTO CD
@@ -634,8 +634,8 @@ Set-Location : Cannot find path '~\WindowsPowerShell'...
 
 :point_right:
 Unlike bash, the current directory is always included when a relative path is used. If a child
-with the same name exists in both the current directory and a `CD_PATH` directory then the `cd`
-command will prefer the former.
+with the same name exists in both the current directory and a `CD_PATH` directory then `cd` will
+prefer the former.
 
 ```pwsh
 [~]> mkdir -f child, someDir/child
@@ -646,7 +646,7 @@ command will prefer the former.
 ```
 
 :point_right:
-The value of `CD_PATH` is an array, not a delimited string as in bash.
+The value of `CD_PATH` is an array, not a delimited string as it is in bash.
 ```pwsh
 [~]> setocd CD_PATH ~/Documents/, ~/Downloads
 [~]> $cde.CD_PATH
@@ -659,9 +659,8 @@ The value of `CD_PATH` is an array, not a delimited string as in bash.
 
 **`cd` into variables without the `$` and enable tab completion into child directories**
 
-Given a variable containing the path to a folder (configured in your `$PROFILE`, perhaps,
-or by invoking [`Get-Ancestors`](#variable-based-completions)), you can `cd` into it using
-the name of the variable.
+Given a variable assigned to a folder path (configured in your `$PROFILE`, perhaps, or by invoking
+[`Get-Ancestors`](#variable-based-completions)), you can `cd` into it using the variable name.
 
 :point_right:
 CDABLE_VARS is off by default; enable it with, [`setocd CDABLE_VARS`](#configure).
@@ -696,16 +695,20 @@ You can combine it with [AUTO_CD](#auto-cd) for great good:
 
 ## Get-Up (_gup_)
 
-Gets the path of an ancestor directory, either by name or by `n` levels, returning the parent
-of the current directory by default. Supports consuming values from the pipeline so you can do
-things like:
+Gets the path of an ancestor directory, either by name or by number of levels (`n`), returning the
+parent of the current directory by default. It supports consuming values from the pipeline so you
+can do things like:
 
 ```pwsh
-[C:/projects]> # find directories with a git repository
+[C:/projects]> # find git repositories
 [C:/projects]> ls .git -Force -Recurse -Depth 2 | gup
 C:\projects\cd-extras
 C:\projects\work\app
 ...
+
+[C:/projects]> # find chocolatey root directory
+[C:/projects]> gcm choco | gup 2
+C:\ProgramData\chocolatey
 ```
 
 
@@ -713,8 +716,8 @@ C:\projects\work\app
 
 View contents of undo (`cd-`) and redo (`cd+`) stacks.
 
-Use `dirs -u` for an indexed list of undo locations, `dirs -r` for a corresponding list of
-redo locations, or just `dirs` to see both.
+Use `dirs -u` for an indexed list of undo locations, `dirs -r` for a corresponding list of redo
+locations, or just `dirs` to see both.
 
 
 ## Clear-Stack (_dirsc_)
@@ -726,16 +729,16 @@ Expands a candidate path by inserting wildcards between each segment. Use a trai
 expand *children* of the matched path(s). Contents of `CD_PATH` will be included.
 
 :point_right:
-The expansion may match more than you expect. Always test the output before piping it
-into a potentially destructive command.
+The expansion may match more than you expect. Test the output before piping it into a potentially
+destructive command.
 
 
 # Compatibility
 
 ## Alternative providers
 
-_cd-extras_ is primarily intended to work against the filesystem provider but it should work
-with other providers too.
+_cd-extras_ is primarily intended to work against the filesystem provider but it should work with
+other providers too.
 
 ```pwsh
 [~]> cd hklm:\
@@ -749,8 +752,8 @@ with other providers too.
 
 ## OS X & Linux
 
-`cd-extras` works on non-Windows operating systems. The `IndexedCompletion` option may be off by
-default unless you configure PSReadLine with a `MenuComplete` keybinding _before_ importing
+`cd-extras` works on non-Windows operating systems. The `IndexedCompletion` option is be off by
+default unless you configured PSReadLine with a `MenuComplete` keybinding _before_ importing
 `cd-extras`.
 
 ```pwsh
@@ -853,7 +856,7 @@ Import-Module cd-extras
 
 ## Navigation helper key handlers
 
-If you want to bind [navigation helpers](#navigation-helpers) to `PSReadLine` [key handlers][2]
+If you want to bind [navigation helpers](#navigation-helpers) to _PSReadLine_ [key handlers][2]
 then you'll probably want to redraw the prompt after navigation.
 
 ```pwsh
@@ -882,6 +885,14 @@ then you'll probably want to restore the original `cd` alias too.
 
 :point_right:
 `cd-extras` will only remember locations visited via `Set-LocationEx` or its alias.
+
+```pwsh
+[~]> dirs -u
+
+[~]> Set-Location code
+[~/code]> cd-
+[~/code]> █
+```
 
 [0]: https://github.com/PowerShell/PSReadLine
 [1]: https://github.com/DHowett/DirColors
