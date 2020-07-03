@@ -26,7 +26,7 @@ jobs:
         run: |
           $modulePath = './ps_modules/'
           mkdir $modulePath
-          Find-Module Pester | Save-Module -Path $modulePath
+          Find-Module Pester -RequiredVersion 4.10.1 | Save-Module -Path $modulePath
           Find-Module PSCodeCovIo | Save-Module -Path $modulePath
         shell: pwsh
 
