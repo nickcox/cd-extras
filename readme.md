@@ -10,17 +10,18 @@ cd-extras
 
 <!-- TOC -->
 
+- [cd-extras](#cd-extras)
 - [Navigation helpers](#navigation-helpers)
   - [Even faster](#even-faster)
   - [Return a result](#return-a-result)
   - [Navigation helper completions](#navigation-helper-completions)
-  - [Viewing available navigation targets](#viewing-available-navigation-targets)
-- [`cd` enhancements](#cd-enhancements)
+  - [Listing available navigation targets](#listing-available-navigation-targets)
+- [cd enhancements](#cd-enhancements)
   - [Path shortening](#path-shortening)
-  - [Multi-dot `cd`](#multi-dot-cd)
-  - [No argument `cd`](#no-argument-cd)
-  - [Two argument `cd`](#two-argument-cd)
-- [Enhanced completion for `cd` and others](#enhanced-completion-for-cd-and-others)
+  - [Multi-dot cd](#multi-dot-cd)
+  - [No argument cd](#no-argument-cd)
+  - [Two argument cd](#two-argument-cd)
+- [Enhanced completion for cd and others](#enhanced-completion-for-cd-and-others)
   - [Single and double periods](#single-and-double-periods)
   - [Multi-dot completions](#multi-dot-completions)
   - [Variable based completions](#variable-based-completions)
@@ -32,16 +33,16 @@ cd-extras
 - [CD PATH](#cd-path)
 - [CDABLE VARS](#cdable-vars)
 - [Additional helpers](#additional-helpers)
-  - [Get-Up (gup)](#get-up-gup)
-  - [Get-Stack (dirs)](#get-stack-dirs)
-  - [Clear-Stack (dirsc)](#clear-stack-dirsc)
-  - [Expand-Path (xpa)](#expand-path-xpa)
+  - [Get-Up _gup_](#get-up-_gup_)
+  - [Get-Stack _dirs_](#get-stack-_dirs_)
+  - [Clear-Stack _dirsc_](#clear-stack-_dirsc_)
+  - [Expand-Path _xpa_](#expand-path-_xpa_)
 - [Compatibility](#compatibility)
   - [Alternative providers](#alternative-providers)
   - [OS X & Linux](#os-x--linux)
 - [Install](#install)
 - [Configure](#configure)
-  - [cd-extras options](#cd-extras-options)
+  - [_cd-extras_ options](#_cd-extras_-options)
   - [Navigation helper key handlers](#navigation-helper-key-handlers)
   - [Using a different alias](#using-a-different-alias)
 
@@ -179,9 +180,9 @@ is on and more than one completion is available, the completions offered are the
 corresponding directory; the directory name is displayed in the menu below. The full directory path
 is given in the tooltip if you have _PSReadLine_ tooltips enabled.
 
-_cd-extras_ attempts to detect _PSReadLine_ options in order to set _IndexedCompletion_ at
-startup. If the _PSReadLine_ `MenuComplete` option is bound to at least one key combination then
-_IndexedCompletion_ is turned on by default. You can turn it off if it's not your thing.
+_cd-extras_ detects _PSReadLine_ options in order to set _IndexedCompletion_ at startup. If the
+_PSReadLine_ `MenuComplete` option is bound to at least one key combination then _IndexedCompletion_
+is turned on by default. You can turn it off if you prefer.
 
 ```pwsh
 [C:/Windows/System32/drivers/etc]> setocd IndexedCompletion 0
@@ -205,7 +206,7 @@ It's also possible to tab-complete `cd-`, `cd+` and `up` using a partial directo
 ```
 
 
-## Viewing available navigation targets
+## Listing available navigation targets
 
 As an alternative to menu completion you retrieve a list of available targets with:
 
@@ -224,7 +225,7 @@ n Name        Path
 
 [C:/Windows/System32/drivers]> up 2
 [C:/Windows]> up 1
-[C:/]> dirs -u
+[C:/]> dirs -u # dirs -v also works
 
 n Name        Path
 - ----        ----
@@ -281,8 +282,8 @@ containing `.sdk` is expanded into `*.sdk*`.
 ```
 
 :point_right:
-Powershell interprets a hyphen at the start of an argument as a parameter name. So while you can
-do this...
+Powershell interprets a hyphen at the start of an argument as a parameter name. So while you can do
+this...
 
 ```pwsh
 [~/projects/powershell]> cd src/-unix
@@ -659,20 +660,22 @@ The value of `CD_PATH` is an array, not a delimited string as it is in bash.
 
 **`cd` into variables without the `$` and enable tab completion into child directories**
 
-Given a variable assigned to a folder path (configured in your `$PROFILE`, perhaps, or by invoking
-[`Get-Ancestors`](#variable-based-completions)), you can `cd` into it using the variable name.
+Given a variable containing a folder path (configured in your `$PROFILE`, perhaps, or by invoking
+[`Get-Ancestors -Export`](#variable-based-completions)), you can `cd` into it using the variable
+name.
 
 :point_right:
 CDABLE_VARS is off by default; enable it with, [`setocd CDABLE_VARS`](#configure).
 
 ```pwsh
-[~]> setocd CDABLE_VARS
-[~]> $power = '~/projects/powershell'
-[~]> cd power
+[~/projects/powershell]> setocd CDABLE_VARS
+[~/projects/powershell]> $bk1 = $pwd
+[~/projects/powershell]> cd
+[~]> cd bk1
 [~/projects/powershell]> █
 ```
 
-This works with relative paths too, so if you find yourself frequently `cd`ing into the same
+It works with relative paths too, so if you find yourself frequently `cd`ing into the same
 subdirectories you could create a corresponding variable.
 
 ```pwsh
@@ -701,7 +704,7 @@ can do things like:
 
 ```pwsh
 [C:/projects]> # find git repositories
-[C:/projects]> ls .git -Force -Recurse -Depth 2 | gup
+[C:/projects]> ls .git -Force -Depth 2 | gup
 C:\projects\cd-extras
 C:\projects\work\app
 ...
@@ -752,7 +755,7 @@ other providers too.
 
 ## OS X & Linux
 
-`cd-extras` works on non-Windows operating systems. The `IndexedCompletion` option is be off by
+`cd-extras` works on non-Windows operating systems. The `IndexedCompletion` option is off by
 default unless you configured PSReadLine with a `MenuComplete` keybinding _before_ importing
 `cd-extras`.
 
