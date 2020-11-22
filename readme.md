@@ -42,7 +42,7 @@ cd-extras
   - [OS X & Linux](#os-x--linux)
 - [Install](#install)
 - [Configure](#configure)
-  - [_cd-extras_ options](#_cd-extras_-options)
+  - [cd-extras options](#cd-extras-options)
   - [Navigation helper key handlers](#navigation-helper-key-handlers)
   - [Using a different alias](#using-a-different-alias)
 
@@ -793,7 +793,7 @@ Import-Module cd-extras/cd-extras/cd-extras.psd1 # yep, three :D
 
 # Configure
 
-## _cd-extras_ options
+## cd-extras options
 
 - _AUTO_CD_: `[bool] = $true`
   - Enables auto_cd.
@@ -820,8 +820,10 @@ Import-Module cd-extras/cd-extras/cd-extras.psd1 # yep, three :D
 - _MaxMenuLength_ : `[int] = 35`
   - Truncate completion menu items to this length.
 - _MaxCompletions_ : `[int] = 99`
-  - Limit the number of dir/path/file completions offered. Should probably be at least one less
-  than `(Get-PSReadLineOption).CompletionQueryItems`.
+  - Limit the number of menu completions offered. If falsy then _cd_extras_ will attempt to
+  calculate the maximum number of completions that can fit on the screen given the current
+  `$Host.UI.RawUI.WindowSize` and `$cde.MaxMenuLength`. Otherwise should be no greater than
+  `(Get-PSReadLineOption).CompletionQueryItems`.
 
 To configure _cd-extras_ create a hashtable, `cde`, with one or more of these keys _before_
 importing it:

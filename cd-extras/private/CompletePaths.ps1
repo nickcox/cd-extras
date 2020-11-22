@@ -63,33 +63,54 @@ function CompletePaths {
     )
   }
 
-  $switches = @{
-    File      = $boundParameters['File'] -or $filesOnly
-    Directory = $boundParameters['Directory'] -or $dirsOnly
-    Force     = $true
-  }
-
   $wordToExpand = if ($wordToComplete) { $wordToComplete | RemoveSurroundingQuotes } else { './' }
 
-  $completions = Expand-Path @switches $wordToExpand -MaxResults ($cde.MaxCompletions + 1)
+  $maxCompletions =
+  if ($cde.MaxCompletions) {
+    $cde.MaxCompletions
+  }
+  else {
+    $columnPadding = 2
+    $winSize = $Host.UI.RawUI.WindowSize
+    $options = if (Get-Module PSReadLine) { Get-PSReadLineOption } else {
+      @{ShowToolTips = $false; ExtraPromptLineCount = 0; CompletionQueryItems = 256 }
+    }
+    $tooltipHeight = if ($options.ShowToolTips) { 2 } else { 0 }
+    $promptLines = 1 + $options.ExtraPromptLineCount
+    $psReadLineMax = $options.CompletionQueryItems
+    $numCols = [int][Math]::Floor($winSize.Width / ($cde.MaxMenuLength + $columnPadding))
+    $numRows = $winSize.Height - $promptLines - $tooltipHeight - 1
+    $maxVisible = $numCols * $numRows
+
+    [Math]::Min($psReadLineMax, $maxVisible)
+  }
+
+  $switches = @{
+    File       = $boundParameters['File'] -or $filesOnly
+    Directory  = $boundParameters['Directory'] -or $dirsOnly
+    Force      = $true
+    MaxResults = $maxCompletions + 1 # fetch one more than we need so we know if we're truncating the results
+  }
+
+  $completions = Expand-Path @switches $wordToExpand
 
   #replace cdable_vars
-  $variCompletions = if (
+  $variableCompletions = if (
     $cde.CDABLE_VARS -and
     $wordToComplete -match '[^/\\]+' -and # separate variable from slashes before or after it
     ($maybeVar = Get-Variable "$($Matches[0])*" -ValueOnly | where { Test-Path $_ -PathType Container })
   ) {
-    Expand-Path @switches ($wordToExpand -replace $Matches[0], $maybeVar) -MaxResults $cde.MaxCompletions
+    Expand-Path @switches ($wordToExpand -replace $Matches[0], $maybeVar) -MaxResults $maxCompletions
   }
 
-  $allCompletions = @($completions) + @($variCompletions)
-  if ($allCompletions.Length -gt $cde.MaxCompletions) {
+  $allCompletions = @($completions) + @($variableCompletions)
+  if ($allCompletions.Length -gt $maxCompletions) {
     [System.Console]::Beep() # audible warning if list of completions has been truncated
   }
 
   $allCompletions |
   select -Unique |
-  select -First $cde.MaxCompletions |
+  select -First $maxCompletions |
   CompletionResult |
   DefaultIfEmpty { $null }
 }
