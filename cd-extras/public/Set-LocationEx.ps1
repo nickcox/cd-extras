@@ -99,24 +99,20 @@ Function Set-LocationEx {
   ]
  	param(
     [Parameter(ParameterSetName = 'Path', Position = 0, ValueFromPipeline, ValueFromPipelineByPropertyName)]
-    [string]
-    ${Path},
+    [string] ${Path},
 
     [Parameter(ParameterSetName = 'Path', Position = 1)]
-    [string]
-    ${ReplaceWith},
+    [string] ${ReplaceWith},
 
     [Parameter(ParameterSetName = 'LiteralPath', Mandatory, ValueFromPipelineByPropertyName)]
     [Alias('PSPath')]
-    [string]
-    ${LiteralPath},
+    [string] ${LiteralPath},
 
-    [switch]
-    ${PassThru},
+    [switch] ${PassThru},
 
     [Parameter(ParameterSetName = 'Stack', ValueFromPipelineByPropertyName)]
-    [string]
-    ${StackName})
+    [string] ${StackName}
+  )
 
  	begin {
 

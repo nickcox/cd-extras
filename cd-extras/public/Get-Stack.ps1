@@ -1,12 +1,12 @@
 <#
 .SYNOPSIS
-See the items in the cd-extras history stack.
+Get the items in the cd-extras history stack.
 
 .PARAMETER Undo
-Show contents of the Undo stack only.
+Returns the contents of the Undo stack only.
 
 .PARAMETER Redo
-Show contents of the Redo stack only.
+Returns the contents of the Redo stack only.
 
 .EXAMPLE
 # Get contents of both stacks (default)
@@ -51,13 +51,13 @@ function Get-Stack {
     [switch] $Redo
   )
 
-  if ($PSCmdlet.ParameterSetName -eq 'Undo') { IndexPaths $undoStack.ToArray() }
-  elseif ($PSCmdlet.ParameterSetName -eq 'Redo') { IndexPaths $redoStack.ToArray() }
+  if ($Undo) { IndexPaths $undoStack.ToArray() }
+  elseif ($Redo) { IndexPaths $redoStack.ToArray() }
 
   else {
     @{
-      Undo = $undoStack
-      Redo = $redoStack
+      Undo = IndexPaths $undoStack.ToArray()
+      Redo = IndexPaths $redoStack.ToArray()
     }
   }
 }

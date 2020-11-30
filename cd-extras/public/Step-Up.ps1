@@ -30,16 +30,16 @@ function Step-Up {
   [CmdletBinding(DefaultParameterSetName = 'n')]
   param(
     [Parameter(ParameterSetName = 'n', Position = 0)]
-    [byte]$n = 1,
+    [byte] $n = 1,
 
     [Parameter(ParameterSetName = 'named', Position = 0, Mandatory)]
-    [string]$NamePart,
+    [string] $NamePart,
 
     [Alias('FullName', 'Path')]
     [Parameter(ValueFromPipeline, ValueFromPipelineByPropertyName)]
-    [string]$From = $PWD,
+    [string] $From = $PWD,
 
-    [switch]$PassThru
+    [switch] $PassThru
   )
 
   if ($PSBoundParameters.ContainsKey('PassThru')) {

@@ -18,8 +18,8 @@ function Switch-LocationPart {
   [OutputType([void])]
   [CmdletBinding()]
   param(
-    [Parameter(Mandatory)][string]$Replace,
-    [Parameter(Mandatory)][string]$With
+    [Parameter(Mandatory)][string] $Replace,
+    [Parameter(Mandatory)][string] $With
   )
 
   $normalised = $Replace | NormaliseAndEscape

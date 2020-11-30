@@ -12,7 +12,7 @@ PS C:\Windows\System32> _
 
 function Step-Between {
   [OutputType([void], [Management.Automation.PathInfo])]
-  param ([switch]$PassThru)
+  param ([switch] $PassThru)
 
   if ($Script:cycleDirection -eq [CycleDirection]::Undo) {
     Undo-Location -PassThru:$PassThru
