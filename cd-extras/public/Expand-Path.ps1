@@ -79,7 +79,7 @@ function Expand-Path {
       -replace [Regex]::Escape($multiDot), $replacement `
       -replace '`?\[|`?\]', '?' <# be as permissive as possible about square brackets #> `
       -replace '\w(?=[/\\])|[\w/\\]$', '$0*' <# asterisks around slashes and at end #> `
-      -replace '(\w)\.\.(\w)', '$1*' <# support double dot operator #> `
+      -replace '(\w)\.\.(\w)', '$1*$2' <# support double dot operator #> `
       -replace "$delimiterGroup\w+", '*$0' <# expand around dots, etc. #>
 
     $wildcardedPaths = if ($SearchPaths -and -not ($Path | IsRootedOrRelative)) {
