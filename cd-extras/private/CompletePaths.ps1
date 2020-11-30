@@ -28,39 +28,49 @@ function CompletePaths {
       $_.PSChildName
     }
   }
+
   filter CompletionResult {
+    Begin { $seenNames = @{} } # for disambiguation purposes
+    Process {
+      $fullPath = $_ | Convert-Path
 
-    $fullPath = $_ | Convert-Path
+      $completionText = if ($wordToComplete -match '^\.{1,2}$') {
+        $wordToComplete
+      }
+      elseif (!($wordToComplete | IsRooted) -and ($fullPath | IsDescendedFrom ..)) {
+        $fullPath | Resolve-Path -Relative
+      }
+      else {
+        $fullPath -replace "^$($HOME | NormaliseAndEscape)", "~"
+      }
 
-    $completionText = if ($wordToComplete -match '^\.{1,2}$') {
-      $wordToComplete
+      # add normalised trailing directory separator; quote if contains spaces
+      $trailChar = if ($_.PSIsContainer) { ${/} }
+
+      $completionText = $completionText |
+      RemoveTrailingSeparator |
+      SurroundAndTerminate $trailChar |
+      EscapeWildcards
+
+      # hack to support registry provider
+      if ($_.PSProvider.Name -eq 'Registry') {
+        $completionText = $completionText -replace $_.PSDrive.Root, "$($_.PSDrive.Name):"
+      }
+
+      filter Dedupe {
+        $n = ++$seenNames[$_]
+        if ($n -le 1) { $_ } else { "$_ ($n)" }
+      }
+
+      $extraInfo = if ($cde.ToolTipExtraInfo) { ' ' + (&$cde.ToolTipExtraInfo $_) }
+
+      [Management.Automation.CompletionResult]::new(
+        $completionText,
+        ($_ | Colourise | Truncate | Dedupe),
+        [Management.Automation.CompletionResultType]::ParameterValue,
+        $fullPath + $extraInfo
+      )
     }
-    elseif (!($wordToComplete | IsRooted) -and ($fullPath | IsDescendedFrom ..)) {
-      $fullPath | Resolve-Path -Relative
-    }
-    else {
-      $fullPath -replace "^$($HOME | NormaliseAndEscape)", "~"
-    }
-
-    # add normalised trailing directory separator; quote if contains spaces
-    $trailChar = if ($_.PSIsContainer) { ${/} }
-
-    $completionText = $completionText |
-    RemoveTrailingSeparator |
-    SurroundAndTerminate $trailChar |
-    EscapeWildcards
-
-    # hack to support registry provider
-    if ($_.PSProvider.Name -eq 'Registry') {
-      $completionText = $completionText -replace $_.PSDrive.Root, "$($_.PSDrive.Name):"
-    }
-
-    [Management.Automation.CompletionResult]::new(
-      $completionText,
-      ($_ | Colourise | Truncate),
-      [Management.Automation.CompletionResultType]::ParameterValue,
-      $($fullPath)
-    )
   }
 
   $wordToExpand = if ($wordToComplete) { $wordToComplete | RemoveSurroundingQuotes } else { './' }
@@ -70,7 +80,8 @@ function CompletePaths {
     $cde.MaxCompletions
   }
   else {
-    $columnPadding = 2
+    # calculate a number that should fit onto one screen
+    $columnPadding = 5
     $winSize = $Host.UI.RawUI.WindowSize
     $options = if (Get-Module PSReadLine) { Get-PSReadLineOption } else {
       @{ShowToolTips = $false; ExtraPromptLineCount = 0; CompletionQueryItems = 256 }
@@ -109,8 +120,9 @@ function CompletePaths {
   }
 
   $allCompletions |
-  select -Unique |
-  select -First $maxCompletions |
+  Select -Unique |
+  Sort-Object { !$_.PSIsContainer, $_.PSChildName } |
+  Select -First $maxCompletions |
   CompletionResult |
   DefaultIfEmpty { $null }
 }
