@@ -11,7 +11,7 @@ cd-extras
 <!-- TOC -->
 
 - [cd-extras](#cd-extras)
-- [Navigation helpers](#navigation-helpers)
+- [Navigation helper commands](#navigation-helper-commands)
   - [Even faster](#even-faster)
   - [Return a result](#return-a-result)
   - [Navigation helper completions](#navigation-helper-completions)
@@ -49,9 +49,9 @@ cd-extras
 <!-- /TOC -->
 
 
-# Navigation helpers
+# Navigation helper commands
 
-**Quickly navigate backwards, forwards or upwards**
+**Quickly navigate backwards, forwards, upwards or between two directories**
 
 <details>
 <summary>[<i>Watch</i>]<p/></summary>
@@ -60,11 +60,11 @@ cd-extras
 
 </details>
 
-_cd-extras_ provides the following navigation helper functions (and corresponding aliases):
+_cd-extras_ provides the following navigation helpers and corresponding aliases (shown in parens):
 
-- `Undo-Location`, (`cd-`, `~`)
-- `Redo-Location`, (`cd+`, `~~`)
-- `Step-Up`, (`up`, `..`)
+- `Undo-Location`, (`cd-` or `~`)
+- `Redo-Location`, (`cd+` or `~~`)
+- `Step-Up`, (`up`or `..`)
 - `Step-Between`, (`cdb`)
 
 ```pwsh
@@ -76,7 +76,7 @@ _cd-extras_ provides the following navigation helper functions (and correspondin
 
 :point_right:
 That's `cd-` and `cd+`, without a space. `cd -` and `cd +` (with a space) also work but you won't
-get [autocompletions](#navigation-helper-completions).
+get [auto-completions](#navigation-helper-completions).
 
 Repeated uses of `cd-`  keep moving backwards towards the beginning of the stack rather than
 toggling between the two most recent directories as in vanilla bash. Use `Step-Between` (`cdb`)
@@ -398,6 +398,15 @@ Paths within [`$cde.CD_PATH`](#cd-path) are included in the completion results.
 [~]> ~\Documents\WindowsPowerShell\Modules\█
 ```
 
+:point_right:
+The total number of completions offered is limited by the `MaxCompletions` [option](#configure)
+(or calculated dynamically to fit the screen if `MaxCompletions` is falsy). Although the completions
+are sorted by type (folders first) and then by name for ease of reading, that sort is applied _after_
+the limit has been applied to the original results. Those results are sorted breadth first for
+responsiveness.
+
+_A console beep is emitted in cases where the available results have been truncated._
+
 
 ## Single and double periods
 
@@ -540,7 +549,8 @@ File: C:\Users\Nick\projects\PowerShell\README.md
 ## Colourised completions
 
 The _`ColorCompletion`_ [option](#configure) enables colourisation of completions in the filesystem
-provider via [_DirColors_][1] or via your own global `Format-ColorizedFilename` function.
+provider via [_DirColors_][1] or via your own global `Format-ColorizedFilename` function of type
+[System.IO.FileSystemInfo] -> [String].
 
 :point_right:
 _ColorCompletion_ is off by default. Enable it on with `setocd ColorCompletion`.
@@ -805,6 +815,9 @@ Import-Module cd-extras/cd-extras/cd-extras.psd1 # yep, three :D
   - Paths to be searched by `cd` and tab completion. An array, not a delimited string.
 - _WordDelimiters_ : `[string[]] = '.', '_', '-'`
   - Word boundaries within path segments. For example, `.foo` will be expanded into `*.foo*`.
+- _ToolTipExtraInfo_ : `[ScriptBlock] = $null`
+  - Optional extra information displayed after the file path in the menu-completion tooltip.
+  This should take a single argument, the current item, and return a string.
 - _IndexedCompletion_: `[bool] = $true (if MenuComplete key bound)`
   - If truthy, indexes are offered as completions for `up`, `cd+` and `cd-` with full paths
     displayed in the menu.
@@ -819,7 +832,7 @@ Import-Module cd-extras/cd-extras/cd-extras.psd1 # yep, three :D
     available.
 - _MaxMenuLength_ : `[int] = 35`
   - Truncate completion menu items to this length.
-- _MaxCompletions_ : `[int] = 99`
+- _MaxCompletions_ : `[int] = 0`
   - Limit the number of menu completions offered. If falsy then _cd_extras_ will attempt to
   calculate the maximum number of completions that can fit on the screen given the current
   `$Host.UI.RawUI.WindowSize` and `$cde.MaxMenuLength`. Otherwise should be no greater than
@@ -845,7 +858,10 @@ Import-Module cd-extras
 setocd PathCompletions Invoke-VSCode # appends PathCompletions
 setocd CDABLE_VARS # turns CDABLE_VARS on
 setocd AUTO_CD 0 # turns AUTO_CD off
-setocd NOARG_CD /
+setocd MaxCompletions 0 # auto calculate the maximum number of completions to display
+
+# append the mode string for each item to the completion tooltip
+setocd ToolTipExtraInfo {if ($mode = $args[0].Mode) { " ($mode)" }}
 ```
 
 :point_right:
