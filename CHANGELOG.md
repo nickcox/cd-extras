@@ -1,5 +1,13 @@
 # Changes
 
+## [2.9.0]
+- Enable auto-calculation of `$cde.MaxCompletions` when the option is set to `0` (or `$false`)
+- Deduplicate menu completion entries by adding an index to the second and subsequent occurrences of each leaf item
+- Add an option, `ToolTipExtraInfo` to augment the menu completion tooltip for path completion
+- Sort path completions by type (directories first), then by name
+- Default parameter set for `Get-Stack` now outputs `IndexedPath` entries for undo and redo stacks
+- Fixed a bug where final character in double-dot expansion operator was ignored
+
 ## [2.8.0]
 - Emit a warning beep if list of path completions has been truncated
 - Don't invoke auto_cd unless at least one alphanumeric is given
