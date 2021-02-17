@@ -61,28 +61,21 @@ function Get-Up {
 
   Process {
 
-    $ancestors = Get-Ancestors -From $From
+    $ancestors = (Get-Ancestors -From $From).Path
 
     if ($PSCmdlet.ParameterSetName -eq 'n') {
 
-      if (!$n) { return $From }
-
-      return $ancestors.Path | select -Index ($n - 1)
+      if (!$n -or !$ancestors) { return $From } else { return $ancestors[$n - 1] }
     }
 
     if ($PSCmdlet.ParameterSetName -eq 'named') {
 
-      if ($result = $ancestors | where Name -like "$NamePart*") {
-        return $result.Path | select -first 1
+      if (($match = GetStackIndex $ancestors $NamePart) -ge 0) {
+        $ancestors[$match]
       }
-
-      # if we couldn't match by leaf name then match by complete path
-      # this is mainly for completion when IndexedCompletion is off
-      if ($result = $ancestors.Path -eq $NamePart) {
-        return $result | select -first 1
+      else {
+        Write-Error "Could not find '$NamePart' as an ancestor of '$From'." -ErrorAction Stop
       }
-
-      Write-Error "Could not find '$NamePart' as an ancestor of '$From'." -ErrorAction Stop
     }
   }
 }

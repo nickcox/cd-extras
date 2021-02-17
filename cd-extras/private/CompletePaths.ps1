@@ -37,8 +37,8 @@ function CompletePaths {
       $completionText = if ($wordToComplete -match '^\.{1,2}$') {
         $wordToComplete
       }
-      elseif (!($wordToComplete | IsRooted) -and ($fullPath | IsDescendedFrom ..)) {
-        $fullPath | Resolve-Path -Relative
+      elseif (!($wordToComplete | IsRooted) -and ($_ | Resolve-Path -Relative | IsDescendedFrom ..)) {
+        $_ | Resolve-Path -Relative
       }
       else {
         $fullPath -replace "^$($HOME | NormaliseAndEscape)", "~"
@@ -107,11 +107,12 @@ function CompletePaths {
 
   #replace cdable_vars
   $variableCompletions = if (
+    $completions.Length -lt $maxCompletions -and
     $cde.CDABLE_VARS -and
     $wordToComplete -match '[^/\\]+' -and # separate variable from slashes before or after it
     ($maybeVar = Get-Variable "$($Matches[0])*" -ValueOnly | where { Test-Path $_ -PathType Container })
   ) {
-    Expand-Path @switches ($wordToExpand -replace $Matches[0], $maybeVar) -MaxResults $maxCompletions
+    Expand-Path @switches ($wordToExpand -replace $Matches[0], $maybeVar)
   }
 
   $allCompletions = @($completions) + @($variableCompletions)

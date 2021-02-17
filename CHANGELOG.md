@@ -1,5 +1,8 @@
 # Changes
 
+## [2.9.1]
+- Fix bug where multi-dotting stopped working with `AUTO_CD`, thanks @jamesmcgill
+
 ## [2.9.0]
 - Enable auto-calculation of `$cde.MaxCompletions` when the option is set to `0` (or `$false`)
 - Deduplicate menu completion entries by adding an index to the second and subsequent occurrences of each leaf item

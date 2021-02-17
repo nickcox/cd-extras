@@ -339,7 +339,15 @@ Describe 'cd-extras' {
       CurrentDir | Should -Be Modules
     }
 
-    It 'does not choke on root directory full path' {
+    It 'does not choke on navigating up from root' {
+      cd $PSScriptRoot
+      cd /
+      $PWD | Should -Be (Get-Location).Drive.Root
+      Step-Up 3
+      $PWD | Should -Be (Get-Location).Drive.Root
+    }
+
+    It 'does not choke on root directory full path' -Skip:(!$IsWindows) {
       Set-Location $PSScriptRoot
       Step-Up (Get-Location).Drive.Root
       $PWD | Should -Be (Get-Location).Drive.Root
@@ -696,7 +704,7 @@ Describe 'cd-extras' {
         cd powershell\tools\releaseBuild\Images
         $actual = CompletePaths -wordToComplete '_centos'
         $actual.CompletionText |
-        Should -BeLike "*Images${/}microsoft_powershell_centos7${/}"
+        Should -Be ".${/}microsoft_powershell_centos7${/}"
 
         $actual = CompletePaths -wordToComplete 'microsoft_'
         $actual | Should -HaveCount 4
@@ -709,9 +717,9 @@ Describe 'cd-extras' {
         $actual | SHould -HaveCount 2
 
         $actual[0].CompletionText |
-        Should -BeLike "*powershell${/}src${/}libpsl-native${/}"
+        Should -Be ".${/}libpsl-native${/}"
         $actual[1].CompletionText |
-        Should -BeLike "*powershell${/}src${/}powershell-native${/}"
+        Should -Be ".${/}powershell-native${/}"
       }
 
       It 'completes directories with spaces correctly' {
@@ -955,8 +963,8 @@ Describe 'cd-extras' {
       }
 
       It 'returns $null result if no completions available' {
-        xup | select -Last 1 | cd
-        xup | select -Last 1 | cd #do this twice to escape TestDrive
+        cd $PSScriptRoot # escape TestDrive
+        cd $PWD.Drive.Root
         $actual = CompleteAncestors -wordToComplete ''
         $actual | Should -Be $null
       }
