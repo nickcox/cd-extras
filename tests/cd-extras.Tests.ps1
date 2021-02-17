@@ -1,18 +1,23 @@
-${Script:/} = [System.IO.Path]::DirectorySeparatorChar
+BeforeDiscovery {
+  ${Script:/} = [System.IO.Path]::DirectorySeparatorChar
 
-if (-not (Test-Path variable:IsWindows)) {
-  $Global:IsWindows = $PSEdition -eq 'desktop' -or $env:OS -like "windows*"
+  if (-not (Test-Path variable:IsWindows)) {
+    $Script:IsWindows = $PSEdition -eq 'desktop' -or $env:OS -like "windows*"
+  }
+
+  $Script:xcde = if (Test-Path variable:cde) { $cde }
+  $Global:cde = $null
+  Push-Location $PSScriptRoot
+  Import-Module ../cd-extras/cd-extras.psd1 -Force
 }
-
-$Script:xcde = if (Test-Path variable:cde) { $cde }
-$Global:cde = $null
-Push-Location $PSScriptRoot
-Import-Module ../cd-extras/cd-extras.psd1 -Force
 
 Describe 'cd-extras' {
 
   BeforeAll {
     Get-Content sampleStructure.txt | New-Item -ItemType Directory -Path { "TestDrive:/$_" }
+    function CurrentDir() {
+      Get-Location | Split-Path -Leaf
+    }
   }
 
   AfterAll {
@@ -25,10 +30,6 @@ Describe 'cd-extras' {
     Set-Location TestDrive:\
     setocd CD_PATH @()
     Clear-Stack
-  }
-
-  function CurrentDir() {
-    Get-Location | Split-Path -Leaf
   }
 
   Describe 'cd' {
@@ -112,7 +113,7 @@ Describe 'cd-extras' {
 
     It 'throws if the named location cannot be found' {
       cd powershell/src
-      { Undo-Location doesnotexist } | Should -Throw "Could not find"
+      { Undo-Location doesnotexist } | Should -Throw "Could not find*"
     }
 
     It 'matches more than one segment if necessary' {
@@ -287,12 +288,12 @@ Describe 'cd-extras' {
 
     It 'throws if the replaceable text is not in the current directory name' {
       Set-Location powershell\src\Modules\Shared\Microsoft.PowerShell.Utility
-      { cd: shard Unix } | Should -Throw "String 'shard'"
+      { cd: shard Unix } | Should -Throw "String 'shard'*"
     }
 
     It 'throws if the replacement results in a path which does not exist' {
       Set-Location powershell\src\Modules\Shared\Microsoft.PowerShell.Utility
-      { cd: Shared unice } | Should -Throw "No such directory"
+      { cd: Shared unice } | Should -Throw "No such directory*"
     }
   }
 
@@ -548,7 +549,7 @@ Describe 'cd-extras' {
 
     It 'does not search CD_PATH when given directory is rooted or relative' {
       Set-CdExtrasOption -Option CD_PATH -Value @('TestDrive:\powershell\src\')
-      { cd ./resgen -ErrorAction Stop } | Should -Throw "Cannot find path"
+      { cd ./resgen -ErrorAction Stop } | Should -Throw "Cannot find path*"
     }
   }
 
@@ -574,7 +575,7 @@ Describe 'cd-extras' {
 
     It 'considers CD_PATH for expansion' {
       Set-CdExtrasOption -Option CD_PATH -Value @('TestDrive:\powershell\src\')
-      Expand-Path Microsoft.WSMan | Should HaveCount 2
+      Expand-Path Microsoft.WSMan | Should -HaveCount 2
     }
 
     It 'expands around periods' {
@@ -674,7 +675,7 @@ Describe 'cd-extras' {
     Describe 'Path expansion' {
       It 'expands multiple items' {
         $actual = CompletePaths -wordToComplete 'pow/t/c' | % CompletionText
-        $actual | Should HaveCount 3
+        $actual | Should -HaveCount 3
 
         function ShouldContain($likeStr) {
           $actual -like $likeStr | Should -Not -BeNullOrEmpty
@@ -706,7 +707,7 @@ Describe 'cd-extras' {
         $cde.WordDelimiters | should -Contain '-'
         cd powershell\src
         $actual = CompletePaths -wordToComplete '-native'
-        $actual | SHould -HaveCount 2
+        $actual | Should -HaveCount 2
 
         $actual[0].CompletionText |
         Should -BeLike "*powershell${/}src${/}libpsl-native${/}"
@@ -849,7 +850,7 @@ Describe 'cd-extras' {
         $actual | Should -Be $null
       }
 
-      It 'uses the `force` switch when the command being completed does not have one' {
+      It 'uses the "force" switch when the command being completed does not have one' {
         $git = Get-Item powershell/.git/
         $git.Attributes = "Hidden"
         $actual = CompletePaths -wordToComplete 'pow/.git' -commandName 'Get-Date' | Select -Expand ListItemText
@@ -956,7 +957,7 @@ Describe 'cd-extras' {
 
       It 'returns $null result if no completions available' {
         xup | select -Last 1 | cd
-        xup | select -Last 1 | cd #do this twice to escape TestDrive
+        xup | select -Last 1 | cd # do this twice to escape TestDrive
         $actual = CompleteAncestors -wordToComplete ''
         $actual | Should -Be $null
       }

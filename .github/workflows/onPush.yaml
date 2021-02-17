@@ -10,38 +10,14 @@ jobs:
         os: [ubuntu-latest, windows-latest, macOS-latest]
     steps:
       - name: Checkout
-        uses: actions/checkout@v1
-        with:
-          fetch-depth: 1
-
-      - name: Cache Modules
-        uses: actions/cache@v1
-        id: cache
-        with:
-          path: ps_modules
-          key: ${{ runner.os }}-PSModules-2
-
-      - name: Install Modules
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: |
-          $modulePath = './ps_modules/'
-          mkdir $modulePath
-          Find-Module Pester -RequiredVersion 4.10.1 | Save-Module -Path $modulePath
-          Find-Module PSCodeCovIo | Save-Module -Path $modulePath
-        shell: pwsh
+        uses: actions/checkout@v2
 
       - name: Run the tests
-        id: run_tests
         run: |
-          echo 'Running tests...'
-          Import-Module ./ps_modules/Pester
-          Import-Module ./ps_modules/PSCodeCovIo
-          Get-Module | select name, path | Out-Host
-          $outDir = New-Item ./_reports/ -ItemType Directory
-          $reportPath = "$outDir/testResults.xml"
-          $src = Get-ChildItem ./cd-extras -Recurse -File -Include *.ps1
-          $out = Invoke-Pester ./tests/cd-extras.Tests.ps1 -OutputFormat JUnitXml -OutputFile $reportPath -CodeCoverage $src -PassThru -EnableExit
-          Export-CodeCovIoJson -CodeCoverage $out.CodeCoverage -RepoRoot $pwd -Path $outDir/coverage.json
+          . ./cd-extras/public/_Classes.ps1
+          md ./_reports
+          Import-Module Pester
+          Invoke-Pester ./tests/cd-extras.Tests.ps1 -EnableExit -CodeCoverage ./cd-extras/private/*.ps1,./cd-extras/public/*.ps1 -CodeCoverageOutputFile ./_reports/coverage.xml -OutputFile ./_reports/testresults.xml
         shell: pwsh
 
       - name: Upload test report
@@ -50,9 +26,9 @@ jobs:
           name: Test Report (${{ matrix.os }})
           path: _reports
 
-      - name: Upload coverage to Codecov  
+      - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          file: ./_reports/coverage.json
+          file: ./_reports/coverage.xml
           flags: ${{ runner.os }}

@@ -1,11 +1,9 @@
-#Requires -Module Pester
-
 param ([switch] $Cover)
 
 if ($Cover) {
-  $src = Get-ChildItem $PSScriptRoot\..\cd-extras\ -Recurse -File -Include *.ps1
-  Invoke-Pester $PSScriptRoot\cd-extras.Tests.ps1 -CodeCoverage $src @args
+  $ex = "$PSScriptRoot/../cd-extras"
+  Invoke-Pester $PSScriptRoot\cd-extras.Tests.ps1 -CodeCoverage "$ex/public/*.ps1", "$ex/private/*.ps1" @args
 }
 else {
-  Invoke-Pester $PSScriptRoot\cd-extras.Tests.ps1
+  Invoke-Pester $PSScriptRoot\cd-extras.Tests.ps1 @args
 }

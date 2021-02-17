@@ -111,7 +111,7 @@ function CompletePaths {
     $wordToComplete -match '[^/\\]+' -and # separate variable from slashes before or after it
     ($maybeVar = Get-Variable "$($Matches[0])*" -ValueOnly | where { Test-Path $_ -PathType Container })
   ) {
-    Expand-Path @switches ($wordToExpand -replace $Matches[0], $maybeVar) -MaxResults $maxCompletions
+    Expand-Path @switches ($wordToExpand -replace $Matches[0], $maybeVar)
   }
 
   $allCompletions = @($completions) + @($variableCompletions)
