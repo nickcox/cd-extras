@@ -49,13 +49,12 @@ function Redo-Location {
   }
 
   if ($PSCmdlet.ParameterSetName -eq 'named') {
-    $match = GetStackIndex $redoStack.ToArray() $NamePart
 
-    if ($match -ge 0) {
+    if (($match = GetStackIndex $redoStack.ToArray() $NamePart) -ge 0) {
       Redo-Location ($match + 1)
     }
     else {
-      Write-Error "Could not find '$NamePart' in redo stack" -ErrorAction Stop
+      Write-Error "Could not find '$NamePart' in redo stack." -ErrorAction Stop
     }
   }
 }

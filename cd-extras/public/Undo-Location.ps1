@@ -47,7 +47,6 @@ function Undo-Location {
   )
 
   if ($PSCmdlet.ParameterSetName -eq 'n' -and $n -ge 1) {
-
     1..$n | % {
       if ($undoStack.Count) {
         $redoStack.Push($PWD.Path)
@@ -57,13 +56,12 @@ function Undo-Location {
   }
 
   if ($PSCmdlet.ParameterSetName -eq 'named') {
-    $match = GetStackIndex $undoStack.ToArray() $NamePart
 
-    if ($match -ge 0) {
+    if (($match = GetStackIndex $undoStack.ToArray() $NamePart) -ge 0) {
       Undo-Location ($match + 1)
     }
     else {
-      Write-Error "Could not find '$NamePart' in undo stack" -ErrorAction Stop
+      Write-Error "Could not find '$NamePart' in undo stack." -ErrorAction Stop
     }
   }
 }

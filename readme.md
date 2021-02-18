@@ -12,9 +12,9 @@ cd-extras
 
 - [cd-extras](#cd-extras)
 - [Navigation helper commands](#navigation-helper-commands)
-  - [Even faster](#even-faster)
-  - [Return a result](#return-a-result)
-  - [Navigation helper completions](#navigation-helper-completions)
+  - [Parameters](#parameters)
+  - [Output](#output)
+  - [Completions](#completions)
   - [Listing available navigation targets](#listing-available-navigation-targets)
 - [cd enhancements](#cd-enhancements)
   - [Path shortening](#path-shortening)
@@ -33,10 +33,10 @@ cd-extras
 - [CD PATH](#cd-path)
 - [CDABLE VARS](#cdable-vars)
 - [Additional helpers](#additional-helpers)
-  - [Get-Up _gup_](#get-up-_gup_)
-  - [Get-Stack _dirs_](#get-stack-_dirs_)
-  - [Clear-Stack _dirsc_](#clear-stack-_dirsc_)
-  - [Expand-Path _xpa_](#expand-path-_xpa_)
+  - [Get-Up gup](#get-up-gup)
+  - [Get-Stack dirs](#get-stack-dirs)
+  - [Clear-Stack dirsc](#clear-stack-dirsc)
+  - [Expand-Path xpa](#expand-path-xpa)
 - [Compatibility](#compatibility)
   - [Alternative providers](#alternative-providers)
   - [OS X & Linux](#os-x--linux)
@@ -67,7 +67,7 @@ _cd-extras_ provides the following navigation helpers and corresponding aliases 
 - `Step-Up`, (`up`or `..`)
 - `Step-Between`, (`cdb`)
 
-```pwsh
+```powershell
 [C:/Windows/System32]> up # or ..
 [C:/Windows]> cd- # or ~
 [C:/Windows/System32]> cd+ # or ~~
@@ -76,13 +76,13 @@ _cd-extras_ provides the following navigation helpers and corresponding aliases 
 
 :point_right:
 That's `cd-` and `cd+`, without a space. `cd -` and `cd +` (with a space) also work but you won't
-get [auto-completions](#navigation-helper-completions).
+get [auto-completions](#completions).
 
 Repeated uses of `cd-`  keep moving backwards towards the beginning of the stack rather than
 toggling between the two most recent directories as in vanilla bash. Use `Step-Between` (`cdb`)
 if you want to toggle between directories.
 
-```pwsh
+```powershell
 [C:/Windows/System32]> cd ..
 [C:/Windows]> cd ..
 [C:/]> cd-
@@ -95,11 +95,11 @@ if you want to toggle between directories.
 ```
 
 
-## Even faster
+## Parameters
 
-`up`, `cd+` and `cd-` each take a single optional parameter: either a number of steps, `n`...
+`up`, `cd+` and `cd-` each take a single optional argument: either a number of steps, `n`...
 
-```pwsh
+```powershell
 [C:/Windows/System32]> .. 2 # or `up 2`
 [C:/]> cd temp
 [C:/temp]> cd- 2 # `cd -2`, `~ 2` or just `~2` also work
@@ -108,11 +108,11 @@ if you want to toggle between directories.
 ```
 
 ...or a string, `NamePart`, used to select the nearest matching directory from the available
-locations. Given a `NamePart`, _cd&#8209;extras_ will search from the current location for
-directories whose _leaf_ name contains the given string (ex. ¹). If none is found then it will
-attempt to find a match within the full path of each candidate directory (ex. ²).
+locations. Given a `NamePart`, _cd-extras_ will search from the current location for directories
+whose leaf name contains the given string⁽¹⁾. If none is found then it will attempt to find a match
+within the full path of each candidate directory⁽²⁾.
 
-```pwsh
+```powershell
 [C:/Windows]> cd system32
 [C:/Windows/System32]> cd drivers
 [C:/Windows/System32/drivers]> cd- win # [ex. 1] by leaf name
@@ -122,13 +122,13 @@ attempt to find a match within the full path of each candidate directory (ex. ²
 ```
 
 
-## Return a result
+## Output
 
 Each helper includes a `-PassThru` switch to return a `PathInfo` value in case you need a
 reference to the resulting directory. The value will be `$null` if the action wasn't completed.
 (For example, if there was nothing in the stack or you attempted to navigate up from the root.)
 
-```pwsh
+```powershell
 [C:/Windows/System32]> up -PassThru
 
 Path
@@ -145,15 +145,16 @@ C:\Windows\System32
 ```
 
 
-## Navigation helper completions
+## Completions
 
 Auto-completions are provided for each of `cd-`, `cd+`, and `up`.
 
 Assuming the [_PSReadLine_][0] `MenuComplete` function is bound to tab...
 
-```pwsh
+```powershell
 [C:]> Get-PSReadLineKeyHandler -Bound | Where Function -eq MenuComplete
-  
+```
+```
 Completion functions
 ====================
 
@@ -163,9 +164,9 @@ Tab           MenuComplete Complete the input if there is a single completion ..
 ...
 ```
 
-then tabbing (`⇥`) through any of the navigation helpers will display a menu based completion.
+...then tabbing (`⇥`) through any of the navigation helpers will display a menu based completion.
 
-```pwsh
+```powershell
 [C:/Windows/System32/drivers/etc]> up ⇥⇥
 [C:/Windows/System32/drivers/etc]> up 2
 
@@ -184,7 +185,7 @@ _cd-extras_ detects _PSReadLine_ options in order to set _IndexedCompletion_ at 
 _PSReadLine_ `MenuComplete` option is bound to at least one key combination then _IndexedCompletion_
 is turned on by default. You can turn it off if you prefer.
 
-```pwsh
+```powershell
 [C:/Windows/System32/drivers/etc]> setocd IndexedCompletion 0
 [C:/Windows/System32/drivers/etc]> up ⇥⇥
 [C:/Windows/System32/drivers/etc]> up C:\Windows\System32 <--- full path shown
@@ -197,9 +198,9 @@ C:\Windows\System32
 
 
 It's also possible to tab-complete `cd-`, `cd+` and `up` using a partial directory name (i.e. the
-[`NamePart` parameter](#even-faster)).
+[`NamePart` parameter](#parameters)).
 
-```pwsh
+```powershell
 [~/projects/PowerShell/src/Modules/Shared]> up pr⇥
 [~/projects/PowerShell/src/Modules/Shared]> up '~\projects'
 [~/projects]> █
@@ -214,7 +215,7 @@ As an alternative to menu completion you retrieve a list of available targets wi
 - `Get-Stack -Redo` (`dirs -r`)
 - `Get-Ancestors` (`xup`)
 
-```pwsh
+```powershell
 [C:/Windows/System32/drivers]> Get-Ancestors # xup
 
 n Name        Path
@@ -265,7 +266,7 @@ This effectively changes a path given as, `p` into `p*` or `~/pr/pow/src` into `
 If you're not sure whether an unambiguous match is available then just hit tab to pick from a
 [list of potential matches](#enhanced-completion-for-cd-and-others) instead.
 
-```pwsh
+```powershell
 [~]> cd pr
 [~/projects]> cd cd-e
 [~/projects/cd-extras]> cd ~
@@ -276,7 +277,7 @@ If you're not sure whether an unambiguous match is available then just hit tab t
 Word delimiters (`.`, `_`, `-` by [default](#configure)) are expanded around so a segment
 containing `.sdk` is expanded into `*.sdk*`.
 
-```pwsh
+```powershell
 [~]> cd proj/pow/s/.sdk
 [~/projects/powershell/src/Microsoft.PowerShell.SDK]> █
 ```
@@ -285,14 +286,14 @@ containing `.sdk` is expanded into `*.sdk*`.
 Powershell interprets a hyphen at the start of an argument as a parameter name. So while you can do
 this...
 
-```pwsh
+```powershell
 [~/projects/powershell]> cd src/-unix
 [~/projects/PowerShell/src/powershell-unix]> █
 ```
 
 ... you need to escape this:
 
-```pwsh
+```powershell
 [~/projects/powershell/src]> cd -unix
 Set-LocationEx: A parameter cannot be found that matches parameter name 'unix'.
 
@@ -303,14 +304,14 @@ Set-LocationEx: A parameter cannot be found that matches parameter name 'unix'.
 Pairs of periods are expanded between so, for example, a segment containing `s..32` is expanded
 into `s*32`.
 
-```pwsh
+```powershell
 [~]> cd /w/s..32/d/et
 [C:/Windows/System32/drivers/etc]> █
 ```
 
 Directories in [`CD_PATH`](#cd-path) will be also be shortened.
 
-```pwsh
+```powershell
 [C:/]> setocd CD_PATH ~/projects
 [C:/]> cd p..shell
 [~/projects/PowerShell/]> █
@@ -318,7 +319,7 @@ Directories in [`CD_PATH`](#cd-path) will be also be shortened.
 
 [`AUTO_CD`](#auto-cd) uses the same expansion algorithm when enabled.
 
-```pwsh
+```powershell
 [~]> $cde.AUTO_CD
 True
 
@@ -335,7 +336,7 @@ In the same way that you can navigate up one level with `cd ..`, `Set-LocationEx
 navigating multiple levels by adding additional dots. [`AUTO_CD`](#multi-dot) works the same way
 if enabled.
 
-```pwsh
+```powershell
 [C:/Windows/System32/drivers/etc]> cd ... # same as `up 2` or `.. 2`
 [C:/Windows/System32]> cd-
 [C:/Windows/System32/drivers/etc>] cd .... # same as `up 3` or `.. 3`
@@ -350,7 +351,7 @@ directory (`~` by default). This overrides the out of the box behaviour on Power
 no-arg `cd` _always_ navigates to `~` and PowerShell < 6.0, where no-argument `cd` does nothing at
 all.
 
-```pwsh
+```powershell
 [~/projects/powershell]> cd
 [~]> setocd NOARG_CD /
 [~]> cd
@@ -365,7 +366,7 @@ changing to the resulting directory if it exists, using the `Switch-LocationPart
 
 You can also use the alias `cd:` or the explicit `ReplaceWith` parameter of `Set-LocationEx`.
 
-```pwsh
+```powershell
 [~/Modules/Unix/Microsoft.PowerShell.Utility]> cd unix shared
 [~/Modules/Shared/Microsoft.PowerShell.Utility]> cd: -Replace shared -With unix
 [~/Modules/Unix/Microsoft.PowerShell.Utility]> cd unix -ReplaceWith shared
@@ -380,7 +381,7 @@ by default, expanding all path segments in one go so that you don't have to indi
 through each one. The path shortening logic is provided by `Expand-Path` and works as
 [described above](#path-shortening).
 
-```pwsh
+```powershell
 [~]> cd /w/s/dr⇥⇥
 [~]> cd C:\Windows\System32\DriverState\
 
@@ -392,7 +393,7 @@ C:\Windows\System32\DriverState
 
 Paths within [`$cde.CD_PATH`](#cd-path) are included in the completion results.
 
-```pwsh
+```powershell
 [~]> $cde.CD_PATH += '~\Documents\'
 [~]> cd win/mod⇥
 [~]> ~\Documents\WindowsPowerShell\Modules\█
@@ -413,14 +414,14 @@ _A console beep is emitted in cases where the available results have been trunca
 Word delimiters (`.`, `_`, `-` [by default](#configure)) are expanded around so, for example, a
 segment containing `.sdk` is expanded into `*.sdk*`.
 
-```pwsh
+```powershell
 [~]> cd proj/pow/s/.sdk⇥
 [~]> cd ~\projects\powershell\src\Microsoft.PowerShell.SDK\█
 ```
 
 or
 
-```pwsh
+```powershell
 [~]> ls pr/pow/t/ins.sh⇥
 [~]> ls ~\projects\powershell\tools\install-powershell.sh
 [~]> ls ~\projects\powershell\tools\install-powershell.sh | cat
@@ -432,7 +433,7 @@ or
 
 A double-dot (`..`) token is expanded inside, so `s..32` becomes `s*32`.
 
-```pwsh
+```powershell
 [~]> ls /w/s..32⇥
 [~]> ls C:\Windows\System32\█
 ```
@@ -442,12 +443,12 @@ A double-dot (`..`) token is expanded inside, so `s..32` becomes `s*32`.
 
 The [multi-dot syntax](#multi-dot-cd) provides tab completion into ancestor directories.
 
-```pwsh
+```powershell
 [~/projects/powershell/docs/git]> cd ...⇥
 [~/projects/powershell/docs/git]> cd ~\projects\powershell\█
 ```
 
-```pwsh
+```powershell
 [C:/projects/powershell/docs/git]> cd .../⇥
 
 .git     .vscode    demos    docs   test
@@ -465,7 +466,7 @@ that contain file paths. This can be combined with the `-Export` option of `Get-
 which recursively exports each parent directory's path into a global variable with a corresponding
 name.
 
-```pwsh
+```powershell
 [C:/projects/powershell/src/Modules/Unix]> xup -Export -ExcludeRoot
 
 n Name        Path
@@ -490,7 +491,7 @@ You can extend the list of commands that participate in enhanced completion for 
 (`FileCompletions` is the least useful of the three since you can't tab through intermediate
 directories to get to the file you're looking for.)
 
-```pwsh
+```powershell
 [~]> setocd DirCompletions mkdir
 [~]> mkdir ~/pow/src⇥
 [~]> mkdir ~\powershell\src\█
@@ -508,7 +509,7 @@ completion for a native executable or for a cmdlet without a `Path` parameter th
 need to provide a wrapper. Either the wrapper or the target itself should handle expanding
 `~` where necessary.
 
-```pwsh
+```powershell
 [~]> function Invoke-VSCode($path) { &code (rvpa $path) }
 [~]> setocd PathCompletions Invoke-VSCode
 [~]> Set-Alias co Invoke-VSCode
@@ -519,7 +520,7 @@ need to provide a wrapper. Either the wrapper or the target itself should handle
 An alternative to registering a bunch of aliases is to create a tiny wrapper to pipe input
 from `ls`, `gi` or `xpa`.
 
-```pwsh
+```powershell
 [~]> function to($target) { &$target $input }
 [~]> xpa ~/pr/po/r.md⇥
 [~]> xpa ~/projects/powershell/readme.md | to bat
@@ -535,7 +536,7 @@ File: C:\Users\Nick\projects\PowerShell\README.md
 You can skip tab completion altogether and use [Expand-Path](#expand-path-xpa) directly if you
 know exactly what you're looking for.
 
-```pwsh
+```powershell
 [~]> xpa ~/pr/po/r.md | to bat
 
 ───────────────────────────────────────────────────────
@@ -550,7 +551,7 @@ File: C:\Users\Nick\projects\PowerShell\README.md
 
 The _`ColorCompletion`_ [option](#configure) enables colourisation of completions in the filesystem
 provider via [_DirColors_][1] or via your own global `Format-ColorizedFilename` function of type
-[System.IO.FileSystemInfo] -> [String].
+`[System.IO.FileSystemInfo] -> [String]`.
 
 :point_right:
 _ColorCompletion_ is off by default. Enable it on with `setocd ColorCompletion`.
@@ -567,7 +568,7 @@ _ColorCompletion_ is off by default. Enable it on with `setocd ColorCompletion`.
 
 </details>
 
-```pwsh
+```powershell
 [~]> projects
 [~/projects]> cd-extras
 [~/projects/cd-extras]> /
@@ -577,7 +578,7 @@ _ColorCompletion_ is off by default. Enable it on with `setocd ColorCompletion`.
 As with the [enhanced `cd`](#cd-enhancements) command, [abbreviated paths](#path-shortening)
 and [multi-dot syntax](#multi-dot-cd) are supported.
 
-```pwsh
+```powershell
 [~]> pr
 [~/projects]> cd-e
 [~/projects/cd-extras]> cd
@@ -589,10 +590,10 @@ and [multi-dot syntax](#multi-dot-cd) are supported.
 ## Tilde
 
 `AUTO_CD` supports a shorthand syntax for `cd-` using tilde (`~`). You can use this with or
-without a space between tilde and the number, although [tab completion
-](#navigation-helper-completions) only works after a space (`~ ⇥`).
+without a space between tilde and the number, although [tab completion](#completions) only works
+after a space (`~ ⇥`).
 
-```pwsh
+```powershell
 [C:/Windows/System32]> /
 [C:/]> temp
 [C:/temp]> dirs -u
@@ -613,7 +614,7 @@ n Name      Path
 
 [Multi-dot syntax](#multi-dot-cd) works with `AUTO_CD` as an alternative to `up [n]`.
 
-```pwsh
+```powershell
 [C:/Windows/System32/drivers/etc]> ... # same as `up 2` or `.. 2`
 [C:/Windows/System32]> cd-
 [C:/Windows/System32/drivers/etc>] .... # same as `up 3` or `.. 3`
@@ -625,7 +626,7 @@ n Name      Path
 
 **Additional base directories for the `cd` command**
 
-```pwsh
+```powershell
 [~]> setocd CD_PATH ~/documents
 [~]> # or $cde.CD_PATH = ,'~/documents'
 [~]> cd WindowsPowerShell
@@ -637,7 +638,7 @@ n Name      Path
 
 `CD_PATH`s are _not_ searched when an absolute or relative path is given.
 
-```pwsh
+```powershell
 [~]> setocd CD_PATH ~/documents
 [~]> cd ./WindowsPowerShell
 Set-Location : Cannot find path '~\WindowsPowerShell'...
@@ -648,7 +649,7 @@ Unlike bash, the current directory is always included when a relative path is us
 with the same name exists in both the current directory and a `CD_PATH` directory then `cd` will
 prefer the former.
 
-```pwsh
+```powershell
 [~]> mkdir -f child, someDir/child
 [~]> resolve-path someDir | setocd CD_PATH
 [~]> cd child
@@ -658,7 +659,7 @@ prefer the former.
 
 :point_right:
 The value of `CD_PATH` is an array, not a delimited string as it is in bash.
-```pwsh
+```powershell
 [~]> setocd CD_PATH ~/Documents/, ~/Downloads
 [~]> $cde.CD_PATH
 ~/Documents
@@ -677,7 +678,7 @@ name.
 :point_right:
 CDABLE_VARS is off by default; enable it with, [`setocd CDABLE_VARS`](#configure).
 
-```pwsh
+```powershell
 [~/projects/powershell]> setocd CDABLE_VARS
 [~/projects/powershell]> $bk1 = $pwd
 [~/projects/powershell]> cd
@@ -688,7 +689,7 @@ CDABLE_VARS is off by default; enable it with, [`setocd CDABLE_VARS`](#configure
 It works with relative paths too, so if you find yourself frequently `cd`ing into the same
 subdirectories you could create a corresponding variable.
 
-```pwsh
+```powershell
 [~/projects/powershell]> $gh = './.git/hooks'
 [~/projects/powershell]> cd gh
 [~/projects/powershell/.git/hooks]> █
@@ -696,7 +697,7 @@ subdirectories you could create a corresponding variable.
 
 You can combine it with [AUTO_CD](#auto-cd) for great good:
 
-```pwsh
+```powershell
 [C:/projects/powershell/src/Modules/Unix]> xup -Export | out-null
 [C:/projects/powershell/src/Modules/Unix]> projects
 [C:/projects]> src
@@ -706,13 +707,13 @@ You can combine it with [AUTO_CD](#auto-cd) for great good:
 
 # Additional helpers
 
-## Get-Up (_gup_)
+## Get-Up (gup)
 
 Gets the path of an ancestor directory, either by name or by number of levels (`n`), returning the
 parent of the current directory by default. It supports consuming values from the pipeline so you
 can do things like:
 
-```pwsh
+```powershell
 [C:/projects]> # find git repositories
 [C:/projects]> ls .git -Force -Depth 2 | gup
 C:\projects\cd-extras
@@ -725,7 +726,7 @@ C:\ProgramData\chocolatey
 ```
 
 
-## Get-Stack (_dirs_)
+## Get-Stack (dirs)
 
 View contents of undo (`cd-`) and redo (`cd+`) stacks.
 
@@ -733,11 +734,11 @@ Use `dirs -u` for an indexed list of undo locations, `dirs -r` for a correspondi
 locations, or just `dirs` to see both.
 
 
-## Clear-Stack (_dirsc_)
+## Clear-Stack (dirsc)
 
 Clear contents of undo (`cd-`) and/or redo (`cd+`) stacks.
 
-## Expand-Path (_xpa_)
+## Expand-Path (xpa)
 Expands a candidate path by inserting wildcards between each segment. Use a trailing slash to
 expand *children* of the matched path(s). Contents of `CD_PATH` will be included.
 
@@ -748,12 +749,28 @@ destructive command.
 
 # Compatibility
 
+## OS X & Linux
+
+`cd-extras` works on non-Windows operating systems. The `IndexedCompletion` option is off by
+default unless you configured PSReadLine with a `MenuComplete` keybinding _before_ importing
+`cd-extras`.
+
+```powershell
+Set-PSReadLineKeyHandler -Key Tab -Function MenuComplete
+```
+
+Otherwise you can enable `cd-extras` menu completions manually with:
+
+```powershell
+setocd IndexedCompletion
+```
+
 ## Alternative providers
 
 _cd-extras_ is primarily intended to work against the filesystem provider but it should work with
 other providers too.
 
-```pwsh
+```powershell
 [~]> cd hklm:\
 [HKLM:]> cd so/mic/win/cur/windowsupdate
 [HKLM:/SOFTWARE/Microsoft/Windows/CurrentVersion/WindowsUpdate]> ..
@@ -762,29 +779,11 @@ other providers too.
 [~]> █
 ```
 
-
-## OS X & Linux
-
-`cd-extras` works on non-Windows operating systems. The `IndexedCompletion` option is off by
-default unless you configured PSReadLine with a `MenuComplete` keybinding _before_ importing
-`cd-extras`.
-
-```pwsh
-Set-PSReadLineKeyHandler -Key Tab -Function MenuComplete
-```
-
-Otherwise you can enable `cd-extras` menu completions manually with:
-
-```pwsh
-setocd IndexedCompletion
-```
-
-
 # Install
 
 From the [gallery](https://www.powershellgallery.com/packages/cd-extras/)
 
-```pwsh
+```powershell
 Install-Module cd-extras
 Import-Module cd-extras
 
@@ -795,7 +794,7 @@ Add-Content $PROFILE `n, 'Import-Module cd-extras'
 
 or get the latest from github
 
-```pwsh
+```powershell
 git clone git@github.com:nickcox/cd-extras.git
 Import-Module cd-extras/cd-extras/cd-extras.psd1 # yep, three :D
 ```
@@ -841,7 +840,7 @@ Import-Module cd-extras/cd-extras/cd-extras.psd1 # yep, three :D
 To configure _cd-extras_ create a hashtable, `cde`, with one or more of these keys _before_
 importing it:
 
-```pwsh
+```powershell
 $cde = @{
   AUTO_CD = $false
   CD_PATH = '~/Documents/', '~/Downloads'
@@ -852,7 +851,7 @@ Import-Module cd-extras
 
 or call the `Set-CdExtrasOption` (`setocd`) function after importing the module:
 
-```pwsh
+```powershell
 Import-Module cd-extras
 
 setocd PathCompletions Invoke-VSCode # appends PathCompletions
@@ -869,7 +868,7 @@ If you want to opt out of the default [completions](#enhanced-completion-for-cd-
 then you should do it before _cd-extras_ is loaded since PowerShell doesn't provide a way to
 unregister argument completers.
 
-```pwsh
+```powershell
 $cde = @{ DirCompletions = @() }
 Import-Module cd-extras
 ```
@@ -880,7 +879,7 @@ Import-Module cd-extras
 If you want to bind [navigation helpers](#navigation-helpers) to _PSReadLine_ [key handlers][2]
 then you'll probably want to redraw the prompt after navigation.
 
-```pwsh
+```powershell
 function invokePrompt() { [Microsoft.PowerShell.PSConsoleReadLine]::InvokePrompt() }
 @{
   'Alt+^'         = { if (up  -PassThru) { invokePrompt } }
@@ -896,7 +895,7 @@ function invokePrompt() { [Microsoft.PowerShell.PSConsoleReadLine]::InvokePrompt
 _cd-extras_ aliases `cd` to its proxy command, `Set-LocationEx`. If you want a different alias
 then you'll probably want to restore the original `cd` alias too.
 
-```pwsh
+```powershell
 [~]> set-alias cd set-location -Option AllScope
 [~]> set-alias cde set-locationex
 [~]> cde /w/s/d/et
@@ -907,7 +906,7 @@ then you'll probably want to restore the original `cd` alias too.
 :point_right:
 `cd-extras` will only remember locations visited via `Set-LocationEx` or its alias.
 
-```pwsh
+```powershell
 [~]> dirs -u
 
 [~]> Set-Location code

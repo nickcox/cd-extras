@@ -55,8 +55,10 @@ function Get-Ancestors {
 
   Process {
 
-    $start = Resolve-Path -LiteralPath $From -ErrorAction Ignore
-    $root = $start.Drive.Root
+    $start = Resolve-Path -LiteralPath $From
+
+    # this works around registry provider having a root that can't be easily navigated to
+    $root = if ($start.Provider.VolumeSeparatedByColon) { "$($start.Drive.Name):${/}" } else { $start.Drive.Root }
 
     if (!$start -or ($start.Path -eq $root)) { return }
 
