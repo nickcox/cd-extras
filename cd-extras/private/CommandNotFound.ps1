@@ -7,7 +7,7 @@ function CommandNotFound($actions, $isUnderTest) {
 
     # don't run unless invoked interactively
     if ($CommandLookupEventArgs.CommandOrigin -ne 'Runspace' -and !(&$isUnderTest)) { return }
-    $invocation = $isUnderTest ? $CommandName : $MyInvocation.Line
+    $invocation = if ($isUnderTest) { $CommandName } else { $MyInvocation.Line }
 
     # don't run as part of pipeline
     if ($invocation -match "$([regex]::Escape($CommandName))\s*\|") { return }
