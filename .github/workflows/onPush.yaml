@@ -32,3 +32,31 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: ./_reports/coverage.xml
           flags: ${{ runner.os }}
+          
+  build-powershell:
+    name: Run powershell tests
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Run the tests
+        run: |
+          . ./cd-extras/public/_Classes.ps1
+          md ./_reports
+          Import-Module Pester
+          Invoke-Pester ./tests/cd-extras.Tests.ps1 -EnableExit -CodeCoverage ./cd-extras/private/*.ps1,./cd-extras/public/*.ps1 -CodeCoverageOutputFile ./_reports/coverage.xml -OutputFile ./_reports/testresults.xml
+        shell: powershell
+
+      - name: Upload test report
+        uses: actions/upload-artifact@master
+        with:
+          name: Test Report (${{ matrix.os }})
+          path: _reports
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./_reports/coverage.xml
+          flags: ${{ runner.os }}
