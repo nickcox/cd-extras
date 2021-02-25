@@ -20,6 +20,16 @@ jobs:
           Invoke-Pester ./tests/cd-extras.Tests.ps1 -EnableExit -CodeCoverage ./cd-extras/private/*.ps1,./cd-extras/public/*.ps1 -CodeCoverageOutputFile ./_reports/coverage.xml -OutputFile ./_reports/testresults.xml
         shell: pwsh
 
+      # run the tests again on WIndows, this time in PowerShell v5
+      - name: Run the tests (Powershell v5)
+        if: matrix.os == 'windows-latest'
+        run: |
+          . ./cd-extras/public/_Classes.ps1
+          md ./_reports -ea Ignore
+          Import-Module Pester
+          Invoke-Pester ./tests/cd-extras.Tests.ps1 -EnableExit -OutputFile ./_reports/testresults_powershell.xml
+        shell: powershell
+
       - name: Upload test report
         uses: actions/upload-artifact@master
         with:
