@@ -19,7 +19,7 @@ filter Truncate([int] $maxLength = $cde.MaxMenuLength) {
     TruncatedColoured $_ $maxLength
   }
   else {
-    $_.Substring(0, $maxLength - 1) + '…'
+    $_.Substring(0, $maxLength - 1) + [char]0x2026 # ellipsis
   }
 }
 

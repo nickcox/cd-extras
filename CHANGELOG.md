@@ -1,5 +1,9 @@
 # Changes
 
+## [2.9.2]
+- Fix regression where `cd-extras` not starting on PowerShell v5, thanks @jetersen!
+- Fix a bug where truncated menu completion entries not emitting unicode ellipsis character
+
 ## [2.9.1]
 - Fix bug where multi-dotting stopped working with `AUTO_CD`, thanks @jamesmcgill
 - Improve output of `Get-Ancestors` in registry provider
