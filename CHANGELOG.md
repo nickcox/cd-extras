@@ -1,5 +1,8 @@
 # Changes
 
+## [2.9.3]
+- Fix regression where `Step-Up` failed to change to root directory on Windows, thanks @thorstenkampe
+
 ## [2.9.2]
 - Fix regression where `cd-extras` not starting on PowerShell v5, thanks @jetersen!
 - Fix a bug where truncated menu completion entries not emitting unicode ellipsis character
