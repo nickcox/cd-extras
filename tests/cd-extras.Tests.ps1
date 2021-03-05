@@ -372,6 +372,18 @@ Describe 'cd-extras' {
       Get-Up | Should -Be (Resolve-Path ..).Path
     }
 
+    It 'can find the root directory from child' {
+      cd $PSScriptRoot
+      (Get-Ancestors)[-2] | cd
+      Get-Up | Should -Be $PWD.Drive.Root
+    }
+
+    It 'can find the root directory from child by name' {
+      cd $PSScriptRoot
+      (Get-Ancestors)[-2] | cd
+      Get-Up $PWD.Drive.Root.Substring(0, 1) | Should -Be $PWD.Drive.Root
+    }
+
     It 'can take an arbitrary path' {
       Get-Up -From powershell\docs\git | Should -Be (Resolve-Path powershell\docs).Path
     }

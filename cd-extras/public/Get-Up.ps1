@@ -61,7 +61,7 @@ function Get-Up {
 
   Process {
 
-    $ancestors = (Get-Ancestors -From $From).Path
+    $ancestors = @((Get-Ancestors -From $From).Path)
 
     if ($PSCmdlet.ParameterSetName -eq 'n') {
 
