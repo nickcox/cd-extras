@@ -1,6 +1,6 @@
 @{
   RootModule        = 'cd-extras.psm1'
-  ModuleVersion     = '2.9.2'
+  ModuleVersion     = '2.9.3'
   GUID              = '206fccbd-dc96-4b23-908c-5ac821372e16'
 
   Author            = 'Nick Cox'
@@ -16,8 +16,7 @@
   PrivateData       = @{
     PSData = @{
       ReleaseNotes = '
-      - Fix regression where `cd-extras` not starting on PowerShell v5, thanks @jetersen!
-      - Fix a bug where truncated menu completion entries not emitting unicode ellipsis character'
+      - Fix regression where `Step-Up` failed to change to root directory on Windows'
       Tags         = @('cd+', 'cd-', 'AUTO_CD', 'CD_PATH', 'CDABLE_VARS', 'bash', 'zsh')
       LicenseUri   = 'https://github.com/nickcox/cd-extras/blob/master/LICENSE'
       ProjectUri   = 'https://github.com/nickcox/cd-extras'
