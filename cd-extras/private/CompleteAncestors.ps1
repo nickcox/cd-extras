@@ -7,9 +7,9 @@ function CompleteAncestors {
 
   if (!$ups) { return }
 
-  $ups
-  | where Path -eq $valueToMatch
-  | DefaultIfEmpty { $ups | where Name -match $normalised }
-  | DefaultIfEmpty { $ups | where Path -match $normalised }
-  | IndexedComplete
+  $ups | where Path -eq $valueToMatch |
+  DefaultIfEmpty { $ups | where Name -match $normalised } |
+  DefaultIfEmpty { $ups | where Path -match $normalised } |
+  IndexedComplete |
+  DefaultIfEmpty { $null }
 }

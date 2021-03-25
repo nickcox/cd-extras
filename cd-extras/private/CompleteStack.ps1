@@ -13,7 +13,7 @@ function CompleteStack {
 
   if (!$stack) { return }
 
-  @($stack)
-  | Where Path -match ($wordToComplete | RemoveSurroundingQuotes | RemoveTrailingSeparator | Escape)
-  | IndexedComplete
+  @($stack) | Where Path -match ($wordToComplete | RemoveSurroundingQuotes | RemoveTrailingSeparator | Escape) |
+  IndexedComplete |
+  DefaultIfEmpty { $null }
 }

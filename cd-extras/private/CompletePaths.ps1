@@ -47,11 +47,10 @@ function CompletePaths {
       # add normalised trailing directory separator; quote if contains spaces
       $trailChar = if ($_.PSIsContainer) { ${/} }
 
-      $completionText =
-      $completionText
-      | RemoveTrailingSeparator
-      | SurroundAndTerminate $trailChar
-      | EscapeWildcards
+      $completionText = $completionText |
+      RemoveTrailingSeparator |
+      SurroundAndTerminate $trailChar |
+      EscapeWildcards
 
       # hack to support registry provider
       if ($_.PSProvider.Name -eq 'Registry') {
@@ -123,9 +122,9 @@ function CompletePaths {
 
   if (!$allCompletions) { return }
 
-  $allCompletions
-  | Select -Unique
-  | Sort-Object { !$_.PSIsContainer, $_.PSChildName }
-  | Select -First $maxCompletions
-  | CompletionResult
+  $allCompletions |
+  Select -Unique |
+  Sort-Object { !$_.PSIsContainer, $_.PSChildName } |
+  Select -First $maxCompletions |
+  CompletionResult
 }
