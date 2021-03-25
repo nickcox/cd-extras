@@ -47,10 +47,11 @@ function CompletePaths {
       # add normalised trailing directory separator; quote if contains spaces
       $trailChar = if ($_.PSIsContainer) { ${/} }
 
-      $completionText = $completionText |
-      RemoveTrailingSeparator |
-      SurroundAndTerminate $trailChar |
-      EscapeWildcards
+      $completionText =
+      $completionText
+      | RemoveTrailingSeparator
+      | SurroundAndTerminate $trailChar
+      | EscapeWildcards
 
       # hack to support registry provider
       if ($_.PSProvider.Name -eq 'Registry') {
@@ -107,23 +108,24 @@ function CompletePaths {
 
   #replace cdable_vars
   $variableCompletions = if (
-    $completions.Length -lt $maxCompletions -and
     $cde.CDABLE_VARS -and
+    $completions.Length -lt $maxCompletions -and
     $wordToComplete -match '[^/\\]+' -and # separate variable from slashes before or after it
     ($maybeVar = Get-Variable "$($Matches[0])*" -ValueOnly | where { Test-Path $_ -PathType Container })
   ) {
     Expand-Path @switches ($wordToExpand -replace $Matches[0], $maybeVar)
   }
 
-  $allCompletions = @($completions) + @($variableCompletions)
+  $allCompletions = @($completions) + @($variableCompletions) | ? { $_ }
   if ($allCompletions.Length -gt $maxCompletions) {
     [System.Console]::Beep() # audible warning if list of completions has been truncated
   }
 
-  $allCompletions |
-  Select -Unique |
-  Sort-Object { !$_.PSIsContainer, $_.PSChildName } |
-  Select -First $maxCompletions |
-  CompletionResult |
-  DefaultIfEmpty { $null }
+  if (!$allCompletions) { return }
+
+  $allCompletions
+  | Select -Unique
+  | Sort-Object { !$_.PSIsContainer, $_.PSChildName }
+  | Select -First $maxCompletions
+  | CompletionResult
 }

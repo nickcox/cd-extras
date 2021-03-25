@@ -90,8 +90,8 @@ function Expand-Path {
     else { $wildcardedPath }
 
     WriteLog "`nExpanding $Path to: $wildcardedPaths"
-    Get-Item $wildcardedPaths -Force:$Force -ErrorAction Ignore |
-    Where { (!$File -or !$_.PSIsContainer) -and (!$Directory -or $_.PSIsContainer) } |
-    Select -First $MaxResults
+    Get-Item $wildcardedPaths -Force:$Force -ErrorAction Ignore
+    | Where { (!$File -or !$_.PSIsContainer) -and (!$Directory -or $_.PSIsContainer) }
+    | Select -First $MaxResults
   }
 }

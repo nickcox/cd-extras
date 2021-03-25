@@ -30,6 +30,11 @@ Describe 'cd-extras' {
     Set-Location TestDrive:\
     setocd CD_PATH @()
     Clear-Stack
+    $Error.Clear()
+  }
+
+  AfterEach {
+    $Error | Should -BeNullOrEmpty
   }
 
   Describe 'cd' {
@@ -114,6 +119,7 @@ Describe 'cd-extras' {
     It 'throws if the named location cannot be found' {
       cd powershell/src
       { Undo-Location doesnotexist } | Should -Throw "Could not find*"
+      $Error.Clear()
     }
 
     It 'matches more than one segment if necessary' {
@@ -182,6 +188,7 @@ Describe 'cd-extras' {
       cd powershell/src
       cd-
       { Redo-Location doesnotexist } | Should -Throw
+      $Error.Clear()
     }
 
     It 'pops a directory with square brackets' {
@@ -289,11 +296,13 @@ Describe 'cd-extras' {
     It 'throws if the replaceable text is not in the current directory name' {
       Set-Location powershell\src\Modules\Shared\Microsoft.PowerShell.Utility
       { cd: shard Unix } | Should -Throw "String 'shard'*"
+      $Error.Clear()
     }
 
     It 'throws if the replacement results in a path which does not exist' {
       Set-Location powershell\src\Modules\Shared\Microsoft.PowerShell.Utility
       { cd: Shared unice } | Should -Throw "No such directory*"
+      $Error.Clear()
     }
   }
 
@@ -357,6 +366,7 @@ Describe 'cd-extras' {
     It 'throws if the given name part is not found' {
       Set-Location powershell\src\Modules\Shared\
       { Step-Up zrc } | Should -Throw
+      $Error.Clear()
     }
 
     It 'supports the PassThru switch' {
@@ -440,11 +450,6 @@ Describe 'cd-extras' {
     BeforeEach {
       Set-CdExtrasOption AUTO_CD $true
       &(Get-Module cd-extras) Set-Variable __cdeUnderTest -Scope Script $true
-      $error.Clear()
-    }
-
-    AfterEach {
-      $error.Count | Should -Be 0
     }
 
     It 'can change directory' {
@@ -482,7 +487,7 @@ Describe 'cd-extras' {
       Set-Location powershell
       { src } | Should -Throw
       CurrentDir | Should -Be powershell
-      $error.Clear()
+      $Error.Clear()
     }
 
     It 'supports the double dot operator' {
@@ -570,6 +575,7 @@ Describe 'cd-extras' {
     It 'does not search CD_PATH when given directory is rooted or relative' {
       Set-CdExtrasOption -Option CD_PATH -Value @('TestDrive:\powershell\src\')
       { cd ./resgen -ErrorAction Stop } | Should -Throw "Cannot find path*"
+      $Error.Clear()
     }
   }
 

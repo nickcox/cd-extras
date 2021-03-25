@@ -136,7 +136,6 @@ function IndexPaths(
     }
   }
 }
-
 function RegisterCompletions([string[]] $commands, $param, $target) {
   Register-ArgumentCompleter -CommandName $commands -ParameterName $param -ScriptBlock $target
 }

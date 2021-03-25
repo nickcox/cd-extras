@@ -5,9 +5,11 @@ function CompleteAncestors {
   $valueToMatch = $wordToComplete | RemoveSurroundingQuotes
   $normalised = $valueToMatch | NormaliseAndEscape
 
-  $ups | where Path -eq $valueToMatch |
-  DefaultIfEmpty { $ups | where Name -match $normalised } |
-  DefaultIfEmpty { $ups | where Path -match $normalised } |
-  IndexedComplete |
-  DefaultIfEmpty { $null }
+  if (!$ups) { return }
+
+  $ups
+  | where Path -eq $valueToMatch
+  | DefaultIfEmpty { $ups | where Name -match $normalised }
+  | DefaultIfEmpty { $ups | where Path -match $normalised }
+  | IndexedComplete
 }
