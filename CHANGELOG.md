@@ -1,5 +1,8 @@
 # Changes
 
+## [2.9.4]
+- Fix an issue where UNC paths not expanded properly, thanks @sba923!
+
 ## [2.9.3]
 - Fix regression where `Step-Up` failed to change to root directory on Windows, thanks @thorstenkampe
 
