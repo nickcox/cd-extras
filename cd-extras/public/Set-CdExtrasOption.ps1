@@ -57,17 +57,34 @@ function Set-CdExtrasOption {
 
   if ($Option -in $completionTypes) {
     if ($Global:cde.$option -notcontains $value) {
-      $value | ? { $Global:cde.$option -notcontains $_ } | % { $Global:cde.$option += $_ }
+      $value | Where { $Global:cde.$option -notcontains $_ } | % { $Global:cde.$option += $_ }
     }
   }
   else {
     $Global:cde.$option = $value
   }
 
-  $isUnderTest = { $Script:__cdeUnderTest -and !($Script:__cdeUnderTest = $false) }
+  if ($cde.RECENT_DIRS_FILE) {
+    # save recent dirs from memory when dirs file first set
+    if ($recent.Count) { PersistRecent }
 
-  RegisterCompletions @('Step-Up') 'n' { CompleteAncestors @args }
-  RegisterCompletions @('Undo-Location', 'Redo-Location') 'n' { CompleteStack @args }
+    # load recent dirs into memory at startup
+    elseif (Test-Path $cde.RECENT_DIRS_FILE) {
+      $dirs = Import-Csv $cde.RECENT_DIRS_FILE
+      $dirs.ForEach{ $recent[$_.Path] = [RecentDir]$_ }
+    }
+
+    else {
+      Add-Content $cde.RECENT_DIRS_FILE ''
+    }
+  }
+
+  $cde.RECENT_DIRS_EXCLUDE = $cde.RECENT_DIRS_EXCLUDE.ForEach{ Resolve-Path $_ }
+  $cde.RECENT_DIRS_FILE = if ($cde.RECENT_DIRS_FILE) {
+    $path = $cde.RECENT_DIRS_FILE -replace '~', $HOME
+    $Script:recentHash = $path | Where { Test-Path $_ } | Get-FileHash | Select -Expand Hash
+    $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath( $path )
+  }
 
   if ($cde.DirCompletions) {
     RegisterCompletions $cde.DirCompletions 'Path' { CompletePaths -dirsOnly @args }
@@ -79,6 +96,7 @@ function Set-CdExtrasOption {
     RegisterCompletions $cde.PathCompletions 'Path' { CompletePaths @args }
   }
 
+  $isUnderTest = { $Script:__cdeUnderTest -and !($Script:__cdeUnderTest = $false) }
   if ($cde.AUTO_CD) {
     CommandNotFound @(AutoCd) $isUnderTest
   }

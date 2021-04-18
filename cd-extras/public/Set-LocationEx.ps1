@@ -94,7 +94,7 @@ Function Set-LocationEx {
 
   [CmdletBinding(
     DefaultParameterSetName = 'Path',
-    SupportsTransactions = $true,
+    SupportsTransactions,
     HelpUri = 'https://go.microsoft.com/fwlink/?LinkID=113397')
   ]
  	param(
@@ -196,7 +196,7 @@ Function Set-LocationEx {
     if ($PWD.Path -ne $startLocation) {
       $redoStack.Clear()
       $undoStack.Push($startLocation)
-      $Script:cycleDirection = [CycleDirection]::Undo
+      SaveRecent $PWD.Path
     }
 
     if ($steppablePipeline) {

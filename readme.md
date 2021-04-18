@@ -51,7 +51,7 @@ cd-extras
 
 # Navigation helper commands
 
-**Quickly navigate backwards, forwards, upwards or between two directories**
+**Quickly navigate backwards, forwards, upwards or into recently used directories*
 
 <details>
 <summary>[<i>Watch</i>]<p/></summary>
@@ -64,8 +64,8 @@ _cd-extras_ provides the following navigation helpers and corresponding aliases 
 
 - `Undo-Location`, (`cd-` or `~`)
 - `Redo-Location`, (`cd+` or `~~`)
+- `Set-RecentLocation`, (`cdr`)
 - `Step-Up`, (`up`or `..`)
-- `Step-Between`, (`cdb`)
 
 ```powershell
 [C:/Windows/System32]> up # or ..
@@ -79,7 +79,7 @@ That's `cd-` and `cd+`, without a space. `cd -` and `cd +` (with a space) also w
 get [auto-completions](#completions).
 
 Repeated uses of `cd-`  keep moving backwards towards the beginning of the stack rather than
-toggling between the two most recent directories as in vanilla bash. Use `Step-Between` (`cdb`)
+toggling between the two most recent directories as in vanilla bash. Use `Set-RecentLocation` (`cdr`)
 if you want to toggle between directories.
 
 ```powershell
@@ -89,15 +89,15 @@ if you want to toggle between directories.
 [C:/Windows]> cd-
 [C:/Windows/System32]> cd+
 [C:/Windows]> cd+
-[C:/]> cdb
-[C:/Windows]> cdb
+[C:/]> cdr
+[C:/Windows]> cdr
 [C:/]> █
 ```
 
 
 ## Parameters
 
-`up`, `cd+` and `cd-` each take a single optional argument: either a number of steps, `n`...
+`up`, `cd+`, `cd-` and `cdr` each take a single optional argument: either a number of steps, `n`...
 
 ```powershell
 [C:/Windows/System32]> .. 2 # or `up 2`
@@ -117,8 +117,9 @@ within the full path of each candidate directory⁽²⁾.
 [C:/Windows/System32]> cd drivers
 [C:/Windows/System32/drivers]> cd- win # [ex. 1] by leaf name
 [C:/Windows/]> cd+ 32/dr # [ex. 2] by full name
-[C:/Windows/System32/drivers]> up win # by leaf name again
-[C:/Windows]> █
+[C:/Windows/System32/drivers]> up win # by leaf name
+[C:/Windows]> cdr drivers # by leaf again
+[C:/Windows/System32/drivers]> █
 ```
 
 
@@ -297,7 +298,7 @@ this...
 [~/projects/powershell/src]> cd -unix
 Set-LocationEx: A parameter cannot be found that matches parameter name 'unix'.
 
-[~/projects/powershell/src]> cd `-unix # backtick escapes the hypen
+[~/projects/powershell/src]> cd `-unix # backtick escapes the hyphen
 [~/projects/PowerShell/src/powershell-unix]> █
 ```
 
@@ -885,7 +886,7 @@ function invokePrompt() { [Microsoft.PowerShell.PSConsoleReadLine]::InvokePrompt
   'Alt+^'         = { if (up  -PassThru) { invokePrompt } }
   'Alt+['         = { if (cd- -PassThru) { invokePrompt } }
   'Alt+]'         = { if (cd+ -PassThru) { invokePrompt } }
-  'Alt+Backspace' = { if (cdb -PassThru) { invokePrompt } }
+  'Alt+Backspace' = { if (cdr -PassThru) { invokePrompt } }
 }.GetEnumerator() | % { Set-PSReadLineKeyHandler $_.Name $_.Value }
 ```
 
