@@ -2,11 +2,9 @@ ${Script:/} = [IO.Path]::DirectorySeparatorChar
 $Script:undoStack = [Collections.Stack]::new()
 $Script:redoStack = [Collections.Stack]::new()
 
-# Dictionary[dirName, (accessTime, accessCount)]
 $Script:recent = [Collections.Generic.Dictionary[string, RecentDir]]::new()
-$Script:recentHash = $null
 $Script:logger = { Write-Verbose ($args[0] | ConvertTo-Json) }
-$Script:bg
+$Script:background
 
 function DefaultIfEmpty([scriptblock] $default) {
   Begin { $any = $false }
@@ -142,19 +140,31 @@ function RegisterCompletions([string[]] $commands, $param, $target) {
   Register-ArgumentCompleter -CommandName $commands -ParameterName $param -ScriptBlock $target
 }
 
+function ImportRecent() {
+  $dirs = Import-Csv $cde.RECENT_DIRS_FILE
+  $cde.recentHash = if ($h = Get-FileHash -LiteralPath $cde.RECENT_DIRS_FILE -ErrorAction Ignore) {
+    $h.Hash.ToString()
+  }
+  $dirs.ForEach{
+    $dir = [RecentDir]$_
+    $dir.Favour = $_.Favour -and [bool]::Parse($_.Favour)
+    $recent[$_.Path] = $dir
+  }
+}
+
 function RefreshRecent() {
   # assumes we already know the file exists
   if (!$cde.RECENT_DIRS_FILE) { return }
 
   $currentHash = (Get-FileHash -LiteralPath $cde.RECENT_DIRS_FILE).Hash.ToString()
-  if ($currentHash -ne $recentHash) {
+  if ($currentHash -ne $cde.recentHash) {
     WriteLog 'RecentDirs file has changed'
     $recent.Clear()
-    (Import-Csv $cde.RECENT_DIRS_FILE).ForEach{ $recent[$_.Path] = [RecentDir]$_ }
+    ImportRecent
   }
 }
 
-function RecentsByTermWithSort([string[]] $terms, [scriptblock] $sort, [int] $first) {
+function RecentsByTermWithSort([int] $first, [string[]] $terms, [scriptblock] $sort) {
   function MatchesTerms([string] $path) {
     function MatchPath() {
       $indexes = $terms.ForEach{ $path.IndexOf($_, [System.StringComparison]::CurrentCultureIgnoreCase) }.Where{ $_ -gt 0 }
@@ -167,12 +177,12 @@ function RecentsByTermWithSort([string[]] $terms, [scriptblock] $sort, [int] $fi
   }
 
   RefreshRecent
-  $recent.Values.Where( { ($_.Path -ne $pwd) -and (MatchesTerms $_.Path) }, 'First', $first) |
+  $recent.Values.Where( { ($_.Path -ne $pwd) -and (MatchesTerms $_.Path) }) |
   sort $sort -Descending |
-  select -Expand Path
+  select -First $first -Expand Path
 }
 
-function GetFrecent([int] $first = $cde.MaxRecentCompletions, [string[]] $terms) {
+function GetFrecent([int] $first, [string[]] $terms) {
   function FrecencyFactor([ulong] $lastEntered) {
     $now = [System.DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
 
@@ -182,30 +192,52 @@ function GetFrecent([int] $first = $cde.MaxRecentCompletions, [string[]] $terms)
     else { 1 / 4 }
   }
 
-  RecentsByTermWithSort $terms { $_.EnterCount * (FrecencyFactor $_.LastEntered) } $first
+  function FavourFactor([bool] $isFavoured) {
+    ([int]$isFavoured * 1000) + 1
+  }
+
+  RecentsByTermWithSort $first $terms {
+    $_.EnterCount * (FrecencyFactor $_.LastEntered) * (FavourFactor $_.Favour)
+  }
 }
 
 function GetRecent([int] $first, [string[]] $terms) {
-  RecentsByTermWithSort $terms { $_.LastEntered } $first
+  RecentsByTermWithSort $first $terms { $_.LastEntered }
 }
 
-function SaveRecent($path) {
+function UpdateRecent($path, $favour = $false) {
   if ($path -in ($cde.RECENT_DIRS_EXCLUDE | Resolve-Path).Path) { return }
 
-  $current = $recent[$path]
-  $accessCount = if ($current) { $current.EnterCount + 1 } else { 1 }
+  $entry =
+  if (($current = $recent[$path])) { $current }
+  else { [RecentDir] @{ Path = $path; EnterCount = $favour } }
 
-  $recent[$path] = [RecentDir] @{
-    Path        = $path
-    LastEntered = [System.DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
-    EnterCount  = $accessCount
+  if (!$favour) {
+    $entry.LastEntered = [System.DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
+    $entry.EnterCount++
+  }
+  else {
+    $entry.Favour = $true
   }
 
+  $recent[$path] = $entry
+
   if ($recent.Count -gt $cde.MaxRecentDirs) {
-    $null = $recent.Remove((GetRecent $cde.MaxRecentDirs | select -last 1))
+    RemoveRecent (
+      $recent.Values |
+      sort LastEntered |
+      select -First ($recent.Count - $cde.MaxRecentDirs) -expand Path )
   }
 
   PersistRecent
+}
+
+function Unfavour([RecentDir] $dir) {
+  if (!$dir.LastEntered) { RemoveRecent(@($dir.Path)) }
+  else {
+    $dir.Favour = $false
+    PersistRecent
+  }
 }
 
 function RemoveRecent([string[]] $dirs) {
@@ -215,28 +247,28 @@ function RemoveRecent([string[]] $dirs) {
 
 function PersistRecent() {
   if ($cde.RECENT_DIRS_FILE) {
-    if (!$bg) { InitRunspace }
-    $bg.Stop()
-    $null = $bg.BeginInvoke()
+    if (!$background) { InitRunspace }
+    $background.Stop()
+    $null = $background.BeginInvoke()
   }
 }
 
 function InitRunspace() {
   # infra for backgrounding recent dirs persistence
-  $script:bg = [PowerShell]::Create()
-  $null = $bg.AddScript( {
+  $script:background = [PowerShell]::Create()
+  $null = $background.AddScript( {
       $recent.Values | Export-Csv -LiteralPath $cde.RECENT_DIRS_FILE
-      $Script:recentHash = (Get-FileHash $cde.RECENT_DIRS_FILE).Hash.ToString()
+      $cde.recentHash = (Get-FileHash $cde.RECENT_DIRS_FILE).Hash.ToString()
     } )
 
   $runspace = [RunspaceFactory]::CreateRunspace()
   $runspace.Open()
   $runspace.SessionStateProxy.SetVariable('recent', $recent)
-  $runspace.SessionStateProxy.SetVariable('recentHash', $recentHash)
   $runspace.SessionStateProxy.SetVariable('cde', $cde)
-  $bg.Runspace = $runspace
+  $background.Runspace = $runspace
 }
 
 function WriteLog($message) {
-  &$logger $message
+  $m = if ($message) { $message } else { '[null]' }
+  &$logger $m
 }

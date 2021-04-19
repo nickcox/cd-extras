@@ -9,82 +9,85 @@ The option to update.
 The new value.
 
 .EXAMPLE
-C:\> setocd AUTO_CD
+PS C:\> setocd AUTO_CD
 
 Enables AUTO_CD
 
 .EXAMPLE
-C:\> setocd AUTO_CD $false
+PS C:\> setocd AUTO_CD $false
 
 Disables AUTO_CD
 
 .EXAMPLE
-C:\> Set-CdExtrasOption -Option CD_PATH -Value @('/temp')
+PS C:\> Set-CdExtrasOption -Option CD_PATH -Value @('/temp')
 
 Set the directory search paths to the single directory, '/temp'
 #>
 function Set-CdExtrasOption {
-  [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]
-  [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidGlobalVars", "")]
 
-  [OutputType([void])]
-  [CmdletBinding()]
+  [OutputType([void], [bool])]
+  [CmdletBinding(DefaultParameterSetName = 'Set')]
   param (
     [ArgumentCompleter( { $global:cde | Get-Member -Type Property -Name "$($args[2])*" | % Name })]
-    [Parameter(Mandatory)]
-    $Option,
+    [Parameter(ParameterSetName = 'Set', Mandatory, Position = 0)]
+    [string] $Option,
 
-    [parameter(ValueFromPipeline)]
-    $Value
+    [Parameter(ParameterSetName = 'Set', Position = 1, ValueFromPipeline)]
+    $Value,
+
+    [Parameter(ParameterSetName = 'Validate', Mandatory, ValueFromPipeline)]
+    [switch] $Validate
   )
 
-  $flags = @(
-    'AUTO_CD',
-    'CDABLE_VARS'
-    'ColorCompletion'
-    'IndexedCompletion'
-  )
+  if ($PSCmdlet.ParameterSetName -eq 'Set') {
 
-  if ($null -eq $Value -and $Option -in $flags) {
-    $Value = $true
-  }
+    $flags = @(
+      'AUTO_CD'
+      'CDABLE_VARS'
+      'ColorCompletion'
+      'IndexedCompletion'
+      'RecentDirsFallThrough'
+    )
 
-  $completionTypes = @(
-    'PathCompletions'
-    'DirCompletions'
-    'FileCompletions'
-  )
-
-  if ($Option -in $completionTypes) {
-    if ($Global:cde.$option -notcontains $value) {
-      $value | Where { $Global:cde.$option -notcontains $_ } | % { $Global:cde.$option += $_ }
+    if ($null -eq $Value -and $Option -in $flags) {
+      $Value = $true
     }
-  }
-  else {
-    $Global:cde.$option = $value
+
+    $completionTypes = @(
+      'PathCompletions'
+      'DirCompletions'
+      'FileCompletions'
+    )
+
+    if ($Option -in $completionTypes) {
+      if ($Global:cde.$option -notcontains $value) {
+        $value | Where { $Global:cde.$option -notcontains $_ } | % { $Global:cde.$option += $_ }
+      }
+    }
+    else {
+      $Global:cde.$option = $value
+    }
   }
 
   if ($cde.RECENT_DIRS_FILE) {
+    $path = $cde.RECENT_DIRS_FILE -replace '~', $HOME
+    $cde.RECENT_DIRS_FILE = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath( $path )
+
     # save recent dirs from memory when dirs file first set
     if ($recent.Count) { PersistRecent }
 
     # load recent dirs into memory at startup
     elseif (Test-Path $cde.RECENT_DIRS_FILE) {
-      $dirs = Import-Csv $cde.RECENT_DIRS_FILE
-      $dirs.ForEach{ $recent[$_.Path] = [RecentDir]$_ }
+      ImportRecent
     }
 
     else {
       Add-Content $cde.RECENT_DIRS_FILE ''
+      $global:cde.recentHash = (Get-FileHash $cde.RECENT_DIRS_FILE).Hash.ToString()
     }
   }
 
   $cde.RECENT_DIRS_EXCLUDE = $cde.RECENT_DIRS_EXCLUDE.ForEach{ Resolve-Path $_ }
-  $cde.RECENT_DIRS_FILE = if ($cde.RECENT_DIRS_FILE) {
-    $path = $cde.RECENT_DIRS_FILE -replace '~', $HOME
-    $Script:recentHash = $path | Where { Test-Path $_ } | Get-FileHash | Select -Expand Hash
-    $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath( $path )
-  }
 
   if ($cde.DirCompletions) {
     RegisterCompletions $cde.DirCompletions 'Path' { CompletePaths -dirsOnly @args }
@@ -103,4 +106,6 @@ function Set-CdExtrasOption {
   else {
     CommandNotFound @() $isUnderTest
   }
+
+  if ($Validate) { return $true }
 }

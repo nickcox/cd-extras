@@ -493,9 +493,9 @@ You can extend the list of commands that participate in enhanced completion for 
 directories to get to the file you're looking for.)
 
 ```powershell
-[~]> setocd DirCompletions mkdir
-[~]> mkdir ~/pow/src⇥
-[~]> mkdir ~\powershell\src\█
+[~]> setocd DirCompletions md
+[~]> md ~/pow/src⇥
+[~]> md ~\powershell\src\█
 [~]> setocd PathCompletions Copy-Item
 [~]> cp /t/⇥
 [~]> cp C:\temp\subdir\█
@@ -651,7 +651,7 @@ with the same name exists in both the current directory and a `CD_PATH` director
 prefer the former.
 
 ```powershell
-[~]> mkdir -f child, someDir/child
+[~]> md -f child, someDir/child
 [~]> resolve-path someDir | setocd CD_PATH
 [~]> cd child
 [~/child]> cd child
@@ -796,7 +796,7 @@ Add-Content $PROFILE `n, 'Import-Module cd-extras'
 or get the latest from github
 
 ```powershell
-git clone git@github.com:nickcox/cd-extras.git
+git clone https://github.com/nickcox/cd-extras.git
 Import-Module cd-extras/cd-extras/cd-extras.psd1 # yep, three :D
 ```
 
@@ -867,7 +867,7 @@ setocd ToolTip { "$($args[0]) ($($args[0].Mode))" }
 :point_right:
 If you want to opt out of the default [completions](#enhanced-completion-for-cd-and-others)
 then you should do it before _cd-extras_ is loaded since PowerShell doesn't provide a way to
-unregister argument completers.
+deregister argument completers.
 
 ```powershell
 $cde = @{ DirCompletions = @() }

@@ -11,6 +11,8 @@ Set-Alias cdf Set-FrecentLocation
 Set-Alias dirs Get-Stack
 Set-Alias dirsc Clear-Stack
 Set-Alias setocd Set-CdExtrasOption
+Set-Alias mark Add-Bookmark
+Set-Alias unmark Remove-Bookmark
 Set-Alias '~' Undo-Location
 Set-Alias '~~' Redo-Location
 

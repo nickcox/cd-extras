@@ -54,15 +54,16 @@ function Expand-Path {
   [OutputType([object])]
   [CmdletBinding()]
   param (
-    [alias("Candidate")]
-    [parameter(ValueFromPipeline, Mandatory)]
-    [String]    $Path,
-    [UInt16]    $MaxResults = [UInt16]::MaxValue,
-    [String[]]  $SearchPaths = $cde.CD_PATH,
-    [Char[]]    $WordDelimiters = $cde.WordDelimiters,
-    [Switch]    $File,
-    [Switch]    $Directory,
-    [Switch]    $Force
+    [Alias("Candidate")]
+    [Parameter(ValueFromPipeline, Mandatory)]
+    [SupportsWildcards()]
+    [string]    $Path,
+    [ushort]    $MaxResults = [ushort]::MaxValue,
+    [string[]]  $SearchPaths = $cde.CD_PATH,
+    [char[]]    $WordDelimiters = $cde.WordDelimiters,
+    [switch]    $File,
+    [switch]    $Directory,
+    [switch]    $Force
   )
 
   Process {

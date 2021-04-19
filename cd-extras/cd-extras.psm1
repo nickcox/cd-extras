@@ -13,16 +13,15 @@ else {
   [CdeOptions]::new()
 }
 
+(Get-Variable cde).Attributes.Add([ValidateScript]::new( { Set-CdExtrasOption -Validate } ))
+
 RegisterCompletions @('Step-Up') 'n' { CompleteAncestors @args }
 RegisterCompletions @('Undo-Location', 'Redo-Location') 'n' { CompleteStack @args }
-RegisterCompletions @('Set-RecentLocation') 'NamePart' { CompleteRecent @args }
-RegisterCompletions @('Set-FrecentLocation') 'NamePart' { CompleteFrecent @args }
-
-# some set up happens in Set-Option so make sure to call it here
-Set-CdExtrasOption -Option 'AUTO_CD' -Value $global:cde.AUTO_CD
+RegisterCompletions @('Set-RecentLocation') 'Terms' { CompleteRecent @args }
+RegisterCompletions @('Set-FrecentLocation') 'Terms' { CompleteFrecent @args }
 
 $MyInvocation.MyCommand.ScriptBlock.Module.OnRemove = {
-  $Script:bg.Dispose()
+  if ($background) { $background.Dispose() }
   $ExecutionContext.SessionState.InvokeCommand.CommandNotFoundAction = $null
   Set-Item Alias:cd $cdAlias
   Remove-Variable cde -Scope Global -ErrorAction Ignore

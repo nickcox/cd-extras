@@ -196,7 +196,7 @@ Function Set-LocationEx {
     if ($PWD.Path -ne $startLocation) {
       $redoStack.Clear()
       $undoStack.Push($startLocation)
-      SaveRecent $PWD.Path
+      UpdateRecent $PWD.Path
     }
 
     if ($steppablePipeline) {

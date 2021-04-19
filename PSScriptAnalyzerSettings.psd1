@@ -1,3 +1,6 @@
 @{
-  ExcludeRules = @('PSAvoidUsingCmdletAliases')
+  ExcludeRules = @(
+    'PSAvoidUsingCmdletAliases',
+    'PSAvoidGlobalVars',
+    'PSUseShouldProcessForStateChangingFunctions')
 }
