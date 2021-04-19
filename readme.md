@@ -38,8 +38,8 @@ cd-extras
   - [Clear-Stack dirsc](#clear-stack-dirsc)
   - [Expand-Path xpa](#expand-path-xpa)
 - [Compatibility](#compatibility)
-  - [Alternative providers](#alternative-providers)
   - [OS X & Linux](#os-x--linux)
+  - [Alternative providers](#alternative-providers)
 - [Install](#install)
 - [Configure](#configure)
   - [cd-extras options](#cd-extras-options)
@@ -814,9 +814,9 @@ Import-Module cd-extras/cd-extras/cd-extras.psd1 # yep, three :D
   - Paths to be searched by `cd` and tab completion. An array, not a delimited string.
 - _WordDelimiters_ : `[string[]] = '.', '_', '-'`
   - Word boundaries within path segments. For example, `.foo` will be expanded into `*.foo*`.
-- _ToolTipExtraInfo_ : `[ScriptBlock] = $null`
-  - Optional extra information displayed after the file path in the menu-completion tooltip.
-  This should take a single argument, the current item, and return a string.
+- _ToolTip_ : `[ScriptBlock] = { param ($item, $isTruncated) ... }`
+  - Information displayed in the menu-completion tooltip. This is passed two arguments: the current item,
+  and a boolean indicating whether the list of completions has been truncated. It should return a string.
 - _IndexedCompletion_: `[bool] = $true (if MenuComplete key bound)`
   - If truthy, indexes are offered as completions for `up`, `cd+` and `cd-` with full paths
     displayed in the menu.
@@ -860,7 +860,7 @@ setocd AUTO_CD 0 # turns AUTO_CD off
 setocd MaxCompletions 0 # auto calculate the maximum number of completions to display
 
 # append the mode string for each item to the completion tooltip
-setocd ToolTipExtraInfo {if ($mode = $args[0].Mode) { " ($mode)" }}
+setocd ToolTip { "$($args[0]) ($($args[0].Mode))" }
 ```
 
 :point_right:

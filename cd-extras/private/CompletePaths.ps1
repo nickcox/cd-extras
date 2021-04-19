@@ -29,7 +29,7 @@ function CompletePaths {
     }
   }
 
-  filter CompletionResult {
+  filter CompletionResult ($isListTruncated = $false) {
     Begin { $seenNames = @{} } # for disambiguation purposes
     Process {
       $fullPath = $_ | Convert-Path
@@ -62,13 +62,13 @@ function CompletePaths {
         if ($n -le 1) { $_ } else { "$_ ($n)" }
       }
 
-      $extraInfo = if ($cde.ToolTipExtraInfo) { ' ' + (&$cde.ToolTipExtraInfo $_) }
+      $tooltip = if ($cde.ToolTip) { &$cde.ToolTip $_ $isListTruncated } else { $_ }
 
       [Management.Automation.CompletionResult]::new(
         $completionText,
         ($_ | Colourise | Truncate | Dedupe),
         [Management.Automation.CompletionResultType]::ParameterValue,
-        $fullPath + $extraInfo
+        $tooltip
       )
     }
   }
@@ -116,9 +116,7 @@ function CompletePaths {
   }
 
   $allCompletions = @($completions) + @($variableCompletions) | ? { $_ }
-  if ($allCompletions.Length -gt $maxCompletions) {
-    [System.Console]::Beep() # audible warning if list of completions has been truncated
-  }
+  $isListTruncated = if ($allCompletions.Length -gt $maxCompletions) { $true }
 
   if (!$allCompletions) { return }
 
@@ -126,5 +124,5 @@ function CompletePaths {
   Select -Unique |
   Sort-Object { !$_.PSIsContainer, $_.PSChildName } |
   Select -First $maxCompletions |
-  CompletionResult
+  CompletionResult $isListTruncated
 }
