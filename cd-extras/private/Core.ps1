@@ -176,7 +176,7 @@ function RecentsByTermWithSort([int] $first, [string[]] $terms, [scriptblock] $s
   function MatchesTerms([string] $path) {
     function MatchPath() {
       $indexes = $terms.ForEach{ $path.IndexOf($_, [System.StringComparison]::CurrentCultureIgnoreCase) }.Where{ $_ -gt 0 }
-      $indexes.Count -eq $terms.Count -and (!(Compare-Object -SyncWindow 0 $indexes ($indexes | sort)))
+      $indexes.Count -eq $terms.Count -and (!(Compare-Object -SyncWindow 0 $indexes ($indexes | Sort-Object)))
     }
     function MatchLeaf() { (Split-Path -Leaf $path) -match $terms[-1] }
 
@@ -186,7 +186,7 @@ function RecentsByTermWithSort([int] $first, [string[]] $terms, [scriptblock] $s
 
   RefreshRecent
   $recent.Values.Where( { ($_.Path -ne $pwd) -and (MatchesTerms $_.Path) }) |
-  sort $sort -Descending |
+  Sort-Object $sort -Descending |
   select -First $first -Expand Path
 }
 
@@ -233,7 +233,7 @@ function UpdateRecent($path, $favour = $false) {
   if ($recent.Count -gt $cde.MaxRecentDirs) {
     RemoveRecent (
       $recent.Values |
-      sort Favour, LastEntered |
+      Sort-Object Favour, LastEntered |
       select -First ($recent.Count - $cde.MaxRecentDirs) -expand Path)
   }
 

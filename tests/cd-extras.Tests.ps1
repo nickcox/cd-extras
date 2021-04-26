@@ -209,8 +209,8 @@ Describe 'cd-extras' {
     BeforeEach { Remove-RecentLocation * }
 
     It 'toggles between two directories' {
-      cd /powershell/tools/ResxGen
-      cd /powershell/tools/terms
+      cd TestDrive:/powershell/tools/ResxGen
+      cd TestDrive:/powershell/tools/terms
       cdr
       CurrentDir | Should -Be ResxGen
       cdr
@@ -218,8 +218,8 @@ Describe 'cd-extras' {
     }
 
     It 'supports the PassThru switch' {
-      cd /powershell/tools/ResxGen
-      cd /powershell/tools/terms
+      cd TestDrive:/powershell/tools/ResxGen
+      cd TestDrive:/powershell/tools/terms
       $path = cdr -PassThru
       $path | SPlit-Path -Leaf | Should -Be ResxGen
       $path = cdr -PassThru
@@ -227,24 +227,24 @@ Describe 'cd-extras' {
     }
 
     It 'can move to a recent location by name' {
-      cd /powershell/tools/ResxGen
-      cd /powershell/tools/terms
-      cd /
+      cd TestDrive:/powershell/tools/ResxGen
+      cd TestDrive:/powershell/tools/terms
+      cd TestDrive:/
       $thru = cdr tool, resx -PassThru
       Get-Location | Split-Path -Leaf | Should -be 'ResxGen'
       $thru.Path | Should -BeLike '*ResxGen'
     }
 
     It 'truncates the recent locations list if necessary' {
-      cd /powershell/tools/failingTests
-      cd /powershell/tools/packaging
-      cd /powershell/tools/releaseBuild
-      cd /powershell/tools/ResxGen
-      cd /powershell/tools/terms
-      cd /
+      cd TestDrive:/powershell/tools/failingTests
+      cd TestDrive:/powershell/tools/packaging
+      cd TestDrive:/powershell/tools/releaseBuild
+      cd TestDrive:/powershell/tools/ResxGen
+      cd TestDrive:/powershell/tools/terms
+      cd TestDrive:/
       (cdr -l).Count | Should -Be 5
       setocd MaxRecentDirs 3
-      cd /powershell
+      cd TestDrive:/powershell
       (cdr -l).Count | Should -Be 2
       setocd MaxRecentDirs 10
     }
@@ -261,10 +261,10 @@ Describe 'cd-extras' {
       $Error.Clear()
     }
 
-    It 'can list andprune' {
-      cd /powershell/tools/ResxGen
-      cd /powershell/tools/terms
-      cd /
+    It 'can list and prune' {
+      cd TestDrive:/powershell/tools/ResxGen
+      cd TestDrive:/powershell/tools/terms
+      cd TestDrive:/
       (cdr -l).Count | Should -Be 2
 
       cdr -p *
@@ -276,16 +276,16 @@ Describe 'cd-extras' {
     BeforeEach { Remove-RecentLocation * }
 
     It 'returns most recent directories in order' {
-      cd /powershell/tools/ResxGen
-      cd /powershell/tools/terms
-      cd /
+      cd TestDrive:/powershell/tools/ResxGen
+      cd TestDrive:/powershell/tools/terms
+      cd TestDrive:/
       Get-RecentLocation | select -Expand Name | Should -Be 'terms', 'ResxGen'
     }
 
     It 'refreshes the list if RECENT_DIRS_FILE updated in another process' {
       Get-RecentLocation | Should -BeNullOrEmpty
 
-      $fst, $snd = ((Resolve-Path /), (Resolve-Path /powershell)).Path
+      $fst, $snd = ((Resolve-Path TestDrive:/), (Resolve-Path TestDrive:/powershell)).Path
       $newList = [Collections.Generic.Dictionary[string, RecentDir]]::new()
       $newList[$fst] = @{
         Path        = $fst
@@ -311,9 +311,9 @@ Describe 'cd-extras' {
 
     It 'can move to the nth most frecent location (with passthrough)' {
       cdf -l | Should -BeNullOrEmpty
-      cd /powershell/tools/ResxGen
-      cd /powershell/tools/terms
-      cd /
+      cd TestDrive:/powershell/tools/ResxGen
+      cd TestDrive:/powershell/tools/terms
+      cd TestDrive:/
       $frecents = cdf -l
       $thru = cdf 2 -PassThru
       Get-Location | Split-Path -Leaf | Should -be $frecents[1].Name
@@ -321,9 +321,9 @@ Describe 'cd-extras' {
     }
 
     It 'can move to a frecent location by name' {
-      cd /powershell/tools/ResxGen
-      cd /powershell/tools/terms
-      cd /
+      cd TestDrive:/powershell/tools/ResxGen
+      cd TestDrive:/powershell/tools/terms
+      cd TestDrive:/
       $thru = cdf term -PassThru
       Get-Location | Split-Path -Leaf | Should -be 'terms'
       $thru.Path | Should -BeLike '*terms'
@@ -342,9 +342,9 @@ Describe 'cd-extras' {
     }
 
     It 'can list, prune and mark' {
-      cd /powershell/tools/ResxGen
-      cd /powershell/tools/terms
-      cd /
+      cd TestDrive:/powershell/tools/ResxGen
+      cd TestDrive:/powershell/tools/terms
+      cd TestDrive:/
       (cdf -l).Count | Should -Be 2
 
       cdf -p *
@@ -363,11 +363,11 @@ Describe 'cd-extras' {
 
     It 'prefers highest ranked directory when last accessed times are similar' {
       Get-FrecentLocation | Should -BeNullOrEmpty
-      cd /powershell/tools/terms
-      cd /powershell/tools/ResxGen
-      cd /
-      cd /powershell/tools/ResxGen
-      cd /
+      cd TestDrive:/powershell/tools/terms
+      cd TestDrive:/powershell/tools/ResxGen
+      cd TestDrive:/
+      cd TestDrive:/powershell/tools/ResxGen
+      cd TestDrive:/
       $actual = Get-FrecentLocation | select -Expand Name
       $actual[0] | Should -Be 'resxgen'
       $actual[1] | Should -Be 'terms'
@@ -375,11 +375,11 @@ Describe 'cd-extras' {
 
     It 'prefers bookmarked directory regardless of frecency' {
       Get-FrecentLocation | Should -BeNullOrEmpty
-      cd /powershell/tools/terms
-      cd /powershell/tools/ResxGen
-      cd /
-      cd /powershell/tools/ResxGen
-      cd /
+      cd TestDrive:/powershell/tools/terms
+      cd TestDrive:/powershell/tools/ResxGen
+      cd TestDrive:/
+      cd TestDrive:/powershell/tools/ResxGen
+      cd TestDrive:/
       mark powershell/tools/packaging
       $actual = Get-FrecentLocation | select -Expand Name
       $actual[0] | Should -Be 'packaging'
@@ -392,11 +392,11 @@ Describe 'cd-extras' {
     BeforeEach { Remove-RecentLocation * }
 
     It 'can bookmark multiple directories' {
-      '/powershell/tools/failingTests',
-      '/powershell/tools/packaging',
-      '/powershell/tools/releaseBuild',
-      '/powershell/tools/ResxGen',
-      '/powershell/tools/terms' | mark
+      'TestDrive:/powershell/tools/failingTests',
+      'TestDrive:/powershell/tools/packaging',
+      'TestDrive:/powershell/tools/releaseBuild',
+      'TestDrive:/powershell/tools/ResxGen',
+      'TestDrive:/powershell/tools/terms' | mark
 
       (Get-Bookmark).Count | Should -Be 5
 
@@ -405,15 +405,15 @@ Describe 'cd-extras' {
     }
 
     It 'adds bookmarks to the recent directories list if not already there' {
-      cd /powershell/tools/terms
-      cd /
+      cd TestDrive:/powershell/tools/terms
+      cd TestDrive:/
       @(Get-RecentLocation).Count | Should -Be 1
 
-      '/powershell/tools/failingTests',
-      '/powershell/tools/packaging',
-      '/powershell/tools/releaseBuild',
-      '/powershell/tools/ResxGen',
-      '/powershell/tools/terms' | mark
+      'TestDrive:/powershell/tools/failingTests',
+      'TestDrive:/powershell/tools/packaging',
+      'TestDrive:/powershell/tools/releaseBuild',
+      'TestDrive:/powershell/tools/ResxGen',
+      'TestDrive:/powershell/tools/terms' | mark
 
       @(Get-RecentLocation).Count | Should -Be 5
 
@@ -1191,9 +1191,9 @@ Describe 'cd-extras' {
       BeforeEach { Remove-RecentLocation * }
 
       It 'expands recent directories in order' {
-        cd /powershell/tools/terms
-        cd /powershell/tools/ResxGen
-        cd /
+        cd TestDrive:/powershell/tools/terms
+        cd TestDrive:/powershell/tools/ResxGen
+        cd TestDrive:/
         $actual = CompleteRecent -wordToComplete ''
         $actual[0].CompletionText | Should -BeLike "*resxgen"
         $actual[1].CompletionText | Should -BeLike "*terms"
@@ -1240,24 +1240,24 @@ Describe 'cd-extras' {
 
       It 'Persists, loads or creates recent dirs file as necessary' {
         Remove-RecentLocation *
-        cd /powershell/tools/terms
-        cd /powershell/tools/ResxGen
-        cd /
+        cd TestDrive:/powershell/tools/terms
+        cd TestDrive:/powershell/tools/ResxGen
+        cd TestDrive:/
 
-        setocd RECENT_DIRS_FILE /recent_dirs
-        Sleep -Milliseconds 10 # save is async
-        (Get-Content ./recent_dirs).Length | Should -Be 4 # including header
+        setocd RECENT_DIRS_FILE TestDrive:/recent_dirs
+        Start-Sleep -Milliseconds 10 # save is async
+        (Get-Content TestDrive:/recent_dirs).Length | Should -Be 4 # including header
 
         setocd RECENT_DIRS_FILE
         Remove-RecentLocation *
         Get-RecentLocation | Should -BeNullOrEmpty
-        setocd RECENT_DIRS_FILE /recent_dirs
+        setocd RECENT_DIRS_FILE TestDrive:/recent_dirs
         (Get-RecentLocation).Count | Should -Be 2
 
         Remove-RecentLocation *
-        Test-Path /recent_dirs_2 | Should -Be $false
-        setocd RECENT_DIRS_FILE /recent_dirs_2
-        Test-Path /recent_dirs_2 | Should -Be $true
+        Test-Path TestDrive:/recent_dirs_2 | Should -Be $false
+        setocd RECENT_DIRS_FILE TestDrive:/recent_dirs_2
+        Test-Path TestDrive:/recent_dirs_2 | Should -Be $true
 
         setocd RECENT_DIRS_FILE
       }

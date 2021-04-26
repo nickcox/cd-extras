@@ -24,12 +24,12 @@ Set-FrecentLocation
 #>
 
 function Get-Bookmark {
-  
+
   [OutputType([string[]])]
   param(
     [Parameter(Position = 0)] [ushort] $First = $cde.MaxRecentCompletions
   )
   $recent.Values.Where{ $_.Favour } |
-  sort EnterCount, LastEntered -Descending |
+  Sort-Object EnterCount, LastEntered -Descending |
   select -First $First -Expand Path
 }
