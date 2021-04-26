@@ -17,6 +17,7 @@ class RecentDir {
 
 class CdeOptions {
   hidden [string] $recentHash
+  hidden [Threading.Mutex] $mutex = [Threading.Mutex]::new($false, 'cde.RECENT_DIRS_FILE')
 
   [bool] $AUTO_CD = $true
   [bool] $CDABLE_VARS = $false
@@ -25,7 +26,7 @@ class CdeOptions {
   [string] $RECENT_DIRS_FILE = $null
   [string[]] $RECENT_DIRS_EXCLUDE = @()
   [bool] $RecentDirsFallThrough = $true
-  [ushort] $MaxRecentDirs = 800
+  [ushort] $MaxRecentDirs = 150
   [ushort] $MaxRecentCompletions = 100
   [ushort] $MaxCompletions = 0
   [ushort] $MaxMenuLength = 36

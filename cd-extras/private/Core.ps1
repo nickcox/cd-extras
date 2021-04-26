@@ -142,9 +142,11 @@ function RegisterCompletions([string[]] $commands, $param, $target) {
 
 function ImportRecent() {
   $dirs = Import-Csv $cde.RECENT_DIRS_FILE
-  $cde.recentHash = if ($h = Get-FileHash -LiteralPath $cde.RECENT_DIRS_FILE -ErrorAction Ignore) {
+  $cde.recentHash = if ($h = Get-FileHash -LiteralPath $cde.RECENT_DIRS_FILE) {
     $h.Hash.ToString()
   }
+
+  $recent.Clear()
   $dirs.ForEach{
     $dir = [RecentDir]$_
     $dir.Favour = $_.Favour -and [bool]::Parse($_.Favour)
@@ -153,14 +155,20 @@ function ImportRecent() {
 }
 
 function RefreshRecent() {
-  # assumes we already know the file exists
   if (!$cde.RECENT_DIRS_FILE) { return }
 
-  $currentHash = (Get-FileHash -LiteralPath $cde.RECENT_DIRS_FILE).Hash.ToString()
-  if ($currentHash -ne $cde.recentHash) {
-    WriteLog 'RecentDirs file has changed'
-    $recent.Clear()
-    ImportRecent
+  try {
+    if ($hasMutex = $cde.mutex.WaitOne(1)) {
+      # assumes we already know the file exists
+      $currentHash = (Get-FileHash -LiteralPath $cde.RECENT_DIRS_FILE).Hash.ToString()
+      if ($currentHash -ne $cde.recentHash) {
+        WriteLog ($currentHash, $cde.recentHash)
+        ImportRecent
+      }
+    }
+  }
+  finally {
+    if ($hasMutex) { $cde.mutex.ReleaseMutex() }
   }
 }
 
@@ -206,7 +214,7 @@ function GetRecent([int] $first, [string[]] $terms) {
 }
 
 function UpdateRecent($path, $favour = $false) {
-  if ($path -in ($cde.RECENT_DIRS_EXCLUDE | Resolve-Path).Path) { return }
+  if ($path -in $cde.RECENT_DIRS_EXCLUDE) { return }
 
   $entry =
   if (($current = $recent[$path])) { $current }
@@ -225,8 +233,8 @@ function UpdateRecent($path, $favour = $false) {
   if ($recent.Count -gt $cde.MaxRecentDirs) {
     RemoveRecent (
       $recent.Values |
-      sort LastEntered |
-      select -First ($recent.Count - $cde.MaxRecentDirs) -expand Path )
+      sort Favour, LastEntered |
+      select -First ($recent.Count - $cde.MaxRecentDirs) -expand Path)
   }
 
   PersistRecent
@@ -248,18 +256,36 @@ function RemoveRecent([string[]] $dirs) {
 function PersistRecent() {
   if ($cde.RECENT_DIRS_FILE) {
     if (!$background) { InitRunspace }
-    $background.Stop()
-    $null = $background.BeginInvoke()
+
+    try {
+      if ($hasMutex = $cde.mutex.WaitOne(1000)) {
+        $background.Stop()
+        $null = $background.BeginInvoke()
+      }
+      else {
+        WriteLog 'Recent dirs file in use'
+      }
+    }
+
+    finally {
+      if ($hasMutex) { $cde.mutex.ReleaseMutex() }
+    }
   }
 }
 
 function InitRunspace() {
   # infra for backgrounding recent dirs persistence
-  $script:background = [PowerShell]::Create()
+  $Script:background = [PowerShell]::Create()
   $null = $background.AddScript( {
-      $recent.Values | Export-Csv -LiteralPath $cde.RECENT_DIRS_FILE
-      $cde.recentHash = (Get-FileHash $cde.RECENT_DIRS_FILE).Hash.ToString()
-    } )
+      try {
+        if ($hasMutex = $cde.mutex.WaitOne(1000)) {
+          $recent.Values | Export-Csv -LiteralPath $cde.RECENT_DIRS_FILE
+          Write-Verbose ($cde.recentHash = (Get-FileHash $cde.RECENT_DIRS_FILE).Hash.ToString())
+        }
+      }
+      finally {
+        if ($hasMutex) { $cde.mutex.ReleaseMutex() }
+      } })
 
   $runspace = [RunspaceFactory]::CreateRunspace()
   $runspace.Open()
