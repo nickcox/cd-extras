@@ -403,6 +403,23 @@ Describe 'cd-extras' {
       Get-Bookmark | Remove-Bookmark
       @(Get-Bookmark).Count | Should -Be 0
     }
+
+    It 'adds bookmarks to the recent directories list if not already there' {
+      cd /powershell/tools/terms
+      cd /
+      @(Get-RecentLocation).Count | Should -Be 1
+
+      '/powershell/tools/failingTests',
+      '/powershell/tools/packaging',
+      '/powershell/tools/releaseBuild',
+      '/powershell/tools/ResxGen',
+      '/powershell/tools/terms' | mark
+
+      @(Get-RecentLocation).Count | Should -Be 5
+
+      Remove-Bookmark *
+      @(Get-RecentLocation).Count | Should -Be 1
+    }
   }
 
   Describe 'Multi-dot cd' {
