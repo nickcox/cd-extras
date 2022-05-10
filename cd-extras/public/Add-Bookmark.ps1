@@ -31,5 +31,5 @@ function Add-Bookmark() {
     [Parameter(Position = 0, ValueFromPipeline)] [string] $Path = $PWD
   )
 
-  Process { UpdateRecent (Resolve-Path $Path) $true }
+  Process { if (Test-Path $Path) { UpdateRecent (Resolve-Path $Path) $true } }
 }

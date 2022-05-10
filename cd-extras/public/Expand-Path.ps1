@@ -66,12 +66,14 @@ function Expand-Path {
     [switch]    $Force
   )
 
-  Process {
+  Begin {
     $delimiterGroup = if ($WordDelimiters) {
       '[{0}]' -f [Regex]::Escape($WordDelimiters -join '')
     }
     else { '$^' } # no delimiters
+  }
 
+  Process {
     # replace multi-dot with an appropriate number of `../`
     $multiDot = [regex]::Match($Path, '^\.{3,}').Value
     $replacement = ('../' * [Math]::Max(0, $multiDot.Length - 1)) -replace '.$'

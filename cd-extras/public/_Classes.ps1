@@ -26,8 +26,8 @@ class CdeOptions {
   [string] $RECENT_DIRS_FILE = $null
   [string[]] $RECENT_DIRS_EXCLUDE = @()
   [bool] $RecentDirsFallThrough = $true
-  [ushort] $MaxRecentDirs = 150
-  [ushort] $MaxRecentCompletions = 100
+  [ushort] $MaxRecentDirs = 120
+  [ushort] $MaxRecentCompletions = 60
   [ushort] $MaxCompletions = 0
   [ushort] $MaxMenuLength = 36
   [char[]] $WordDelimiters = '.', '_', '-'

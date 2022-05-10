@@ -1,7 +1,8 @@
 $cdAlias = if ($x = (Get-Alias -Name 'cd' -ErrorAction ignore)) { $x.Definition }
 
-Get-ChildItem $PSScriptRoot/private/*.ps1 | % { . $_.FullName }
-Get-ChildItem $PSScriptRoot/public/*.ps1 | % { . $_.FullName }
+Get-ChildItem -File -Filter *.ps1 $PSScriptRoot/private, $PSScriptRoot/public | % {
+  . $_.FullName
+}
 
 # remove stupid phantom module
 Get-Module | Where Path -eq ("$PSScriptRoot/public/_Classes.ps1" | Resolve-Path) | Remove-Module

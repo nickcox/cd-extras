@@ -11,8 +11,11 @@ cd-extras
 <!-- TOC -->
 
 - [cd-extras](#cd-extras)
-- [Navigation helper commands](#navigation-helper-commands)
+- [Navigation commands](#navigation-commands)
   - [Parameters](#parameters)
+  - [Frecency](#frecency)
+  - [Database](#database)
+  - [Bookmarks](#bookmarks)
   - [Output](#output)
   - [Completions](#completions)
   - [Listing available navigation targets](#listing-available-navigation-targets)
@@ -32,7 +35,7 @@ cd-extras
   - [Multi-dot](#multi-dot)
 - [CD PATH](#cd-path)
 - [CDABLE VARS](#cdable-vars)
-- [Additional helpers](#additional-helpers)
+- [Related commands](#related-commands)
   - [Get-Up gup](#get-up-gup)
   - [Get-Stack dirs](#get-stack-dirs)
   - [Clear-Stack dirsc](#clear-stack-dirsc)
@@ -49,9 +52,9 @@ cd-extras
 <!-- /TOC -->
 
 
-# Navigation helper commands
+# Navigation commands
 
-**Quickly navigate backwards, forwards, upwards or into recently used directories*
+*Quickly navigate backwards, forwards, upwards or into recently used directories*
 
 <details>
 <summary>[<i>Watch</i>]<p/></summary>
@@ -60,27 +63,32 @@ cd-extras
 
 </details>
 
-_cd-extras_ provides the following navigation helpers and corresponding aliases (shown in parens):
+_cd-extras_ provides the following navigation commands and corresponding aliases (shown in parens):
 
 - `Undo-Location`, (`cd-` or `~`)
 - `Redo-Location`, (`cd+` or `~~`)
-- `Set-RecentLocation`, (`cdr`)
 - `Step-Up`, (`up`or `..`)
+- `Set-RecentLocation`, (`cdr`)
+- `Set-FrecentLocation`, (`cdf`)
 
 ```powershell
 [C:/Windows/System32]> up # or ..
 [C:/Windows]> cd- # or ~
 [C:/Windows/System32]> cd+ # or ~~
-[C:/Windows]> █
+[C:/Windows]> cdr
+[C:/Windows/System32]> cdr
+[C:/Windows]> ▁
 ```
 
 :point_right:
-That's `cd-` and `cd+`, without a space. `cd -` and `cd +` (with a space) also work but you won't
-get [auto-completions](#completions).
+That's `cd-` and `cd+`, without a space. `cd -` and `cd +`, with a space, also work but you won't
+get [auto-completion](#completions).
 
+:point_right:
 Repeated uses of `cd-`  keep moving backwards towards the beginning of the stack rather than
-toggling between the two most recent directories as in vanilla bash. Use `Set-RecentLocation` (`cdr`)
-if you want to toggle between directories.
+toggling between the two most recent directories as in vanilla bash, neither will it echo the path
+of the target directory. Use `Set-RecentLocation` (`cdr`) to toggle between directories and the
+`-PassThru` switch if you need to output the new directory path.
 
 ```powershell
 [C:/Windows/System32]> cd ..
@@ -90,27 +98,38 @@ if you want to toggle between directories.
 [C:/Windows/System32]> cd+
 [C:/Windows]> cd+
 [C:/]> cdr
-[C:/Windows]> cdr
-[C:/]> █
+[C:/Windows]> cdr -PassThru
+Path
+----
+C:\
+
+[C:/]> ▁
 ```
 
 
 ## Parameters
 
-`up`, `cd+`, `cd-` and `cdr` each take a single optional argument: either a number of steps, `n`...
+`up`, `cd+`, `cd-`, `cdr` and `cdf` each take an optional argument, `n` which navigates by the given
+number of steps.
 
 ```powershell
 [C:/Windows/System32]> .. 2 # or `up 2`
 [C:/]> cd temp
 [C:/temp]> cd- 2 # `cd -2`, `~ 2` or just `~2` also work
 [C:/Windows/System32]> cd+ 2
-[C:/temp]> █
+[C:/temp]> cdr 2 # cdr ignores the current directory
+[C:/]> ▁
 ```
 
-...or a string, `NamePart`, used to select the nearest matching directory from the available
-locations. Given a `NamePart`, _cd-extras_ will search from the current location for directories
-whose leaf name contains the given string⁽¹⁾. If none is found then it will attempt to find a match
-within the full path of each candidate directory⁽²⁾.
+`up`, `cd+` and `cd-` also accept a string, `NamePart`, used to select the nearest matching directory
+from the available locations. Given a `NamePart`, _cd-extras_ will match the first directory whose
+leaf name contains the given string⁽¹⁾. If none is found then it will attempt to match against the
+full path of each candidate directory⁽²⁾.
+
+`cdr` and `cdf` use a slightly different name matching logic which is cribbed from [Zoxide][3].
+Each command takes one or more `Terms` where each term must match part of a target directory, in order,
+and the _last_ (or only) term must match the target's leaf name.
+
 
 ```powershell
 [C:/Windows]> cd system32
@@ -118,16 +137,82 @@ within the full path of each candidate directory⁽²⁾.
 [C:/Windows/System32/drivers]> cd- win # [ex. 1] by leaf name
 [C:/Windows/]> cd+ 32/dr # [ex. 2] by full name
 [C:/Windows/System32/drivers]> up win # by leaf name
-[C:/Windows]> cdr drivers # by leaf again
-[C:/Windows/System32/drivers]> █
+[C:/Windows]> cdr drivers # by leaf
+[C:/Windows/System32/drivers]> cdr
+[C:/Windows]> cdr sys,dr # in sequence
+[C:/Windows/System32/drivers]> ▁
+```
+
+
+## Frecency
+
+While `Get-RecentLocation` (`cdr -l`) and `Set-RecentLocation` (`cdr`) work with the recent
+directories list in the order that they were most recently visited, `Get-FrecentLocation` (`cdf -l`)
+and `Set-FrecentLocation` (`cdf`) use a frecency algorithm as described in the [Zoxide docs][4].
+
+
+## Database
+
+Recent locations, frecent locations, and bookmarks share a datastore which is not persisted between
+sessions by default.
+You can opt in to persisting to a CSV file by setting the `RECENT_DIRS_FILE` [option](#configure).
+
+```powershell
+setocd RECENT_DIRS_FILE $env:APPDATA/.recent-dirs
+```
+
+The size of the datastore - whether persisted or not - is configured with the `MaxRecentDirs` option.
+Once the limit is reached, the least recently entered directories are discarded after every directory
+change although bookmarked directories are never dropped.
+
+You can manually remove entries with the `Remove-RecentLocation` command or by using the `-Prune`
+switch with `Set-RecentLocation` and `Set-FrecentLocation`. This command expects a parameter,
+`Pattern`, which is a PowerShell wildcard pattern used to match against the directory path or a
+complete directory leaf name. If no pattern is given then the current working directory is removed.
+
+```powershell
+[~]> Set-Alias z Set-FrecentLocation
+[~]> z -l # z -List
+
+n Name    Path
+- ----    ----
+1 abc     C:\Temp\abc1
+2 abc2    C:\Temp\abc2
+3 def     C:\Temp\def
+
+[~]> z -prune *abc*
+[~]> z -l
+
+n Name    Path
+- ----    ----
+1 def     C:\Temp\def
+
+[~]> z -p def
+[~]> z -l
+[~]> ▁
+```
+
+
+## Bookmarks
+
+Directories may be bookmarked with the `Add-Bookmark` command (`mark`), boosting those directories
+to the top of the frecency list. `Add-Bookmark` takes a `Path` parameter which can be omitted when
+bookmarking the current directory. `Set-RecentLocation` (`cdr`) and `Set-FrecentLocation` (`cdf`)
+provide a `-Mark` or `-m` switch with the same functionality.
+
+```
+[~]> Set-Alias z Set-FrecentLocation
+[~]> z -mark C:\Temp\abc1
+[~]> z a
+[C:\Temp\abc1]> ▁
 ```
 
 
 ## Output
 
-Each helper includes a `-PassThru` switch to return a `PathInfo` value in case you need a
-reference to the resulting directory. The value will be `$null` if the action wasn't completed.
-(For example, if there was nothing in the stack or you attempted to navigate up from the root.)
+Each navigation command includes a `-PassThru` switch to return a `PathInfo` value in case you need
+a reference to the resulting directory. The value will be `$null` if the action wasn't completed -
+for example, if there was nothing in the stack or you attempted to navigate up from the root.
 
 ```powershell
 [C:/Windows/System32]> up -PassThru
@@ -142,13 +227,13 @@ Path
 ----
 C:\Windows\System32
 
-[C:/Windows/System32]> █
+[C:/Windows/System32]> ▁
 ```
 
 
 ## Completions
 
-Auto-completions are provided for each of `cd-`, `cd+`, and `up`.
+Auto-completions are provided for each of `cd-`, `cd+`, `cdr`, `cdf` and `up`.
 
 Assuming the [_PSReadLine_][0] `MenuComplete` function is bound to tab...
 
@@ -198,13 +283,13 @@ C:\Windows\System32
 ```
 
 
-It's also possible to tab-complete `cd-`, `cd+` and `up` using a partial directory name (i.e. the
-[`NamePart` parameter](#parameters)).
+It's also possible to tab-complete `cd-`, `cd+`, `cdr`, `cdf` and `up` using a partial directory name
+(i.e. the [`NamePart` parameter](#parameters)).
 
 ```powershell
 [~/projects/PowerShell/src/Modules/Shared]> up pr⇥
 [~/projects/PowerShell/src/Modules/Shared]> up '~\projects'
-[~/projects]> █
+[~/projects]> ▁
 ```
 
 
@@ -214,6 +299,8 @@ As an alternative to menu completion you retrieve a list of available targets wi
 
 - `Get-Stack -Undo` (`dirs -u`)
 - `Get-Stack -Redo` (`dirs -r`)
+- `Get-RecentLocations` (`cdr -l`)
+- `Get-FrecentLocations` (`cdf -l`)
 - `Get-Ancestors` (`xup`)
 
 ```powershell
@@ -235,7 +322,14 @@ n Name        Path
 2 drivers     C:\Windows\System32\drivers
 
 [C:/]> cd- 2
-[C:/Windows/System32/drivers]> █
+[C:/Windows/System32/drivers]> cdr -l -First 3
+
+n Name        Path
+- ----        ----
+1 C:\         C:\
+2 Windows     C:\Windows
+3 drivers     C:\Windows\System32\drivers
+
 ```
 
 
@@ -272,7 +366,7 @@ If you're not sure whether an unambiguous match is available then just hit tab t
 [~/projects]> cd cd-e
 [~/projects/cd-extras]> cd ~
 [~]> cd pr/cd
-[~/projects/cd-extras]> █
+[~/projects/cd-extras]> ▁
 ```
 
 Word delimiters (`.`, `_`, `-` by [default](#configure)) are expanded around so a segment
@@ -280,7 +374,7 @@ containing `.sdk` is expanded into `*.sdk*`.
 
 ```powershell
 [~]> cd proj/pow/s/.sdk
-[~/projects/powershell/src/Microsoft.PowerShell.SDK]> █
+[~/projects/powershell/src/Microsoft.PowerShell.SDK]> ▁
 ```
 
 :point_right:
@@ -289,7 +383,7 @@ this...
 
 ```powershell
 [~/projects/powershell]> cd src/-unix
-[~/projects/PowerShell/src/powershell-unix]> █
+[~/projects/PowerShell/src/powershell-unix]> ▁
 ```
 
 ... you need to escape this:
@@ -299,7 +393,7 @@ this...
 Set-LocationEx: A parameter cannot be found that matches parameter name 'unix'.
 
 [~/projects/powershell/src]> cd `-unix # backtick escapes the hyphen
-[~/projects/PowerShell/src/powershell-unix]> █
+[~/projects/PowerShell/src/powershell-unix]> ▁
 ```
 
 Pairs of periods are expanded between so, for example, a segment containing `s..32` is expanded
@@ -307,7 +401,7 @@ into `s*32`.
 
 ```powershell
 [~]> cd /w/s..32/d/et
-[C:/Windows/System32/drivers/etc]> █
+[C:/Windows/System32/drivers/etc]> ▁
 ```
 
 Directories in [`CD_PATH`](#cd-path) will be also be shortened.
@@ -315,7 +409,7 @@ Directories in [`CD_PATH`](#cd-path) will be also be shortened.
 ```powershell
 [C:/]> setocd CD_PATH ~/projects
 [C:/]> cd p..shell
-[~/projects/PowerShell/]> █
+[~/projects/PowerShell/]> ▁
 ```
 
 [`AUTO_CD`](#auto-cd) uses the same expansion algorithm when enabled.
@@ -327,7 +421,7 @@ True
 [~]> /w/s/d/et
 [C:/Windows/System32/drivers/etc]> ~/pr/pow/src
 [~/projects/PowerShell/src]> .sdk
-[~/projects/PowerShell/src/Microsoft.PowerShell.SDK]> █
+[~/projects/PowerShell/src/Microsoft.PowerShell.SDK]> ▁
 ```
 
 
@@ -341,16 +435,16 @@ if enabled.
 [C:/Windows/System32/drivers/etc]> cd ... # same as `up 2` or `.. 2`
 [C:/Windows/System32]> cd-
 [C:/Windows/System32/drivers/etc>] cd .... # same as `up 3` or `.. 3`
-[C:/Windows]> █
+[C:/Windows]> ▁
 ```
 
 
 ## No argument `cd`
 
 If the _`NOARG_CD`_ [option](#configure) is defined then `cd` without arguments navigates into that
-directory (`~` by default). This overrides the out of the box behaviour on PowerShell>=6.0, where
-no-arg `cd` _always_ navigates to `~` and PowerShell < 6.0, where no-argument `cd` does nothing at
-all.
+directory (`~` by default). This overrides the out of the box behaviour of PowerShell >=6.0, where
+no-arg `cd` _always_ navigates to `~` and of PowerShell < 6.0, where no-argument `cd` does nothing
+at all.
 
 ```powershell
 [~/projects/powershell]> cd
@@ -371,7 +465,7 @@ You can also use the alias `cd:` or the explicit `ReplaceWith` parameter of `Set
 [~/Modules/Unix/Microsoft.PowerShell.Utility]> cd unix shared
 [~/Modules/Shared/Microsoft.PowerShell.Utility]> cd: -Replace shared -With unix
 [~/Modules/Unix/Microsoft.PowerShell.Utility]> cd unix -ReplaceWith shared
-[~/Modules/Shared/Microsoft.PowerShell.Utility]> █
+[~/Modules/Shared/Microsoft.PowerShell.Utility]> ▁
 ```
 
 
@@ -397,17 +491,19 @@ Paths within [`$cde.CD_PATH`](#cd-path) are included in the completion results.
 ```powershell
 [~]> $cde.CD_PATH += '~\Documents\'
 [~]> cd win/mod⇥
-[~]> ~\Documents\WindowsPowerShell\Modules\█
+[~]> ~\Documents\WindowsPowerShell\Modules\▁
 ```
 
 :point_right:
 The total number of completions offered is limited by the `MaxCompletions` [option](#configure)
-(or calculated dynamically to fit the screen if `MaxCompletions` is falsy). Although the completions
-are sorted by type (folders first) and then by name for ease of reading, that sort is applied _after_
-the limit has been applied to the original results. Those results are sorted breadth first for
-responsiveness.
+or calculated dynamically to fit the screen if `MaxCompletions` is falsy. Although the completions
+are sorted by type (folders first) and then by name for ease of reading, that sort is applied
+_after_ the limit has been applied to the original results. Those original results are sorted
+breadth first in order to keep the completion as responsive as possible.
 
-_A console beep is emitted in cases where the available results have been truncated._
+:point_right:
+If the number of available completions is greater than `MaxCompletions`, causing the list to be
+truncated, then that is noted in the completion tooltip by default.
 
 
 ## Single and double periods
@@ -417,7 +513,7 @@ segment containing `.sdk` is expanded into `*.sdk*`.
 
 ```powershell
 [~]> cd proj/pow/s/.sdk⇥
-[~]> cd ~\projects\powershell\src\Microsoft.PowerShell.SDK\█
+[~]> cd ~\projects\powershell\src\Microsoft.PowerShell.SDK\▁
 ```
 
 or
@@ -436,7 +532,7 @@ A double-dot (`..`) token is expanded inside, so `s..32` becomes `s*32`.
 
 ```powershell
 [~]> ls /w/s..32⇥
-[~]> ls C:\Windows\System32\█
+[~]> ls C:\Windows\System32\▁
 ```
 
 
@@ -446,7 +542,7 @@ The [multi-dot syntax](#multi-dot-cd) provides tab completion into ancestor dire
 
 ```powershell
 [~/projects/powershell/docs/git]> cd ...⇥
-[~/projects/powershell/docs/git]> cd ~\projects\powershell\█
+[~/projects/powershell/docs/git]> cd ~\projects\powershell\▁
 ```
 
 ```powershell
@@ -495,10 +591,10 @@ directories to get to the file you're looking for.)
 ```powershell
 [~]> setocd DirCompletions md
 [~]> md ~/pow/src⇥
-[~]> md ~\powershell\src\█
+[~]> md ~\powershell\src\▁
 [~]> setocd PathCompletions Copy-Item
 [~]> cp /t/⇥
-[~]> cp C:\temp\subdir\█
+[~]> cp C:\temp\subdir\▁
 subdir  txtFile.txt  txtFile2.txt
 ──────
 
@@ -515,7 +611,7 @@ need to provide a wrapper. Either the wrapper or the target itself should handle
 [~]> setocd PathCompletions Invoke-VSCode
 [~]> Set-Alias co Invoke-VSCode
 [~]> co ~/pr/po⇥
-[~]> co ~\projects\powershell\█
+[~]> co ~\projects\powershell\▁
 ```
 
 An alternative to registering a bunch of aliases is to create a tiny wrapper to pipe input
@@ -573,7 +669,7 @@ _ColorCompletion_ is off by default. Enable it on with `setocd ColorCompletion`.
 [~]> projects
 [~/projects]> cd-extras
 [~/projects/cd-extras]> /
-[C:/]> █
+[C:/]> ▁
 ```
 
 As with the [enhanced `cd`](#cd-enhancements) command, [abbreviated paths](#path-shortening)
@@ -584,7 +680,7 @@ and [multi-dot syntax](#multi-dot-cd) are supported.
 [~/projects]> cd-e
 [~/projects/cd-extras]> cd
 [~]> pr/cd
-[~/projects/cd-extras]> █
+[~/projects/cd-extras]> ▁
 ```
 
 
@@ -607,7 +703,7 @@ n Name      Path
 
 [C:/temp]> ~2 # or ~ 2
 [C:/Windows/System32]> ~~2 # or ~~ 2
-[C:/temp]> █
+[C:/temp]> ▁
 ```
 
 
@@ -619,7 +715,7 @@ n Name      Path
 [C:/Windows/System32/drivers/etc]> ... # same as `up 2` or `.. 2`
 [C:/Windows/System32]> cd-
 [C:/Windows/System32/drivers/etc>] .... # same as `up 3` or `.. 3`
-[C:/Windows]>  █
+[C:/Windows]>  ▁
 ```
 
 
@@ -631,7 +727,7 @@ n Name      Path
 [~]> setocd CD_PATH ~/documents
 [~]> # or $cde.CD_PATH = ,'~/documents'
 [~]> cd WindowsPowerShell
-[~/documents/WindowsPowerShell]> █
+[~/documents/WindowsPowerShell]> ▁
 ```
 
 [Tab-completion](#enhanced-completion-for-cd-and-others), [path shortening](#path-shortening) and
@@ -655,7 +751,7 @@ prefer the former.
 [~]> resolve-path someDir | setocd CD_PATH
 [~]> cd child
 [~/child]> cd child
-[~/someDir/child]> █
+[~/someDir/child]> ▁
 ```
 
 :point_right:
@@ -684,7 +780,7 @@ CDABLE_VARS is off by default; enable it with, [`setocd CDABLE_VARS`](#configure
 [~/projects/powershell]> $bk1 = $pwd
 [~/projects/powershell]> cd
 [~]> cd bk1
-[~/projects/powershell]> █
+[~/projects/powershell]> ▁
 ```
 
 It works with relative paths too, so if you find yourself frequently `cd`ing into the same
@@ -693,7 +789,7 @@ subdirectories you could create a corresponding variable.
 ```powershell
 [~/projects/powershell]> $gh = './.git/hooks'
 [~/projects/powershell]> cd gh
-[~/projects/powershell/.git/hooks]> █
+[~/projects/powershell/.git/hooks]> ▁
 ```
 
 You can combine it with [AUTO_CD](#auto-cd) for great good:
@@ -702,11 +798,11 @@ You can combine it with [AUTO_CD](#auto-cd) for great good:
 [C:/projects/powershell/src/Modules/Unix]> xup -Export | out-null
 [C:/projects/powershell/src/Modules/Unix]> projects
 [C:/projects]> src
-[C:/projects/powershell/src]> █
+[C:/projects/powershell/src]> ▁
 ```
 
 
-# Additional helpers
+# Related commands
 
 ## Get-Up (gup)
 
@@ -777,7 +873,7 @@ other providers too.
 [HKLM:/SOFTWARE/Microsoft/Windows/CurrentVersion/WindowsUpdate]> ..
 [HKLM:/SOFTWARE/Microsoft/Windows/CurrentVersion]> cd-
 [HKLM:/SOFTWARE/Microsoft/Windows/CurrentVersion/WindowsUpdate]> cd- 2
-[~]> █
+[~]> ▁
 ```
 
 # Install
@@ -901,7 +997,7 @@ then you'll probably want to restore the original `cd` alias too.
 [~]> set-alias cde set-locationex
 [~]> cde /w/s/d/et
 [C:/Windows/System32/drivers/etc]> cd- # still cd-, not cde-
-[~]> █
+[~]> ▁
 ```
 
 :point_right:
@@ -912,9 +1008,10 @@ then you'll probably want to restore the original `cd` alias too.
 
 [~]> Set-Location code
 [~/code]> cd-
-[~/code]> █
+[~/code]> ▁
 ```
 
 [0]: https://github.com/PowerShell/PSReadLine
 [1]: https://github.com/DHowett/DirColors
 [2]: https://docs.microsoft.com/powershell/module/psreadline/set-psreadlinekeyhandler
+[3]: https://github.com/ajeetdsouza/zoxide/wiki/Algorithm#maching

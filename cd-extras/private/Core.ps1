@@ -82,18 +82,18 @@ filter EscapeWildcards {
   [WildcardPattern]::Escape($_)
 }
 
-function GetStackIndex([array]$stack, [string]$namepart) {
+function GetBestIndex([array]$array, [string]$namepart) {
   (
-    $items = $stack -eq ($namepart | Normalise | RemoveTrailingSeparator) # full path match
+    $items = $array -eq ($namepart | Normalise | RemoveTrailingSeparator) # full path match
   ) -or (
-    $items = $stack.Where{ ($_ | Split-Path -Leaf) -eq $namepart } # full leaf match
+    $items = $array.Where{ ($_ | Split-Path -Leaf) -eq $namepart } # full leaf match
   ) -or (
-    $items = $stack.Where{ ($_ | Split-Path -Leaf) -Match "^$($namepart | NormaliseAndEscape)" } # leaf starts with
+    $items = $array.Where{ ($_ | Split-Path -Leaf) -Match "^$($namepart | NormaliseAndEscape)" } # leaf starts with
   ) -or (
-    $items = $stack -match ($namepart | NormaliseAndEscape) # anything...
+    $items = $array -match ($namepart | NormaliseAndEscape) # anything...
   ) | Out-Null
 
-  [array]::indexOf($stack, ($items | select -First 1))
+  [array]::indexOf($array, ($items | select -First 1))
 }
 
 function IndexedComplete([bool] $IndexedCompletion = $cde.IndexedCompletion) {
@@ -125,7 +125,7 @@ function IndexPaths(
   [array]$xs,
   $rootLabel = 'root' # this on happens on *nix
 ) {
-  $xs = $xs -ne ''
+  $xs = $xs -ne '' | Select -Unique
   if (!$xs) { return }
 
   $i = 0
@@ -174,14 +174,16 @@ function RefreshRecent() {
 
 function RecentsByTermWithSort([int] $first, [string[]] $terms, [scriptblock] $sort) {
   function MatchesTerms([string] $path) {
-    function MatchPath() {
-      $indexes = $terms.ForEach{ $path.IndexOf($_, [System.StringComparison]::CurrentCultureIgnoreCase) }.Where{ $_ -gt 0 }
-      $indexes.Count -eq $terms.Count -and (!(Compare-Object -SyncWindow 0 $indexes ($indexes | Sort-Object)))
+    function MatchPath($terms, $idx = 0) {
+      $fst, $rst = $terms
+      if (!$fst) { return $true }
+      $nextIdx = $path.IndexOf($fst, $idx, [StringComparison]::CurrentCultureIgnoreCase)
+      return ($nextIdx -ge 0) -and (MatchPath $rst ($nextIdx + $fst.Length))
     }
-    function MatchLeaf() { (Split-Path -Leaf $path) -match $terms[-1] }
+    function MatchLeaf($term) { (Split-Path -Leaf $path) -match $term }
 
     if (!$terms) { return $true }
-    (MatchPath) -and (MatchLeaf)
+    (MatchPath ($terms | Normalise)) -and (MatchLeaf ($terms[-1] | NormaliseAndEscape))
   }
 
   RefreshRecent
@@ -214,6 +216,7 @@ function GetRecent([int] $first, [string[]] $terms) {
 }
 
 function UpdateRecent($path, $favour = $false) {
+  $path = $path | RemoveTrailingSeparator
   if ($path -in $cde.RECENT_DIRS_EXCLUDE) { return }
 
   $entry =

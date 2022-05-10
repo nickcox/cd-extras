@@ -72,6 +72,7 @@ function Set-FrecentLocation {
     [Parameter(ParameterSetName = 'n', Position = 0)]
     [ushort] $n = 1,
 
+    [Alias('NamePart')]
     [Parameter(ParameterSetName = 'named', Position = 0)]
     [string[]] $Terms,
 
@@ -86,20 +87,20 @@ function Set-FrecentLocation {
     [Alias('p')]
     [Parameter(ParameterSetName = 'prune', Mandatory)]
     [switch] $Prune,
-    [Parameter(ParameterSetName = 'prune', Position = 1, ValueFromPipeline)]
+    [Parameter(ParameterSetName = 'prune', Position = 1)]
     [SupportsWildcards()]
     [string] $PrunePattern = $PWD,
 
     [Alias('m')]
     [Parameter(ParameterSetName = 'mark', Mandatory)]
     [switch] $Mark,
-    [Parameter(ParameterSetName = 'mark', Position = 1, ValueFromPipeline)]
+    [Parameter(ParameterSetName = 'mark', Position = 1)]
     [string] $MarkPath = $PWD,
 
     [Alias('u')]
     [Parameter(ParameterSetName = 'unmark', Mandatory)]
     [switch] $Unmark,
-    [Parameter(ParameterSetName = 'unmark', Position = 1, ValueFromPipeline)]
+    [Parameter(ParameterSetName = 'unmark', Position = 1)]
     [string] $UnmarkPattern = $PWD,
 
     [switch] $PassThru

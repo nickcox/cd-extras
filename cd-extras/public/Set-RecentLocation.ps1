@@ -56,8 +56,9 @@ function Set-RecentLocation {
     [Parameter(ParameterSetName = 'n', Position = 0)]
     [ushort] $n = 1,
 
+    [Alias('NamePart')]
     [Parameter(ParameterSetName = 'named', Position = 0)]
-    [string[]] $NamePart,
+    [string[]] $Terms,
 
     [Alias('l')]
     [Parameter(ParameterSetName = 'list', Mandatory)]
@@ -70,7 +71,7 @@ function Set-RecentLocation {
     [Alias('p')]
     [Parameter(ParameterSetName = 'prune', Mandatory)]
     [switch] $Prune,
-    [Parameter(ParameterSetName = 'prune', Position = 1, Mandatory, ValueFromPipeline)]
+    [Parameter(ParameterSetName = 'prune', Position = 1, Mandatory)]
     [SupportsWildcards()]
     [string] $PrunePattern,
 
@@ -78,15 +79,15 @@ function Set-RecentLocation {
   )
 
   if ($PSCmdlet.ParameterSetName -eq 'n' -and $n -ge 1) {
-    $recents = @(GetRecent $n $NamePart)
+    $recents = @(GetRecent $n)
     if ($recents.Count -ge $n) { Set-LocationEx $recents[$n - 1] -PassThru:$PassThru }
   }
 
   if ($PSCmdlet.ParameterSetName -eq 'named') {
-    $recents = @(GetRecent 1 $NamePart)
+    $recents = @(GetRecent 1 $Terms)
     if ($recents) { Set-LocationEx $recents[0] -PassThru:$PassThru }
-    elseif ($cde.RecentDirsFallThrough -and $NamePart.Length -eq 1) { Set-LocationEx $NamePart[0] -PassThru:$PassThru }
-    else { Write-Error "Could not find '$NamePart' in recent locations." -ErrorAction Stop }
+    elseif ($cde.RecentDirsFallThrough -and $Terms.Length -eq 1) { Set-LocationEx $Terms[0] -PassThru:$PassThru }
+    else { Write-Error "Could not find '$Terms' in recent locations." -ErrorAction Stop }
   }
 
   if ($PSCmdlet.ParameterSetName -eq 'list' -and $List) {

@@ -35,7 +35,7 @@ function Set-CdExtrasOption {
     [Parameter(ParameterSetName = 'Set', Position = 1, ValueFromPipeline)]
     $Value,
 
-    [Parameter(ParameterSetName = 'Validate', Mandatory, ValueFromPipeline)]
+    [Parameter(ParameterSetName = 'Validate', Mandatory)]
     [switch] $Validate
   )
 
@@ -73,7 +73,7 @@ function Set-CdExtrasOption {
     $path = $cde.RECENT_DIRS_FILE -replace '~', $HOME
     $cde.RECENT_DIRS_FILE = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath( $path )
 
-    # save recent dirs from memory when dirs file first set
+    # save recent dirs from memory when dirs file set
     if ($recent.Count) { PersistRecent }
 
     # load recent dirs into memory at startup
@@ -107,5 +107,6 @@ function Set-CdExtrasOption {
     CommandNotFound @() $isUnderTest
   }
 
+  # can be used to ensure side effects have run without actually changing any options
   if ($Validate) { return $true }
 }

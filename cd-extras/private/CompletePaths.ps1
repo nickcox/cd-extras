@@ -62,7 +62,7 @@ function CompletePaths {
         if ($n -le 1) { $_ } else { "$_ ($n)" }
       }
 
-      $tooltip = if ($cde.ToolTip) { &$cde.ToolTip $_ $isListTruncated } else { $_ }
+      $tooltip = if ($cde.ToolTip -and ($tooltip = &$cde.ToolTip $_ $isListTruncated)) { $tooltip } else { $_ }
 
       [Management.Automation.CompletionResult]::new(
         $completionText,
