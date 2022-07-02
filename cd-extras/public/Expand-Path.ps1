@@ -58,7 +58,7 @@ function Expand-Path {
     [Parameter(ValueFromPipeline, Mandatory)]
     [SupportsWildcards()]
     [string]    $Path,
-    [ushort]    $MaxResults = [ushort]::MaxValue,
+    [uint16]    $MaxResults = [uint16]::MaxValue,
     [string[]]  $SearchPaths = $cde.CD_PATH,
     [char[]]    $WordDelimiters = $cde.WordDelimiters,
     [switch]    $File,

@@ -70,7 +70,7 @@ function Set-FrecentLocation {
   [CmdletBinding(SupportsShouldProcess, DefaultParameterSetName = 'n')]
   param(
     [Parameter(ParameterSetName = 'n', Position = 0)]
-    [ushort] $n = 1,
+    [uint16] $n = 1,
 
     [Alias('NamePart')]
     [Parameter(ParameterSetName = 'named', Position = 0)]
@@ -80,7 +80,7 @@ function Set-FrecentLocation {
     [Parameter(ParameterSetName = 'list', Mandatory)]
     [switch] $List,
     [Parameter(ParameterSetName = 'list')]
-    [ushort] $First = $cde.MaxRecentCompletions,
+    [uint16] $First = $cde.MaxRecentCompletions,
     [Parameter(ParameterSetName = 'list', ValueFromRemainingArguments)]
     [string[]] $ListTerms,
 

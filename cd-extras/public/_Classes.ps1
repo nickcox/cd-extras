@@ -1,5 +1,5 @@
 class IndexedPath {
-  [ushort] $n
+  [uint16] $n
   [string] $Name
   [string] $Path
 
@@ -8,8 +8,8 @@ class IndexedPath {
 
 class RecentDir {
   [string] $Path
-  [ulong] $LastEntered
-  [uint] $EnterCount
+  [uint64] $LastEntered
+  [uint32] $EnterCount
   [bool] $Favour
 
   [string] ToString() { return "{0}, {1}, {2}" -f $this.LastEntered, $this.Count, $this.Favour }
@@ -18,6 +18,7 @@ class RecentDir {
 class CdeOptions {
   hidden [string] $recentHash
   hidden [Threading.Mutex] $mutex = [Threading.Mutex]::new($false, 'cde.RECENT_DIRS_FILE')
+  hidden [array] $executableEx = $env:PATHEXT -split ';'
 
   [bool] $AUTO_CD = $true
   [bool] $CDABLE_VARS = $false
@@ -26,10 +27,10 @@ class CdeOptions {
   [string] $RECENT_DIRS_FILE = $null
   [string[]] $RECENT_DIRS_EXCLUDE = @()
   [bool] $RecentDirsFallThrough = $true
-  [ushort] $MaxRecentDirs = 120
-  [ushort] $MaxRecentCompletions = 60
-  [ushort] $MaxCompletions = 0
-  [ushort] $MaxMenuLength = 36
+  [uint16] $MaxRecentDirs = 120
+  [uint16] $MaxRecentCompletions = 60
+  [uint16] $MaxCompletions = 0
+  [uint16] $MaxMenuLength = 36
   [char[]] $WordDelimiters = '.', '_', '-'
   [string[]] $DirCompletions = @('Set-Location', 'Set-LocationEx', 'Push-Location')
   [string[]] $PathCompletions = @('Get-ChildItem', 'Get-Item', 'Invoke-Item', 'Expand-Path')

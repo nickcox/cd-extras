@@ -34,15 +34,10 @@ function CompletePaths {
     Process {
       $fullPath = $_ | Convert-Path
 
-      $completionText = if ($wordToComplete -match '^\.{1,2}$') {
-        $wordToComplete
-      }
-      elseif (!($wordToComplete | IsRooted) -and ($_ | Resolve-Path -Relative | IsDescendedFrom ..)) {
-        $_ | Resolve-Path -Relative
-      }
-      else {
-        $fullPath -replace "^$($HOME | NormaliseAndEscape)", "~"
-      }
+      $completionText =
+      if ($wordToComplete -in '.', '..') { $wordToComplete }
+      elseif (!($wordToComplete | IsRooted) -and ($relative = $_ | Resolve-Path -Relative) -and ($relative | IsDescendedFrom ..)) { $relative }
+      else { $fullPath -replace "^$($HOME | NormaliseAndEscape)", "~" }
 
       # add normalised trailing directory separator; quote if contains spaces
       $trailChar = if ($_.PSIsContainer) { ${/} }
@@ -115,13 +110,12 @@ function CompletePaths {
     Expand-Path @switches ($wordToExpand -replace $Matches[0], $maybeVar)
   }
 
-  $allCompletions = @($completions) + @($variableCompletions) | ? { $_ }
+  $allCompletions = (@($completions) + @($variableCompletions)).Where{$_} | select -Unique
   $isListTruncated = if ($allCompletions.Length -gt $maxCompletions) { $true }
 
   if (!$allCompletions) { return }
 
   $allCompletions |
-  Select -Unique |
   Sort-Object { !$_.PSIsContainer, $_.PSChildName } |
   Select -First $maxCompletions |
   CompletionResult $isListTruncated

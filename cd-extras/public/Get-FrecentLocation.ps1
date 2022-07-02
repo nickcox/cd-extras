@@ -52,7 +52,7 @@ function Get-FrecentLocation {
 
   [OutputType([IndexedPath])]
   param(
-    [Parameter(ParameterSetName = 'First')] [ushort] $First = $cde.MaxRecentCompletions,
+    [Parameter(ParameterSetName = 'First')] [uint16] $First = $cde.MaxRecentCompletions,
     [Parameter(ValueFromRemainingArguments)] [string[]] $Terms
   )
 

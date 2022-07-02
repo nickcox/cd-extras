@@ -1,10 +1,11 @@
 ${Script:/} = [IO.Path]::DirectorySeparatorChar
+$Script:esc = [char]27 # for PS <7
 $Script:undoStack = [Collections.Stack]::new()
 $Script:redoStack = [Collections.Stack]::new()
 
 $Script:recent = [Collections.Generic.Dictionary[string, RecentDir]]::new()
 $Script:logger = { Write-Verbose ($args[0] | ConvertTo-Json) }
-$Script:background
+$Script:background = $null
 
 function DefaultIfEmpty([scriptblock] $default) {
   Begin { $any = $false }
@@ -15,7 +16,7 @@ function DefaultIfEmpty([scriptblock] $default) {
 filter Truncate([int] $maxLength = $cde.MaxMenuLength) {
   if (!$_ -or $_.Length -le $maxLength) { return $_ }
 
-  if ($_.StartsWith([char]27)) {
+  if ($_.StartsWith($esc)) {
     TruncatedColoured $_ $maxLength
   }
   else {
@@ -32,7 +33,7 @@ function TruncatedColoured([string]$string, $maxLen) {
     $string
   }
   else {
-    $string.Substring(0, $textStart) + ($text | Truncate) + "$([char]27)[0m"
+    $string.Substring(0, $textStart) + ($text | Truncate) + "$esc[0m"
   }
 }
 
@@ -75,7 +76,7 @@ filter SurroundAndTerminate($trailChar) {
 }
 
 filter RemoveTrailingSeparator {
-  $_ -replace "[/\\]$", ''
+  if ($_ -match '[/\\].*?([/\\])$') { $_.TrimEnd('/', '\') } else { $_ }
 }
 
 filter EscapeWildcards {
@@ -193,7 +194,7 @@ function RecentsByTermWithSort([int] $first, [string[]] $terms, [scriptblock] $s
 }
 
 function GetFrecent([int] $first, [string[]] $terms) {
-  function FrecencyFactor([ulong] $lastEntered) {
+  function FrecencyFactor([uint64] $lastEntered) {
     $now = [System.DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
 
     if ($lastEntered -gt ($now - 1000 * 60 * 60)) { 4 } # past hour
