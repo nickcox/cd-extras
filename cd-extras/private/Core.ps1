@@ -26,8 +26,9 @@ filter Truncate([int] $maxLength = $cde.MaxMenuLength) {
 
 function TruncatedColoured([string]$string, $maxLen) {
   $textStart = $string.IndexOf('m') + 1
-  $startFinalEscapeSequence = $string.LastIndexOf([char]27)
-  $text = $string.Substring($textStart, $startFinalEscapeSequence - $textStart)
+  $startFinalEscapeSequence = $string.LastIndexOf($esc)
+  $textEnd = if ($startFinalEscapeSequence -gt $textStart) { $startFinalEscapeSequence } else {$string.Length - 1}
+  $text = $string.Substring($textStart, $textEnd - $textStart)
 
   if ($text.Length -le $maxLen) {
     $string
