@@ -8,6 +8,9 @@ The option to update.
 .PARAMETER Value
 The new value.
 
+.PARAMETER Options
+A dictionary of options and values to update.
+
 .EXAMPLE
 PS C:\> setocd AUTO_CD
 
@@ -31,15 +34,18 @@ function Set-CdExtrasOption {
     [ArgumentCompleter( { $global:cde | Get-Member -Type Property -Name "$($args[2])*" | % Name })]
     [Parameter(ParameterSetName = 'Set', Mandatory, Position = 0)]
     [string] $Option,
-
     [Parameter(ParameterSetName = 'Set', Position = 1, ValueFromPipeline)]
     $Value,
+
+    [Parameter(ParameterSetName = 'SetMany', Mandatory, Position = 0)]
+    [Collections.IDictionary] $Options,
 
     [Parameter(ParameterSetName = 'Validate', Mandatory)]
     [switch] $Validate
   )
 
-  if ($PSCmdlet.ParameterSetName -eq 'Set') {
+  # first update the $cde variable per the given settings
+  if ($PSCmdlet.ParameterSetName -eq 'Set' -or $PSCmdlet.ParameterSetName -eq 'SetMany') {
 
     $flags = @(
       'AUTO_CD'
@@ -49,41 +55,43 @@ function Set-CdExtrasOption {
       'RecentDirsFallThrough'
     )
 
-    if ($null -eq $Value -and $Option -in $flags) {
-      $Value = $true
-    }
-
     $completionTypes = @(
       'PathCompletions'
       'DirCompletions'
       'FileCompletions'
     )
 
-    if ($Option -in $completionTypes) {
-      if ($Global:cde.$option -notcontains $value) {
-        $value | Where { $Global:cde.$option -notcontains $_ } | % { $Global:cde.$option += $_ }
-      }
+    if ($null -eq $Value -and $Option -in $flags) {
+      $Value = $true
     }
-    else {
-      $Global:cde.$option = $value
+
+    $opts = if ($Option) { $Option } else { $Options.Keys }
+    $opts | % {
+      $opt = $_
+      $val = if ($Options -is [hashtable] -and $Options.Keys -contains $_) { $Options[$_] } else { $Value }
+
+      if ($opt -in $completionTypes) {
+        if ($Global:cde.$opt -notcontains $val) {
+          $Global:cde.$opt += $val
+        }
+      }
+      else {
+        $Global:cde.$opt = $val
+      }
     }
   }
 
+  # then perform various side effects based on the current settings
   if ($cde.RECENT_DIRS_FILE) {
     $path = $cde.RECENT_DIRS_FILE -replace '~', $HOME
     $cde.RECENT_DIRS_FILE = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath( $path )
 
     # save recent dirs from memory when dirs file set
-    if ($recent.Count) { PersistRecent }
+    if ($recent.Count -or !(Test-Path $cde.RECENT_DIRS_FILE)) { PersistRecent }
 
     # load recent dirs into memory at startup
     elseif (Test-Path $cde.RECENT_DIRS_FILE) {
       ImportRecent
-    }
-
-    else {
-      Add-Content $cde.RECENT_DIRS_FILE ''
-      $global:cde.recentHash = (Get-FileHash $cde.RECENT_DIRS_FILE).Hash.ToString()
     }
   }
 
@@ -108,5 +116,6 @@ function Set-CdExtrasOption {
   }
 
   # can be used to ensure side effects have run without actually changing any options
+  # this is used when the $cde variable is updated irectly
   if ($Validate) { return $true }
 }

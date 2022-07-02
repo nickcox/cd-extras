@@ -7,13 +7,7 @@ Get-ChildItem -File -Filter *.ps1 $PSScriptRoot/private, $PSScriptRoot/public | 
 # remove stupid phantom module
 Get-Module | Where Path -eq ("$PSScriptRoot/public/_Classes.ps1" | Resolve-Path) | Remove-Module
 
-$global:cde = if ((Test-Path variable:cde) -and $cde -is [System.Collections.IDictionary]) {
-  [CdeOptions]$cde
-}
-else {
-  [CdeOptions]::new()
-}
-
+$global:cde = [CdeOptions]::new()
 (Get-Variable cde).Attributes.Add([ValidateScript]::new( { Set-CdExtrasOption -Validate } ))
 
 RegisterCompletions @('Step-Up') 'n' { CompleteAncestors @args }
