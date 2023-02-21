@@ -27,7 +27,7 @@ filter Truncate([int] $maxLength = $cde.MaxMenuLength) {
 function TruncatedColoured([string]$string, $maxLen) {
   $textStart = $string.IndexOf('m') + 1
   $startFinalEscapeSequence = $string.LastIndexOf($esc)
-  $textEnd = if ($startFinalEscapeSequence -gt $textStart) { $startFinalEscapeSequence } else {$string.Length - 1}
+  $textEnd = if ($startFinalEscapeSequence -gt $textStart) { $startFinalEscapeSequence } else { $string.Length - 1 }
   $text = $string.Substring($textStart, $textEnd - $textStart)
 
   if ($text.Length -le $maxLen) {
@@ -128,7 +128,7 @@ function IndexPaths(
   $rootLabel = 'root' # this on happens on *nix
 ) {
   $xs = $xs -ne '' | Select -Unique
-  if (!$xs) { return }
+  if (!$xs) { return @() }
 
   $i = 0
   $xs.ForEach{
@@ -138,6 +138,7 @@ function IndexPaths(
       Path = $_
     } }
 }
+
 function RegisterCompletions([string[]] $commands, $param, $target) {
   Register-ArgumentCompleter -CommandName $commands -ParameterName $param -ScriptBlock $target
 }
@@ -157,7 +158,7 @@ function ImportRecent() {
 }
 
 function RefreshRecent() {
-  if (!$cde.RECENT_DIRS_FILE) { return }
+  if (!$cde.RECENT_DIRS_FILE -or !(Test-Path $cde.RECENT_DIRS_FILE)) { return }
 
   try {
     if ($hasMutex = $cde.mutex.WaitOne(1)) {
@@ -189,7 +190,7 @@ function RecentsByTermWithSort([int] $first, [string[]] $terms, [scriptblock] $s
   }
 
   RefreshRecent
-  $recent.Values.Where( { ($_.Path -ne $pwd) -and (MatchesTerms $_.Path) }) |
+  $recent.Values.Where( { ($_.Path -ne ($pwd | RemoveTrailingSeparator)) -and (MatchesTerms $_.Path) }) |
   Sort-Object $sort -Descending |
   select -First $first -Expand Path
 }

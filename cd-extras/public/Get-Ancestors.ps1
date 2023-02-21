@@ -60,7 +60,7 @@ function Get-Ancestors {
     # this works around registry provider having a root that can't be easily navigated to
     $root = if ($start.Provider.VolumeSeparatedByColon) { "$($start.Drive.Name):${/}" } else { $start.Drive.Root }
 
-    if (!$start -or ($start.Path -eq $root)) { return }
+    if (!$start -or ($start.Path -eq $root)) { return [IndexedPath[]]@() }
 
     $next = $start.Path
     $paths = @(while ($next -and ($next = $next | Split-Path) -and ($next -ne $root)) { $next })

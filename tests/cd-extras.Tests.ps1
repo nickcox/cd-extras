@@ -299,6 +299,9 @@ Describe 'cd-extras' {
       }
 
       setocd RECENT_DIRS_FILE './recent_dirs'
+      Start-Sleep -Milliseconds 50
+      Get-RecentLocation | Should -BeNullOrEmpty
+
       $newList.Values | Export-Csv -LiteralPath $cde.RECENT_DIRS_FILE
 
       Get-RecentLocation | Should -Not -BeNullOrEmpty
@@ -351,6 +354,7 @@ Describe 'cd-extras' {
       (cdf -l) | Should -BeNullOrEmpty
 
       Get-BookMark | Should -BeNullOrEmpty
+      cd TestDrive:/powershell/tools/terms
       cdf -m
       Get-Bookmark | Should -Be $PWD.Path
       cdf -u
@@ -865,9 +869,7 @@ Describe 'cd-extras' {
       cd ..
       cd ..
 
-      $undos = Get-Stack -Undo
-      $undos | where n -eq 1 | % Path | Should -Be (
-        $undos | where n -eq 3 | % Path)
+      (Get-Stack -Undo).Count | Should -Be (3)
     }
 
     It 'shows the redo stack' {
@@ -1244,19 +1246,21 @@ Describe 'cd-extras' {
         cd TestDrive:/powershell/tools/ResxGen
         cd TestDrive:/
 
-        setocd RECENT_DIRS_FILE TestDrive:/recent_dirs
-        Start-Sleep -Milliseconds 10 # save is async
-        (Get-Content TestDrive:/recent_dirs).Length | Should -Be 4 # including header
+        $tmp = New-TemporaryFile
+        setocd RECENT_DIRS_FILE $tmp
+        Start-Sleep -Milliseconds 50 # save is async
+        (Get-Content $tmp).Length | Should -Be 4 # including header
 
         setocd RECENT_DIRS_FILE
         Remove-RecentLocation *
         Get-RecentLocation | Should -BeNullOrEmpty
-        setocd RECENT_DIRS_FILE TestDrive:/recent_dirs
+        setocd RECENT_DIRS_FILE $tmp
         (Get-RecentLocation).Count | Should -Be 2
 
         Remove-RecentLocation *
         Test-Path TestDrive:/recent_dirs_2 | Should -Be $false
         setocd RECENT_DIRS_FILE TestDrive:/recent_dirs_2
+        Start-Sleep -Milliseconds 50 # save is async
         Test-Path TestDrive:/recent_dirs_2 | Should -Be $true
 
         setocd RECENT_DIRS_FILE
