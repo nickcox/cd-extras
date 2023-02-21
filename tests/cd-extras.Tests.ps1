@@ -6,11 +6,8 @@ BeforeDiscovery {
   }
 
   Remove-Module cd-extras -ErrorAction Ignore
-
-  # $Script:xcde = if (Test-Path variable:cde) { $cde }
-  # $Global:cde = [CdeOptions]@{}
   Push-Location $PSScriptRoot
-  Import-Module ../cd-extras/cd-extras.psd1 -Force
+  Import-Module ../cd-extras/cd-extras.psd1 -Force -ErrorAction Stop
 }
 
 AfterAll {
@@ -282,27 +279,24 @@ Describe 'cd-extras' {
       Get-RecentLocation | select -Expand Name | Should -Be 'terms', 'ResxGen'
     }
 
-    It 'refreshes the list if RECENT_DIRS_FILE updated in another process' -Skip:($PSEdition -eq 'Desktop') {
+    It 'refreshes the list if RECENT_DIRS_FILE updated in another process' {
       Get-RecentLocation | Should -BeNullOrEmpty
 
-      $fst, $snd = ((Resolve-Path TestDrive:/), (Resolve-Path TestDrive:/powershell)).Path
-      $newList = [Collections.Generic.Dictionary[string, RecentDir]]::new()
-      $newList[$fst] = @{
-        Path        = $fst
-        LastEntered = [System.DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
-        EnterCount  = 1
-      }
-      $newList[$snd] = @{
-        Path        = $snd
-        LastEntered = [System.DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
-        EnterCount  = 1
+      $items = ((Resolve-Path TestDrive:/), (Resolve-Path TestDrive:/powershell)).Path
+      $newList =
+      $items | % {
+        [RecentDir]@{
+          Path        = $_
+          LastEntered = [System.DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
+          EnterCount  = 1
+        }
       }
 
       setocd RECENT_DIRS_FILE './recent_dirs'
       Start-Sleep -Milliseconds 50
       Get-RecentLocation | Should -BeNullOrEmpty
 
-      $newList.Values | Export-Csv -LiteralPath $cde.RECENT_DIRS_FILE
+      $newList | Export-Csv -LiteralPath $cde.RECENT_DIRS_FILE
 
       Get-RecentLocation | Should -Not -BeNullOrEmpty
       setocd RECENT_DIRS_FILE
@@ -1246,22 +1240,30 @@ Describe 'cd-extras' {
         cd TestDrive:/powershell/tools/ResxGen
         cd TestDrive:/
 
-        $tmp = New-TemporaryFile
-        setocd RECENT_DIRS_FILE $tmp
+        $file = 'TestDrive:/recent_dirs'
+        setocd RECENT_DIRS_FILE $file
         Start-Sleep -Milliseconds 50 # save is async
-        (Get-Content $tmp).Length | Should -Be 4 # including header
+
+        # there should be three entries, so four lines including header
+        (Get-Content $file).Length | Should -Be 4
 
         setocd RECENT_DIRS_FILE
         Remove-RecentLocation *
         Get-RecentLocation | Should -BeNullOrEmpty
-        setocd RECENT_DIRS_FILE $tmp
-        (Get-RecentLocation).Count | Should -Be 2
+
+        cd powershell/tools/packaging/macos
+        setocd RECENT_DIRS_FILE $file # the three locations in the file should have been added
+
+        # Get-RecentLocation doesn't include the current location, so three results
+        (Get-RecentLocation).Count | Should -Be 3
 
         Remove-RecentLocation *
-        Test-Path TestDrive:/recent_dirs_2 | Should -Be $false
-        setocd RECENT_DIRS_FILE TestDrive:/recent_dirs_2
+        cd TestDrive:/
+        $file = Join-Path ([io.path]::GetTempPath()) ([io.path]::GetRandomFileName())
+        Test-Path $file | Should -Be $false
+        setocd RECENT_DIRS_FILE $file
         Start-Sleep -Milliseconds 50 # save is async
-        Test-Path TestDrive:/recent_dirs_2 | Should -Be $true
+        Test-Path $file | Should -Be $true
 
         setocd RECENT_DIRS_FILE
       }

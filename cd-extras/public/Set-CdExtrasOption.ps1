@@ -88,12 +88,10 @@ function Set-CdExtrasOption {
     $cde.RECENT_DIRS_FILE = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath( $path )
 
     # save recent dirs from memory when dirs file set
-    if ($recent.Count -gt 1 -or !(Test-Path $cde.RECENT_DIRS_FILE)) { PersistRecent }
+    if (!(Test-Path $cde.RECENT_DIRS_FILE)) { PersistRecent }
 
     # load recent dirs into memory at startup
-    elseif (Test-Path $cde.RECENT_DIRS_FILE) {
-      ImportRecent
-    }
+    elseif (Test-Path $cde.RECENT_DIRS_FILE) { ImportRecent }
   }
 
   $cde.RECENT_DIRS_EXCLUDE = $cde.RECENT_DIRS_EXCLUDE.ForEach{ Resolve-Path $_ }

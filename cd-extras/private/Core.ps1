@@ -149,12 +149,13 @@ function ImportRecent() {
     $h.Hash.ToString()
   }
 
-  $recent.Clear()
   $dirs.ForEach{
     $dir = [RecentDir]$_
     $dir.Favour = $_.Favour -and [bool]::Parse($_.Favour)
     $recent[$_.Path] = $dir
   }
+
+  TrimRecent
 }
 
 function RefreshRecent() {
@@ -162,7 +163,6 @@ function RefreshRecent() {
 
   try {
     if ($hasMutex = $cde.mutex.WaitOne(1)) {
-      # assumes we already know the file exists
       $currentHash = (Get-FileHash -LiteralPath $cde.RECENT_DIRS_FILE).Hash.ToString()
       if ($currentHash -ne $cde.recentHash) {
         WriteLog ($currentHash, $cde.recentHash)
@@ -236,13 +236,7 @@ function UpdateRecent($path, $favour = $false) {
 
   $recent[$path] = $entry
 
-  if ($recent.Count -gt $cde.MaxRecentDirs) {
-    RemoveRecent (
-      $recent.Values |
-      Sort-Object Favour, LastEntered |
-      select -First ($recent.Count - $cde.MaxRecentDirs) -expand Path)
-  }
-
+  TrimRecent
   PersistRecent
 }
 
@@ -259,8 +253,17 @@ function RemoveRecent([string[]] $dirs) {
   PersistRecent
 }
 
+function TrimRecent() {
+  if ($recent.Count -gt $cde.MaxRecentDirs) {
+    RemoveRecent (
+      $recent.Values |
+      Sort-Object Favour, LastEntered |
+      select -First ($recent.Count - $cde.MaxRecentDirs) -expand Path)
+  }
+}
+
 function PersistRecent() {
-  if ($cde.RECENT_DIRS_FILE) {
+  if ($cde.RECENT_DIRS_FILE -and $recent.Count) {
     if (!$background) { InitRunspace }
 
     try {
