@@ -282,7 +282,7 @@ Describe 'cd-extras' {
       Get-RecentLocation | select -Expand Name | Should -Be 'terms', 'ResxGen'
     }
 
-    It 'refreshes the list if RECENT_DIRS_FILE updated in another process' {
+    It 'refreshes the list if RECENT_DIRS_FILE updated in another process' -Skip:($PSEdition -eq 'Desktop') {
       Get-RecentLocation | Should -BeNullOrEmpty
 
       $fst, $snd = ((Resolve-Path TestDrive:/), (Resolve-Path TestDrive:/powershell)).Path
