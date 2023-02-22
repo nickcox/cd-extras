@@ -1,6 +1,6 @@
 @{
   RootModule        = 'cd-extras.psm1'
-  ModuleVersion     = '2.9.4'
+  ModuleVersion     = '3.0.0'
   GUID              = '206fccbd-dc96-4b23-908c-5ac821372e16'
 
   Author            = 'Nick Cox'
@@ -15,7 +15,8 @@
 
   PrivateData       = @{
     PSData = @{
-      ReleaseNotes = 'Fix an issue where UNC paths not expanded properly.'
+      Prerelease   = 'beta1'
+      ReleaseNotes = 'Adds Set-Recent and Set-Frecent functionality'
       Tags         = @('cd+', 'cd-', 'AUTO_CD', 'CD_PATH', 'CDABLE_VARS', 'bash', 'zsh')
       LicenseUri   = 'https://github.com/nickcox/cd-extras/blob/master/LICENSE'
       ProjectUri   = 'https://github.com/nickcox/cd-extras'
