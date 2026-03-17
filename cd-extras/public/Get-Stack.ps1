@@ -39,7 +39,7 @@ Redo-Location
 #>
 function Get-Stack {
 
-  [OutputType([IndexedPath], ParameterSetName = ('Undo', 'Redo'))]
+  [OutputType([object[]], ParameterSetName = ('Undo', 'Redo'))]
   [OutputType([System.Collections.Hashtable], ParameterSetName = 'Both')]
   [CmdletBinding(DefaultParameterSetName = 'Both')]
   param(

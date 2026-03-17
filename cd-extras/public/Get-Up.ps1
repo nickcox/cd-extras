@@ -70,7 +70,7 @@ function Get-Up {
 
     if ($PSCmdlet.ParameterSetName -eq 'named') {
 
-      if (($match = GetStackIndex $ancestors $NamePart) -ge 0) {
+      if (($match = GetBestIndex $ancestors $NamePart) -ge 0) {
         $ancestors[$match]
       }
       else {

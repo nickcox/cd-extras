@@ -1,22 +1,24 @@
 $cdAlias = if ($x = (Get-Alias -Name 'cd' -ErrorAction ignore)) { $x.Definition }
 
-Get-ChildItem $PSScriptRoot/private/*.ps1 | % { . $_.FullName }
-Get-ChildItem $PSScriptRoot/public/*.ps1 | % { . $_.FullName }
+. "$PSScriptRoot/public/_Classes.ps1"
+
+Get-ChildItem -File -Filter *.ps1 $PSScriptRoot/private, $PSScriptRoot/public | % {
+  . $_.FullName
+}
 
 # remove stupid phantom module
-Get-Module | ? Path -eq ("$PSScriptRoot/public/_Classes.ps1" | Resolve-Path) | Remove-Module
+Get-Module | Where Path -eq ("$PSScriptRoot/public/_Classes.ps1" | Resolve-Path) | Remove-Module
 
-$global:cde = if ((Test-Path variable:cde) -and $cde -is [System.Collections.IDictionary]) {
-  New-Object -Type CdeOptions -Property $global:cde
-}
-else {
-  New-Object -Type CdeOptions
-}
+$global:cde = [CdeOptions]::new()
+(Get-Variable cde).Attributes.Add([ValidateScript]::new( { Set-CdExtrasOption -Validate } ))
 
-# some set up happens in Set-Option so make sure to call it here
-Set-CdExtrasOption -Option 'AUTO_CD' -Value $global:cde.AUTO_CD
+RegisterCompletions @('Step-Up') 'n' { CompleteAncestors @args }
+RegisterCompletions @('Undo-Location', 'Redo-Location') 'n' { CompleteStack @args }
+RegisterCompletions @('Set-RecentLocation') 'Terms' { CompleteRecent @args }
+RegisterCompletions @('Set-FrecentLocation') 'Terms' { CompleteFrecent @args }
 
 $MyInvocation.MyCommand.ScriptBlock.Module.OnRemove = {
+  if ($background) { $background.Dispose() }
   $ExecutionContext.SessionState.InvokeCommand.CommandNotFoundAction = $null
   Set-Item Alias:cd $cdAlias
   Remove-Variable cde -Scope Global -ErrorAction Ignore

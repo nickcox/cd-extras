@@ -31,7 +31,7 @@ PS C:\Windows\System32> _
 
 .LINK
 Redo-Location
-Get-Stack
+Get-Stack 
 #>
 function Undo-Location {
   [OutputType([void], [Management.Automation.PathInfo])]
@@ -57,7 +57,7 @@ function Undo-Location {
 
   if ($PSCmdlet.ParameterSetName -eq 'named') {
 
-    if (($match = GetStackIndex $undoStack.ToArray() $NamePart) -ge 0) {
+    if (($match = GetBestIndex $undoStack.ToArray() $NamePart) -ge 0) {
       Undo-Location ($match + 1)
     }
     else {

@@ -34,15 +34,10 @@ function CompletePaths {
     Process {
       $fullPath = $_ | Convert-Path
 
-      $completionText = if ($wordToComplete -match '^\.{1,2}$') {
-        $wordToComplete
-      }
-      elseif (!($wordToComplete | IsRooted) -and ($_ | Resolve-Path -Relative | IsDescendedFrom ..)) {
-        $_ | Resolve-Path -Relative
-      }
-      else {
-        $fullPath -replace "^$($HOME | NormaliseAndEscape)", "~"
-      }
+      $completionText =
+      if ($wordToComplete -in '.', '..') { $wordToComplete }
+      elseif (!($wordToComplete | IsRooted) -and ($relative = $_ | Resolve-Path -Relative) -and ($relative | IsDescendedFrom ..)) { $relative }
+      else { $fullPath -replace "^$($HOME | NormaliseAndEscape)", "~" }
 
       # add normalised trailing directory separator; quote if contains spaces
       $trailChar = if ($_.PSIsContainer) { ${/} }
@@ -62,7 +57,7 @@ function CompletePaths {
         if ($n -le 1) { $_ } else { "$_ ($n)" }
       }
 
-      $tooltip = if ($cde.ToolTip) { &$cde.ToolTip $_ $isListTruncated } else { $_ }
+      $tooltip = if ($cde.ToolTip -and ($tooltip = &$cde.ToolTip $_ $isListTruncated)) { $tooltip } else { $_ }
 
       [Management.Automation.CompletionResult]::new(
         $completionText,
@@ -110,18 +105,17 @@ function CompletePaths {
     $cde.CDABLE_VARS -and
     $completions.Length -lt $maxCompletions -and
     $wordToComplete -match '[^/\\]+' -and # separate variable from slashes before or after it
-    ($maybeVar = Get-Variable "$($Matches[0])*" -ValueOnly | where { Test-Path $_ -PathType Container })
+    ($maybeVar = Get-Variable "$($Matches[0])*" -ValueOnly | Where { Test-Path $_ -PathType Container })
   ) {
     Expand-Path @switches ($wordToExpand -replace $Matches[0], $maybeVar)
   }
 
-  $allCompletions = @($completions) + @($variableCompletions) | ? { $_ }
+  $allCompletions = (@($completions) + @($variableCompletions)).Where{$_} | select -Unique
   $isListTruncated = if ($allCompletions.Length -gt $maxCompletions) { $true }
 
   if (!$allCompletions) { return }
 
   $allCompletions |
-  Select -Unique |
   Sort-Object { !$_.PSIsContainer, $_.PSChildName } |
   Select -First $maxCompletions |
   CompletionResult $isListTruncated

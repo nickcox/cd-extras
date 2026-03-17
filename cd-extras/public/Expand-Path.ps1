@@ -54,23 +54,26 @@ function Expand-Path {
   [OutputType([object])]
   [CmdletBinding()]
   param (
-    [alias("Candidate")]
-    [parameter(ValueFromPipeline, Mandatory)]
-    [String]    $Path,
-    [UInt16]    $MaxResults = [UInt16]::MaxValue,
-    [String[]]  $SearchPaths = $cde.CD_PATH,
-    [Char[]]    $WordDelimiters = $cde.WordDelimiters,
-    [Switch]    $File,
-    [Switch]    $Directory,
-    [Switch]    $Force
+    [Alias("Candidate")]
+    [Parameter(ValueFromPipeline, Mandatory)]
+    [SupportsWildcards()]
+    [string]    $Path,
+    [uint16]    $MaxResults = [uint16]::MaxValue,
+    [string[]]  $SearchPaths = $cde.CD_PATH,
+    [char[]]    $WordDelimiters = $cde.WordDelimiters,
+    [switch]    $File,
+    [switch]    $Directory,
+    [switch]    $Force
   )
 
-  Process {
+  Begin {
     $delimiterGroup = if ($WordDelimiters) {
       '[{0}]' -f [Regex]::Escape($WordDelimiters -join '')
     }
     else { '$^' } # no delimiters
+  }
 
+  Process {
     # replace multi-dot with an appropriate number of `../`
     $multiDot = [regex]::Match($Path, '^\.{3,}').Value
     $replacement = ('../' * [Math]::Max(0, $multiDot.Length - 1)) -replace '.$'

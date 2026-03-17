@@ -1,28 +1,53 @@
 class IndexedPath {
-  [byte] $n
+  [uint16] $n
   [string] $Name
   [string] $Path
 
   [string] ToString() { return $this.Path }
 }
 
+class RecentDir {
+  [string] $Path
+  [uint64] $LastEntered
+  [uint32] $EnterCount
+  [bool] $Favour
+
+  [string] ToString() { return "{0}, {1}, {2}" -f $this.LastEntered, $this.EnterCount, $this.Favour }
+}
+
 class CdeOptions {
-  [String[]] $CD_PATH = @()
+  hidden [string] $recentHash
+  hidden [Threading.Mutex] $mutex = [Threading.Mutex]::new($false, 'cde.RECENT_DIRS_FILE')
+  hidden [array] $executableEx = $env:PATHEXT -split ';'
+
   [bool] $AUTO_CD = $true
   [bool] $CDABLE_VARS = $false
+  [string[]] $CD_PATH = @()
   [string] $NOARG_CD = '~'
-  [Char[]] $WordDelimiters = '.', '_', '-'
-  [UInt16] $MaxCompletions = 0
-  [UInt16] $MaxMenuLength = 36
-  [String[]] $DirCompletions = @('Set-Location', 'Set-LocationEx', 'Push-Location')
-  [String[]] $PathCompletions = @('Get-ChildItem', 'Get-Item', 'Invoke-Item', 'Expand-Path')
-  [String[]] $FileCompletions = @()
+  [string] $RECENT_DIRS_FILE = $null
+  [string[]] $RECENT_DIRS_EXCLUDE = @()
+  [bool] $RecentDirsFallThrough = $true
+  [uint16] $MaxRecentDirs = 120
+  [uint16] $MaxRecentCompletions = 60
+  [uint16] $MaxCompletions = 0
+  [uint16] $MaxMenuLength = 36
+  [char[]] $WordDelimiters = '.', '_', '-'
+  [string[]] $DirCompletions = @('Set-Location', 'Set-LocationEx', 'Push-Location')
+  [string[]] $PathCompletions = @('Get-ChildItem', 'Get-Item', 'Invoke-Item', 'Expand-Path')
+  [string[]] $FileCompletions = @()
   [bool] $ColorCompletion = $false
   [bool] $IndexedCompletion = (Get-Module PSReadLine) -and (
-    Get-PSReadLineKeyHandler -Bound | ? Function -eq MenuComplete
+    Get-PSReadLineKeyHandler -Bound | Where Function -eq MenuComplete
   )
+  [scriptblock] $FrecentProvider = $null
   [ScriptBlock] $ToolTip = { param ($item, $isTruncated)
     "{0} $(if ($isTruncated) {'{1}'})" -f
     $item, "$([char]27)[3m(+additional results not displayed)$([char]27)[0m"
+  }
+
+  CdeOptions() {
+    if ((Get-Command zoxide -ErrorAction Ignore) -is [System.Management.Automation.ApplicationInfo]) {
+      $this.FrecentProvider = { &zoxide query -l -- $args }
+    }
   }
 }

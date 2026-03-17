@@ -50,7 +50,7 @@ function Redo-Location {
 
   if ($PSCmdlet.ParameterSetName -eq 'named') {
 
-    if (($match = GetStackIndex $redoStack.ToArray() $NamePart) -ge 0) {
+    if (($match = GetBestIndex $redoStack.ToArray() $NamePart) -ge 0) {
       Redo-Location ($match + 1)
     }
     else {
