@@ -18,7 +18,7 @@ jobs:
           md ./_reports
           Import-Module Pester
           cd tests
-          Invoke-Pester ./cd-extras.Tests.ps1 -EnableExit -CodeCoverage ../cd-extras/private/*.ps1,../cd-extras/public/*.ps1 -CodeCoverageOutputFile ../_reports/coverage.xml -OutputFile ../_reports/testresults.xml
+          ./test.ps1 -Cover -EnableExit -CodeCoverageOutputFile ../_reports/coverage.xml -OutputFile ../_reports/testresults.xml
         shell: pwsh
 
       # run the tests again on Windows, this time in PowerShell v5
@@ -28,7 +28,7 @@ jobs:
           . ./cd-extras/public/_Classes.ps1
           md ./_reports -ea Ignore
           Import-Module Pester
-          Invoke-Pester ./tests/cd-extras.Tests.ps1 -EnableExit -OutputFile ./_reports/testresults_powershell.xml
+          ./test.ps1 -EnableExit -OutputFile ../_reports/testresults.xml
         shell: powershell
 
       - name: Upload test report
