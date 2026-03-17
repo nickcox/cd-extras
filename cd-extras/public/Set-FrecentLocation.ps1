@@ -14,7 +14,7 @@ List the matching frecent locations instead of changing directory. Equivalent to
 The current directory is always excluded from the list.
 
 .PARAMETER ListTerms
-Terms to matching when listing frecent locations. This can be a single term or a comma or space separated list.
+Terms to match when listing frecent locations. This can be a single term or a comma or space separated list.
 The last (or only) term must match the leaf name of a directory in order to be considered a match.
 
 .PARAMETER First
@@ -67,7 +67,7 @@ Remove-Bookmark
 function Set-FrecentLocation {
 
   [OutputType([void])]
-  [CmdletBinding(SupportsShouldProcess, DefaultParameterSetName = 'n')]
+  [CmdletBinding(SupportsShouldProcess, DefaultParameterSetName = 'named')]
   param(
     [Parameter(ParameterSetName = 'n', Position = 0)]
     [uint16] $n = 1,
@@ -106,13 +106,13 @@ function Set-FrecentLocation {
     [switch] $PassThru
   )
 
-  if ($PSCmdlet.ParameterSetName -eq 'n' -and $n -ge 1) {
-    $recents = @(GetFrecent $n)
+  if (($PSCmdlet.ParameterSetName -eq 'n') -and $n -ge 1) {
+    $recents = @(Get-FrecentLocation -First $n)
     if ($recents.Count -ge $n) { Set-LocationEx $recents[$n - 1] -PassThru:$PassThru }
   }
 
   if ($PSCmdlet.ParameterSetName -eq 'named') {
-    $recents = @(GetFrecent 1 $Terms)
+    $recents = @(Get-FrecentLocation -First 1 $Terms)
     if ($recents) { Set-LocationEx $recents[0] -PassThru:$PassThru }
     elseif ($cde.RecentDirsFallThrough -and $Terms.Length -eq 1) { Set-LocationEx $Terms[0] -PassThru:$PassThru }
     else { Write-Error "Could not find '$Terms' in frecent locations." -ErrorAction Stop }

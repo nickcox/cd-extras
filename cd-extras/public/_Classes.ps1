@@ -39,8 +39,15 @@ class CdeOptions {
   [bool] $IndexedCompletion = (Get-Module PSReadLine) -and (
     Get-PSReadLineKeyHandler -Bound | Where Function -eq MenuComplete
   )
+  [scriptblock] $FrecentProvider = $null
   [ScriptBlock] $ToolTip = { param ($item, $isTruncated)
     "{0} $(if ($isTruncated) {'{1}'})" -f
     $item, "$([char]27)[3m(+additional results not displayed)$([char]27)[0m"
+  }
+
+  CdeOptions() {
+    if ((Get-Command zoxide -ErrorAction Ignore) -is [System.Management.Automation.ApplicationInfo]) {
+      $this.FrecentProvider = { &zoxide query -l -- $args }
+    }
   }
 }

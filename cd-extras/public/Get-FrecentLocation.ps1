@@ -56,7 +56,9 @@ function Get-FrecentLocation {
     [Parameter(ValueFromRemainingArguments)] [string[]] $Terms
   )
 
-  $recents = @(GetFrecent $First $Terms)
+  $recents = if ($cde.FrecentProvider) {
+    &$cde.FrecentProvider @Terms | select -First $First
+  } else { @(GetFrecent $First $Terms) }
 
   if ($recents.Count) { IndexPaths $recents }
 }
