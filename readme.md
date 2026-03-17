@@ -195,16 +195,32 @@ n Name    Path
 
 ## Bookmarks
 
-Directories may be bookmarked with the `Add-Bookmark` command (`mark`), boosting those directories
-to the top of the frecency list. `Add-Bookmark` takes a `Path` parameter which can be omitted when
-bookmarking the current directory. `Set-RecentLocation` (`cdr`) and `Set-FrecentLocation` (`cdf`)
-provide a `-Mark` or `-m` switch with the same functionality.
+Bookmarks promote directories to the top of the built-in frecency list, ensuring they rank above
+unvisited or infrequently visited directories regardless of recency. Bookmarks only affect the
+built-in frecency algorithm; if you're using a [custom `FrecentProvider`](#configure) (e.g.
+zoxide), bookmarks have no effect on navigation results.
+
+Directories may be bookmarked with the `Add-Bookmark` command (`mark`). `Add-Bookmark` takes a
+`Path` parameter which can be omitted when bookmarking the current directory.
+`Set-FrecentLocation` (`cdf`) provides a `-Mark` or `-m` switch with the same functionality.
 
 ```
 [~]> Set-Alias z Set-FrecentLocation
 [~]> z -mark C:\Temp\abc1
 [~]> z a
 [C:\Temp\abc1]> ▁
+```
+
+Use `Get-Bookmark` to list bookmarked directories (ordered by frecency), and `Remove-Bookmark`
+(`unmark`) to remove one or more bookmarks. Both default to the current directory when no argument
+is given.
+
+```powershell
+[~]> Get-Bookmark          # list all bookmarks
+[~]> Get-Bookmark 5        # list the top 5 bookmarks
+[~]> unmark                # remove bookmark for the current directory
+[~]> unmark abc1           # remove bookmark matching the leaf name 'abc1'
+[~]> unmark *              # remove all bookmarks
 ```
 
 
@@ -299,8 +315,8 @@ As an alternative to menu completion you retrieve a list of available targets wi
 
 - `Get-Stack -Undo` (`dirs -u`)
 - `Get-Stack -Redo` (`dirs -r`)
-- `Get-RecentLocations` (`cdr -l`)
-- `Get-FrecentLocations` (`cdf -l`)
+- `Get-RecentLocation` (`cdr -l`)
+- `Get-FrecentLocation` (`cdf -l`)
 - `Get-Ancestors` (`xup`)
 
 ```powershell
@@ -909,6 +925,24 @@ Import-Module cd-extras/cd-extras/cd-extras.psd1 # yep, three :D
   - If specified, `cd` with no arguments will change into the given directory.
 - _CD_PATH_: `[string[]] = @()`
   - Paths to be searched by `cd` and tab completion. An array, not a delimited string.
+- _RECENT_DIRS_FILE_: `[string] = $null`
+  - Path to a CSV file for persisting recent, frecent and bookmarked locations between sessions.
+    If not set, the datastore is not persisted.
+- _RECENT_DIRS_EXCLUDE_: `[string[]] = @()`
+  - Directories to exclude from the recent locations list.
+- _RecentDirsFallThrough_: `[bool] = $true`
+  - When truthy, `cdr` and `cdf` will treat the argument as a literal path if no matching
+    recent or frecent entry is found.
+- _MaxRecentDirs_: `[uint16] = 120`
+  - Maximum number of entries in the recent locations datastore. Once the limit is reached,
+    the least recently used non-bookmarked directories are discarded.
+- _MaxRecentCompletions_: `[uint16] = 60`
+  - Default number of results returned by `Get-RecentLocation`, `Get-FrecentLocation`,
+    and related completions.
+- _FrecentProvider_: `[scriptblock] = $null`
+  - An optional scriptblock that provides frecent directory paths. If [zoxide][3] is found
+    on `PATH` at module load time, this is automatically set to `{ &zoxide query -l -- $args }`.
+    Set to `$null` to use the built-in frecency algorithm.
 - _WordDelimiters_ : `[string[]] = '.', '_', '-'`
   - Word boundaries within path segments. For example, `.foo` will be expanded into `*.foo*`.
 - _ToolTip_ : `[ScriptBlock] = { param ($item, $isTruncated) ... }`
@@ -934,40 +968,27 @@ Import-Module cd-extras/cd-extras/cd-extras.psd1 # yep, three :D
   `$Host.UI.RawUI.WindowSize` and `$cde.MaxMenuLength`. Otherwise should be no greater than
   `(Get-PSReadLineOption).CompletionQueryItems`.
 
-To configure _cd-extras_ create a hashtable, `cde`, with one or more of these keys _before_
-importing it:
-
-```powershell
-$cde = @{
-  AUTO_CD = $false
-  CD_PATH = '~/Documents/', '~/Downloads'
-}
-
-Import-Module cd-extras
-```
-
-or call the `Set-CdExtrasOption` (`setocd`) function after importing the module:
+To configure _cd-extras_ call the `Set-CdExtrasOption` (`setocd`) function after importing the
+module:
 
 ```powershell
 Import-Module cd-extras
 
+setocd AUTO_CD $false
+setocd CD_PATH '~/Documents/', '~/Downloads'
 setocd PathCompletions Invoke-VSCode # appends PathCompletions
 setocd CDABLE_VARS # turns CDABLE_VARS on
-setocd AUTO_CD 0 # turns AUTO_CD off
 setocd MaxCompletions 0 # auto calculate the maximum number of completions to display
 
 # append the mode string for each item to the completion tooltip
 setocd ToolTip { "$($args[0]) ($($args[0].Mode))" }
 ```
 
-:point_right:
-If you want to opt out of the default [completions](#enhanced-completion-for-cd-and-others)
-then you should do it before _cd-extras_ is loaded since PowerShell doesn't provide a way to
-deregister argument completers.
+Multiple options can also be set at once by passing a hashtable:
 
 ```powershell
-$cde = @{ DirCompletions = @() }
 Import-Module cd-extras
+setocd @{ AUTO_CD = $false; CD_PATH = '~/Documents/', '~/Downloads' }
 ```
 
 
@@ -1014,4 +1035,4 @@ then you'll probably want to restore the original `cd` alias too.
 [0]: https://github.com/PowerShell/PSReadLine
 [1]: https://github.com/DHowett/DirColors
 [2]: https://docs.microsoft.com/powershell/module/psreadline/set-psreadlinekeyhandler
-[3]: https://github.com/ajeetdsouza/zoxide/wiki/Algorithm#maching
+[3]: https://github.com/ajeetdsouza/zoxide/wiki/Algorithm#matching
