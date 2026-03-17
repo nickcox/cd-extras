@@ -1,0 +1,17 @@
+name: Publish to PowerShell Gallery
+
+on: workflow_dispatch
+
+jobs:
+  publish:
+    name: Publish to PSGallery
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Publish
+        env:
+          PSNugetKey: ${{ secrets.PSNugetKey }}
+        run: ./publishme.ps1 -Confirm:$false
+        shell: pwsh

@@ -15,7 +15,7 @@
 
   PrivateData       = @{
     PSData = @{
-      Prerelease   = 'beta1'
+      Prerelease   = 'beta2'
       ReleaseNotes = 'Adds Set-Recent and Set-Frecent functionality'
       Tags         = @('cd+', 'cd-', 'AUTO_CD', 'CD_PATH', 'CDABLE_VARS', 'bash', 'zsh')
       LicenseUri   = 'https://github.com/nickcox/cd-extras/blob/master/LICENSE'
