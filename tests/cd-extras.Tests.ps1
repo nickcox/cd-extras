@@ -247,6 +247,15 @@ Describe 'cd-extras' {
       setocd MaxRecentDirs 10
     }
 
+    It 'does not add excluded directories to recent locations' {
+      $excluded = (Resolve-Path TestDrive:/powershell).Path
+      setocd RECENT_DIRS_EXCLUDE $excluded
+      cd TestDrive:/powershell
+      cd TestDrive:/
+      Get-RecentLocation | Where-Object Path -like '*powershell' | Should -BeNullOrEmpty
+      setocd RECENT_DIRS_EXCLUDE @()
+    }
+
     It 'supports fallthrough' {
       setocd RecentDirsFallThrough $true
       cdr powershell/tools
@@ -388,6 +397,16 @@ Describe 'cd-extras' {
       $actual[1] | Should -Be 'resxgen'
       $actual[2] | Should -Be 'terms'
     }
+
+    It 'uses a custom FrecentProvider when set' {
+      cd TestDrive:/powershell/tools/terms
+      cd TestDrive:/
+      $providerPaths = @((Resolve-Path TestDrive:/powershell).Path)
+      setocd FrecentProvider { $providerPaths }
+      $result = Get-FrecentLocation
+      $result.Path | Should -Be $providerPaths[0]
+      setocd FrecentProvider $null
+    }
   }
 
   Describe 'Add-Bookmark, Remove-Bookmark' {
@@ -421,6 +440,36 @@ Describe 'cd-extras' {
 
       Remove-Bookmark *
       @(Get-RecentLocation).Count | Should -Be 1
+    }
+
+    It 'bookmarks are not evicted when the recent list is trimmed' {
+      setocd MaxRecentDirs 3
+      mark TestDrive:/powershell/tools/packaging
+      cd TestDrive:/powershell/tools/failingTests
+      cd TestDrive:/powershell/tools/releaseBuild
+      cd TestDrive:/powershell/tools/ResxGen
+      cd TestDrive:/powershell/tools/terms
+      cd TestDrive:/
+      Get-Bookmark | Should -Not -BeNullOrEmpty
+      Get-Bookmark | Should -BeLike '*packaging*'
+      setocd MaxRecentDirs 120
+    }
+
+    It 'can remove a bookmark by leaf name' {
+      mark TestDrive:/powershell/tools/terms
+      mark TestDrive:/powershell/tools/ResxGen
+      unmark terms
+      Get-Bookmark | Should -Not -BeLike '*terms*'
+      Get-Bookmark | Should -BeLike '*ResxGen*'
+    }
+
+    It 'can remove bookmarks by wildcard path pattern' {
+      mark TestDrive:/powershell/tools/terms
+      mark TestDrive:/powershell/tools/ResxGen
+      mark TestDrive:/powershell
+      unmark '*tools*'
+      Get-Bookmark | Should -BeLike '*powershell'
+      Get-Bookmark | Should -Not -BeLike '*tools*'
     }
   }
 
@@ -1322,6 +1371,13 @@ Describe 'cd-extras' {
           Favour      = $true
         }
         $dir.ToString() | Should -Be '12345, 42, True'
+      }
+    }
+
+    Describe 'IndexedComplete' {
+      It 'shows path as tooltip when name differs from path' -Skip:$IsWindows {
+        $result = IndexPaths @('/') | IndexedComplete
+        $result.ToolTip | Should -Be '1. /'
       }
     }
   }

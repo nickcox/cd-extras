@@ -10,7 +10,7 @@ jobs:
         os: [ubuntu-latest, windows-latest, macOS-latest]
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v6
 
       - name: Run the tests
         run: |
@@ -28,17 +28,18 @@ jobs:
           . ./cd-extras/public/_Classes.ps1
           md ./_reports -ea Ignore
           Import-Module Pester
+          cd tests
           ./test.ps1 -EnableExit -OutputFile ../_reports/testresults.xml
         shell: powershell
 
       - name: Upload test report
-        uses: actions/upload-artifact@master
+        uses: actions/upload-artifact@v6
         with:
           name: Test Report (${{ matrix.os }})
           path: _reports
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: ./_reports/coverage.xml
