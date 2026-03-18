@@ -107,6 +107,6 @@ For the full options reference, see [Configuration](docs/configuration.md).
 
 ## Compatibility
 
-_cd-extras_ works on Windows, macOS and Linux. It is primarily intended for the filesystem provider
+_cd-extras_ works on Windows, macOS and Linux. It is designed for the filesystem provider
 but should work with other providers too. See the [compatibility section](docs/navigation.md#compatibility)
 for details on cross-platform setup and alternative providers.

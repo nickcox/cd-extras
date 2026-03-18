@@ -399,8 +399,7 @@ setocd IndexedCompletion
 
 ### Alternative providers
 
-_cd-extras_ is primarily intended to work against the filesystem provider but it should work with
-other providers too.
+_cd-extras_ is designed to work against the filesystem provider but it should work for other providers too.
 
 ```powershell
 [~]> cd hklm:\
