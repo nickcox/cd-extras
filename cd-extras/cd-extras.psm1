@@ -14,7 +14,9 @@ $global:cde = [CdeOptions]::new()
 
 RegisterCompletions @('Step-Up') 'n' { CompleteAncestors @args }
 RegisterCompletions @('Undo-Location', 'Redo-Location') 'n' { CompleteStack @args }
+RegisterCompletions @('Set-RecentLocation') 'n' { CompleteRecent @args }
 RegisterCompletions @('Set-RecentLocation') 'Terms' { CompleteRecent @args }
+RegisterCompletions @('Set-FrecentLocation') 'n' { CompleteFrecent @args }
 RegisterCompletions @('Set-FrecentLocation') 'Terms' { CompleteFrecent @args }
 
 $MyInvocation.MyCommand.ScriptBlock.Module.OnRemove = {

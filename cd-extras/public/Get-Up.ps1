@@ -64,12 +64,10 @@ function Get-Up {
     $ancestors = @((Get-Ancestors -From $From).Path)
 
     if ($PSCmdlet.ParameterSetName -eq 'n') {
-
       if (!$n -or !$ancestors) { return $From } else { return $ancestors[$n - 1] }
     }
 
     if ($PSCmdlet.ParameterSetName -eq 'named') {
-
       if (($match = GetBestIndex $ancestors $NamePart) -ge 0) {
         $ancestors[$match]
       }

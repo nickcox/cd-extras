@@ -67,70 +67,70 @@ Remove-Bookmark
 function Set-FrecentLocation {
 
   [OutputType([void])]
-  [CmdletBinding(SupportsShouldProcess, DefaultParameterSetName = 'named')]
+  [CmdletBinding(SupportsShouldProcess, DefaultParameterSetName = 'Named')]
   param(
     [Parameter(ParameterSetName = 'n', Position = 0)]
     [uint16] $n = 1,
 
     [Alias('NamePart')]
-    [Parameter(ParameterSetName = 'named', Position = 0)]
+    [Parameter(ParameterSetName = 'Named', Position = 0)]
     [string[]] $Terms,
 
     [Alias('l')]
-    [Parameter(ParameterSetName = 'list', Mandatory)]
+    [Parameter(ParameterSetName = 'List', Mandatory)]
     [switch] $List,
-    [Parameter(ParameterSetName = 'list')]
+    [Parameter(ParameterSetName = 'List')]
     [uint16] $First = $cde.MaxRecentCompletions,
-    [Parameter(ParameterSetName = 'list', ValueFromRemainingArguments)]
+    [Parameter(ParameterSetName = 'List', ValueFromRemainingArguments)]
     [string[]] $ListTerms,
 
     [Alias('p')]
-    [Parameter(ParameterSetName = 'prune', Mandatory)]
+    [Parameter(ParameterSetName = 'Prune', Mandatory)]
     [switch] $Prune,
-    [Parameter(ParameterSetName = 'prune', Position = 1)]
+    [Parameter(ParameterSetName = 'Prune', Position = 1)]
     [SupportsWildcards()]
     [string] $PrunePattern = $PWD,
 
     [Alias('m')]
-    [Parameter(ParameterSetName = 'mark', Mandatory)]
+    [Parameter(ParameterSetName = 'Mark', Mandatory)]
     [switch] $Mark,
-    [Parameter(ParameterSetName = 'mark', Position = 1)]
+    [Parameter(ParameterSetName = 'Mark', Position = 1)]
     [string] $MarkPath = $PWD,
 
     [Alias('u')]
-    [Parameter(ParameterSetName = 'unmark', Mandatory)]
+    [Parameter(ParameterSetName = 'Unmark', Mandatory)]
     [switch] $Unmark,
-    [Parameter(ParameterSetName = 'unmark', Position = 1)]
+    [Parameter(ParameterSetName = 'Unmark', Position = 1)]
     [string] $UnmarkPattern = $PWD,
 
     [switch] $PassThru
   )
 
-  if (($PSCmdlet.ParameterSetName -eq 'n') -and $n -ge 1) {
+  if ($PSCmdlet.ParameterSetName -eq 'n' -and $n -ge 1) {
     $recents = @(Get-FrecentLocation -First $n)
     if ($recents.Count -ge $n) { Set-LocationEx $recents[$n - 1] -PassThru:$PassThru }
   }
 
-  if ($PSCmdlet.ParameterSetName -eq 'named') {
+  if ($PSCmdlet.ParameterSetName -eq 'Named') {
     $recents = @(Get-FrecentLocation -First 1 $Terms)
     if ($recents) { Set-LocationEx $recents[0] -PassThru:$PassThru }
     elseif ($cde.RecentDirsFallThrough -and $Terms.Length -eq 1) { Set-LocationEx $Terms[0] -PassThru:$PassThru }
     else { Write-Error "Could not find '$Terms' in frecent locations." -ErrorAction Stop }
   }
 
-  if ($PSCmdlet.ParameterSetName -eq 'list' -and $List) {
+  if ($PSCmdlet.ParameterSetName -eq 'List' -and $List) {
     Get-FrecentLocation -First $First -Terms $ListTerms
   }
 
-  if ($PSCmdlet.ParameterSetName -eq 'prune' -and $Prune) {
+  if ($PSCmdlet.ParameterSetName -eq 'Prune' -and $Prune) {
     Remove-RecentLocation -Pattern $PrunePattern @args
   }
 
-  if ($PSCmdlet.ParameterSetName -eq 'mark') {
+  if ($PSCmdlet.ParameterSetName -eq 'Mark' -and $Mark) {
     Add-Bookmark -Path $MarkPath
   }
 
-  if ($PSCmdlet.ParameterSetName -eq 'unmark') {
+  if ($PSCmdlet.ParameterSetName -eq 'Unmark' -and $Unmark) {
     Remove-Bookmark -Pattern $UnmarkPattern
   }
 }

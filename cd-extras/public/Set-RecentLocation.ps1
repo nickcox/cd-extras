@@ -51,27 +51,27 @@ Remove-RecentLocation
 function Set-RecentLocation {
 
   [OutputType([void])]
-  [CmdletBinding(SupportsShouldProcess, DefaultParameterSetName = 'n')]
+  [CmdletBinding(SupportsShouldProcess, DefaultParameterSetName = 'Named')]
   param(
     [Parameter(ParameterSetName = 'n', Position = 0)]
     [uint16] $n = 1,
 
     [Alias('NamePart')]
-    [Parameter(ParameterSetName = 'named', Position = 0)]
+    [Parameter(ParameterSetName = 'Named', Position = 0)]
     [string[]] $Terms,
 
     [Alias('l')]
-    [Parameter(ParameterSetName = 'list', Mandatory)]
+    [Parameter(ParameterSetName = 'List', Mandatory)]
     [switch] $List,
-    [Parameter(ParameterSetName = 'list')]
+    [Parameter(ParameterSetName = 'List')]
     [uint16] $First = $cde.MaxRecentCompletions,
-    [Parameter(ParameterSetName = 'list', ValueFromRemainingArguments)]
+    [Parameter(ParameterSetName = 'List', ValueFromRemainingArguments)]
     [string[]] $ListTerms,
 
     [Alias('p')]
-    [Parameter(ParameterSetName = 'prune', Mandatory)]
+    [Parameter(ParameterSetName = 'Prune', Mandatory)]
     [switch] $Prune,
-    [Parameter(ParameterSetName = 'prune', Position = 1, Mandatory)]
+    [Parameter(ParameterSetName = 'Prune', Position = 1, Mandatory)]
     [SupportsWildcards()]
     [string] $PrunePattern,
 
@@ -83,18 +83,18 @@ function Set-RecentLocation {
     if ($recents.Count -ge $n) { Set-LocationEx $recents[$n - 1] -PassThru:$PassThru }
   }
 
-  if ($PSCmdlet.ParameterSetName -eq 'named') {
+  if ($PSCmdlet.ParameterSetName -eq 'Named') {
     $recents = @(GetRecent 1 $Terms)
     if ($recents) { Set-LocationEx $recents[0] -PassThru:$PassThru }
     elseif ($cde.RecentDirsFallThrough -and $Terms.Length -eq 1) { Set-LocationEx $Terms[0] -PassThru:$PassThru }
     else { Write-Error "Could not find '$Terms' in recent locations." -ErrorAction Stop }
   }
 
-  if ($PSCmdlet.ParameterSetName -eq 'list' -and $List) {
+  if ($PSCmdlet.ParameterSetName -eq 'List' -and $List) {
     Get-RecentLocation -First $First -Terms $ListTerms
   }
 
-  if ($PSCmdlet.ParameterSetName -eq 'prune' -and $Prune) {
+  if ($PSCmdlet.ParameterSetName -eq 'Prune' -and $Prune) {
     Remove-RecentLocation -Pattern $PrunePattern @args
   }
 }

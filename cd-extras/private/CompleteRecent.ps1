@@ -6,6 +6,6 @@ function CompleteRecent {
   if (!$recents) { return }
 
   @($recents) | Where Path -match ($wordToComplete | RemoveSurroundingQuotes | RemoveTrailingSeparator | Escape) |
-  IndexedComplete $false |
+  IndexedComplete ($parameterName -eq 'n') |
   DefaultIfEmpty { $null }
 }

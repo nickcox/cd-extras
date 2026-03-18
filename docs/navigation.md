@@ -266,10 +266,10 @@ Tab           MenuComplete Complete the input if there is a single completion ..
 C:\Windows\System32
 ```
 
-The _`IndexedCompletion`_ option controls how completion text is displayed. When _IndexedCompletion_
-is on and more than one completion is available, the completions offered are the *indices* of each
-corresponding directory; the directory name is displayed in the menu below. The full directory path
-is given in the tooltip if you have _PSReadLine_ tooltips enabled.
+The _`IndexedCompletion`_ option controls how completion text is displayed for ancestor and stack based completion.
+When _IndexedCompletion_ is on and more than one completion is available, the completions offered are the *indices*
+of each corresponding directory; the directory name is displayed in the menu below. The full directory path is given
+in the tooltip if you have _PSReadLine_ tooltips enabled.
 
 _cd-extras_ detects _PSReadLine_ options in order to set _IndexedCompletion_ at startup. If the
 _PSReadLine_ `MenuComplete` option is bound to at least one key combination then _IndexedCompletion_
