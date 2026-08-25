@@ -315,7 +315,7 @@ Describe 'cd-extras' {
     }
   }
 
-  Describe 'Persisted recent locations across processes' {
+  Describe 'Persisted recent locations' {
     BeforeAll {
       $powerShellCommand = if ($PSEdition -eq 'Core') {
         'pwsh'
@@ -335,6 +335,7 @@ Describe 'cd-extras' {
           -TargetPath $targetPath 2>&1
 
         $LASTEXITCODE | Should -Be 0 -Because ($output | Out-String)
+        if ($operation -eq 'Count') { $output }
       }
     }
 
@@ -354,13 +355,14 @@ Describe 'cd-extras' {
 
     AfterEach {
       setocd RECENT_DIRS_FILE
+      setocd MaxRecentDirs 120
       Microsoft.PowerShell.Management\Set-Location TestDrive:\
       Remove-RecentLocation *
       Remove-Item -LiteralPath $processTestRoot -Recurse -Force -ErrorAction Ignore
     }
 
     It 'retains entries written by another process' {
-      InvokeRecentStoreChild Enter $childTarget
+      $null = InvokeRecentStoreChild Enter $childTarget
 
       Set-LocationEx -LiteralPath $parentTarget
 
@@ -374,14 +376,14 @@ Describe 'cd-extras' {
       Set-LocationEx -LiteralPath $sharedTarget
       Microsoft.PowerShell.Management\Set-Location TestDrive:\
 
-      InvokeRecentStoreChild Enter $sharedTarget
+      $null = InvokeRecentStoreChild Enter $sharedTarget
 
       $entry = Import-Csv -LiteralPath $storeFile | Where-Object Path -eq $sharedTarget
       [int]$entry.EnterCount | Should -Be 2
     }
 
     It 'retains a bookmark written by another process' {
-      InvokeRecentStoreChild Mark $childTarget
+      $null = InvokeRecentStoreChild Mark $childTarget
 
       Set-LocationEx -LiteralPath $parentTarget
 
@@ -395,7 +397,7 @@ Describe 'cd-extras' {
       Microsoft.PowerShell.Management\Set-Location TestDrive:\
       Add-Bookmark -Path $sharedTarget
 
-      InvokeRecentStoreChild Unmark $sharedTarget
+      $null = InvokeRecentStoreChild Unmark $sharedTarget
       Set-LocationEx -LiteralPath $parentTarget
 
       $entry = Import-Csv -LiteralPath $storeFile | Where-Object Path -eq $sharedTarget
@@ -406,7 +408,7 @@ Describe 'cd-extras' {
       Set-LocationEx -LiteralPath $sharedTarget
       Microsoft.PowerShell.Management\Set-Location TestDrive:\
 
-      InvokeRecentStoreChild Remove $sharedTarget
+      $null = InvokeRecentStoreChild Remove $sharedTarget
       Set-LocationEx -LiteralPath $parentTarget
 
       $paths = @(Import-Csv -LiteralPath $storeFile).Path
@@ -419,7 +421,7 @@ Describe 'cd-extras' {
       Set-LocationEx -LiteralPath $childTarget
       Microsoft.PowerShell.Management\Set-Location TestDrive:\
 
-      InvokeRecentStoreChild Clear $sharedTarget
+      $null = InvokeRecentStoreChild Clear $sharedTarget
       Set-LocationEx -LiteralPath $parentTarget
 
       $paths = @(Import-Csv -LiteralPath $storeFile).Path
@@ -428,7 +430,7 @@ Describe 'cd-extras' {
       $paths | Should -Contain $parentTarget
     }
 
-    It 'reports a write failure without changing in-memory history' {
+    It 'warns after navigation fails to write recent history' {
       Set-LocationEx -LiteralPath $childTarget
       Microsoft.PowerShell.Management\Set-Location TestDrive:\
 
@@ -437,12 +439,65 @@ Describe 'cd-extras' {
       setocd RECENT_DIRS_FILE (Join-Path $missingParent recent.csv)
       Remove-Item -LiteralPath $missingParent -Recurse -Force
 
-      { Set-LocationEx -LiteralPath $parentTarget } | Should -Throw
+      $warnings = Set-LocationEx -LiteralPath $parentTarget 3>&1
 
+      $PWD.Path | Should -Be $parentTarget
+      $warnings | Should -HaveCount 1
+      $warnings[0].Message | Should -BeLike 'Location changed, but recent history could not be saved:*'
       $memoryPaths = &(Get-Module cd-extras) { $recent.Keys }
       $memoryPaths | Should -Contain $childTarget
       $memoryPaths | Should -Not -Contain $parentTarget
       $Error.Clear()
+      $global:Error.Clear()
+    }
+
+    It 'persists removal of the final recent location' {
+      Set-LocationEx -LiteralPath $sharedTarget
+      Microsoft.PowerShell.Management\Set-Location TestDrive:\
+
+      Remove-RecentLocation -Pattern $sharedTarget -Confirm:$false
+
+      Test-Path -LiteralPath $storeFile | Should -BeFalse
+      [int](InvokeRecentStoreChild Count $sharedTarget) | Should -Be 0
+    }
+
+    It 'persists clearing every recent location' {
+      Set-LocationEx -LiteralPath $sharedTarget
+      Set-LocationEx -LiteralPath $childTarget
+      Microsoft.PowerShell.Management\Set-Location TestDrive:\
+
+      Remove-RecentLocation -Pattern * -Confirm:$false
+
+      Test-Path -LiteralPath $storeFile | Should -BeFalse
+      [int](InvokeRecentStoreChild Count $sharedTarget) | Should -Be 0
+    }
+
+    It 'removes the datastore when the final pure bookmark is unmarked' {
+      Add-Bookmark -Path $sharedTarget
+
+      Remove-Bookmark -Pattern $sharedTarget -Confirm:$false
+
+      Test-Path -LiteralPath $storeFile | Should -BeFalse
+      [int](InvokeRecentStoreChild Count $sharedTarget) | Should -Be 0
+    }
+
+    It 'persists an empty store when MaxRecentDirs is zero' {
+      Set-LocationEx -LiteralPath $sharedTarget
+      Microsoft.PowerShell.Management\Set-Location TestDrive:\
+
+      setocd MaxRecentDirs 0
+
+      Test-Path -LiteralPath $storeFile | Should -BeFalse
+      setocd MaxRecentDirs 120
+      [int](InvokeRecentStoreChild Count $sharedTarget) | Should -Be 0
+    }
+
+    It 'can clear a missing datastore' {
+      Test-Path -LiteralPath $storeFile | Should -BeFalse
+
+      { Remove-RecentLocation -Pattern * -Confirm:$false } | Should -Not -Throw
+
+      Test-Path -LiteralPath $storeFile | Should -BeFalse
     }
   }
 
@@ -1075,6 +1130,38 @@ Describe 'cd-extras' {
   }
 
   InModuleScope cd-extras {
+
+    Describe 'Empty recent store persistence errors' {
+      BeforeEach {
+        setocd RECENT_DIRS_FILE
+        Remove-RecentLocation *
+
+        $storeFile = 'TestDrive:/recent-delete-failure.csv'
+        $storedPath = (Resolve-Path 'TestDrive:/powershell').Path
+        setocd RECENT_DIRS_FILE $storeFile
+        UpdateRecent $storedPath
+      }
+
+      AfterEach {
+        setocd RECENT_DIRS_FILE
+        Remove-RecentLocation *
+        $Error.Clear()
+        $global:Error.Clear()
+      }
+
+      It 'reports a delete failure without changing in-memory history' {
+        Mock Remove-Item { throw 'delete failed' } -ParameterFilter {
+          $LiteralPath -eq $cde.RECENT_DIRS_FILE
+        }
+
+        { RemoveRecent @($storedPath) } | Should -Throw 'delete failed'
+
+        $recent.ContainsKey($storedPath) | Should -BeTrue
+        Test-Path -LiteralPath $storeFile | Should -BeTrue
+        $Error.Clear()
+        $global:Error.Clear()
+      }
+    }
 
     Describe 'Path expansion' {
       It 'expands multiple items' {

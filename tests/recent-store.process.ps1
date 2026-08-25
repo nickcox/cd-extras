@@ -7,7 +7,7 @@ param(
   [string] $StorePath,
 
   [Parameter(Mandatory)]
-  [ValidateSet('Enter', 'Mark', 'Unmark', 'Remove', 'Clear')]
+  [ValidateSet('Enter', 'Mark', 'Unmark', 'Remove', 'Clear', 'Count')]
   [string] $Operation,
 
   [Parameter(Mandatory)]
@@ -26,4 +26,5 @@ switch ($Operation) {
   'Unmark' { Remove-Bookmark -Pattern $TargetPath -Confirm:$false }
   'Remove' { Remove-RecentLocation -Pattern $TargetPath -Confirm:$false }
   'Clear' { Remove-RecentLocation -Pattern * -Confirm:$false }
+  'Count' { Write-Output (@(Get-RecentLocation).Count) }
 }

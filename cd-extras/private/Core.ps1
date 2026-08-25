@@ -190,7 +190,9 @@ function WriteRecentStore([hashtable] $store) {
   if (!$cde.RECENT_DIRS_FILE) { return }
 
   if (!$store.Count) {
-    Remove-Item -LiteralPath $cde.RECENT_DIRS_FILE -ErrorAction Ignore
+    if (Test-Path -LiteralPath $cde.RECENT_DIRS_FILE) {
+      Remove-Item -LiteralPath $cde.RECENT_DIRS_FILE -ErrorAction Stop
+    }
     return
   }
 
@@ -219,7 +221,9 @@ function WriteRecentStore([hashtable] $store) {
 function ImportRecent() {
   InvokeWithRecentLock {
     $store = ReadRecentStore
+    $previousCount = $store.Count
     TrimRecent $store
+    if ($store.Count -ne $previousCount) { WriteRecentStore $store }
     SetRecentState $store
   }
 }

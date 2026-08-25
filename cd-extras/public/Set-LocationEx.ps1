@@ -196,7 +196,12 @@ Function Set-LocationEx {
     if ($PWD.Path -ne $startLocation) {
       $redoStack.Clear()
       $undoStack.Push($startLocation)
-      UpdateRecent $PWD.Path
+      try {
+        UpdateRecent $PWD.Path
+      }
+      catch {
+        Write-Warning "Location changed, but recent history could not be saved: $($_.Exception.Message)"
+      }
     }
 
     if ($steppablePipeline) {
