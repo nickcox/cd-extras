@@ -71,9 +71,9 @@ function Set-RecentLocation {
     [Alias('p')]
     [Parameter(ParameterSetName = 'Prune', Mandatory)]
     [switch] $Prune,
-    [Parameter(ParameterSetName = 'Prune', Position = 1, Mandatory)]
+    [Parameter(ParameterSetName = 'Prune', Position = 1)]
     [SupportsWildcards()]
-    [string] $PrunePattern,
+    [string] $PrunePattern = $PWD,
 
     [switch] $PassThru
   )
@@ -95,6 +95,6 @@ function Set-RecentLocation {
   }
 
   if ($PSCmdlet.ParameterSetName -eq 'Prune' -and $Prune) {
-    Remove-RecentLocation -Pattern $PrunePattern @args
+    Remove-RecentLocation -Pattern $PrunePattern
   }
 }

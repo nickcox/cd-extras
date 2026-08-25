@@ -277,6 +277,57 @@ Describe 'cd-extras' {
       cdr -p *
       (cdr -l) | Should -BeNullOrEmpty
     }
+
+    It 'prunes the current directory when no pattern is given' {
+      cd TestDrive:/powershell/tools/terms
+      cd TestDrive:/powershell/tools/ResxGen
+      cd TestDrive:/powershell/tools/terms
+
+      cdr -p -Confirm:$false
+      Microsoft.PowerShell.Management\Set-Location TestDrive:/
+
+      (Get-RecentLocation).Name | Should -Be 'ResxGen'
+    }
+
+    It 'prunes a matching leaf name' {
+      cd TestDrive:/powershell/tools/ResxGen
+      cd TestDrive:/powershell/tools/terms
+      cd TestDrive:/
+
+      cdr -p ResxGen -Confirm:$false
+
+      (Get-RecentLocation).Name | Should -Be 'terms'
+    }
+
+    It 'prunes every path matching a wildcard' {
+      cd TestDrive:/powershell/tools/ResxGen
+      cd TestDrive:/powershell/tools/terms
+      cd TestDrive:/
+
+      cdr -p '*tools*' -Confirm:$false
+
+      Get-RecentLocation | Should -BeNullOrEmpty
+    }
+
+    It 'honours WhatIf when pruning the current directory' {
+      cd TestDrive:/powershell/tools/ResxGen
+      cd TestDrive:/powershell/tools/terms
+
+      cdr -p -WhatIf
+      Microsoft.PowerShell.Management\Set-Location TestDrive:/
+
+      (Get-RecentLocation).Name | Should -Contain 'terms'
+    }
+
+    It 'does not change other rows when the current directory is not stored' {
+      cd TestDrive:/powershell/tools/ResxGen
+      Microsoft.PowerShell.Management\Set-Location TestDrive:/powershell/docs
+
+      cdr -p -Confirm:$false
+      Microsoft.PowerShell.Management\Set-Location TestDrive:/
+
+      (Get-RecentLocation).Name | Should -Be 'ResxGen'
+    }
   }
 
   Describe 'Get-RecentLocation' {
@@ -461,6 +512,15 @@ Describe 'cd-extras' {
       [int](InvokeRecentStoreChild Count $sharedTarget) | Should -Be 0
     }
 
+    It 'persists cdr pruning of the current directory' {
+      Set-LocationEx -LiteralPath $sharedTarget
+
+      cdr -p -Confirm:$false
+
+      Test-Path -LiteralPath $storeFile | Should -BeFalse
+      [int](InvokeRecentStoreChild Count $sharedTarget) | Should -Be 0
+    }
+
     It 'persists clearing every recent location' {
       Set-LocationEx -LiteralPath $sharedTarget
       Set-LocationEx -LiteralPath $childTarget
@@ -552,6 +612,17 @@ Describe 'cd-extras' {
       Get-Bookmark | Should -Be $PWD.Path
       cdf -u
       Get-BookMark | Should -BeNullOrEmpty
+    }
+
+    It 'prunes the current directory when no pattern is given' {
+      cd TestDrive:/powershell/tools/terms
+      cd TestDrive:/powershell/tools/ResxGen
+      cd TestDrive:/powershell/tools/terms
+
+      cdf -p -Confirm:$false
+      Microsoft.PowerShell.Management\Set-Location TestDrive:/
+
+      (Get-RecentLocation).Name | Should -Be 'ResxGen'
     }
   }
 

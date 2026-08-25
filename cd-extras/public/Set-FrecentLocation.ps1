@@ -123,7 +123,7 @@ function Set-FrecentLocation {
   }
 
   if ($PSCmdlet.ParameterSetName -eq 'Prune' -and $Prune) {
-    Remove-RecentLocation -Pattern $PrunePattern @args
+    Remove-RecentLocation -Pattern $PrunePattern
   }
 
   if ($PSCmdlet.ParameterSetName -eq 'Mark' -and $Mark) {
