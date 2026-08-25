@@ -315,6 +315,137 @@ Describe 'cd-extras' {
     }
   }
 
+  Describe 'Persisted recent locations across processes' {
+    BeforeAll {
+      $powerShellCommand = if ($PSEdition -eq 'Core') {
+        'pwsh'
+      }
+      else {
+        'powershell'
+      }
+      $null = Get-Command $powerShellCommand -CommandType Application -ErrorAction Stop
+      $modulePath = (Resolve-Path "$PSScriptRoot/../cd-extras/cd-extras.psd1").Path
+      $childScript = (Resolve-Path "$PSScriptRoot/recent-store.process.ps1").Path
+
+      function InvokeRecentStoreChild([string] $operation, [string] $targetPath) {
+        $output = & $powerShellCommand -NoLogo -NoProfile -File $childScript `
+          -ModulePath $modulePath `
+          -StorePath $storeFile `
+          -Operation $operation `
+          -TargetPath $targetPath 2>&1
+
+        $LASTEXITCODE | Should -Be 0 -Because ($output | Out-String)
+      }
+    }
+
+    BeforeEach {
+      setocd RECENT_DIRS_FILE
+      Remove-RecentLocation *
+
+      $processTestRoot = Join-Path ([IO.Path]::GetTempPath()) "cd-extras-$([guid]::NewGuid())"
+      $null = New-Item -ItemType Directory -Path $processTestRoot
+      $parentTarget = (New-Item -ItemType Directory -Path (Join-Path $processTestRoot parent)).FullName
+      $childTarget = (New-Item -ItemType Directory -Path (Join-Path $processTestRoot child)).FullName
+      $sharedTarget = (New-Item -ItemType Directory -Path (Join-Path $processTestRoot shared)).FullName
+      $storeFile = Join-Path $processTestRoot recent.csv
+
+      setocd RECENT_DIRS_FILE $storeFile
+    }
+
+    AfterEach {
+      setocd RECENT_DIRS_FILE
+      Microsoft.PowerShell.Management\Set-Location TestDrive:\
+      Remove-RecentLocation *
+      Remove-Item -LiteralPath $processTestRoot -Recurse -Force -ErrorAction Ignore
+    }
+
+    It 'retains entries written by another process' {
+      InvokeRecentStoreChild Enter $childTarget
+
+      Set-LocationEx -LiteralPath $parentTarget
+
+      $paths = @(Import-Csv -LiteralPath $storeFile).Path
+      $paths | Should -Contain $childTarget
+      $paths | Should -Contain $parentTarget
+      @(Get-ChildItem -LiteralPath $processTestRoot -File).Name | Should -Be 'recent.csv'
+    }
+
+    It 'increments an entry written by more than one process' {
+      Set-LocationEx -LiteralPath $sharedTarget
+      Microsoft.PowerShell.Management\Set-Location TestDrive:\
+
+      InvokeRecentStoreChild Enter $sharedTarget
+
+      $entry = Import-Csv -LiteralPath $storeFile | Where-Object Path -eq $sharedTarget
+      [int]$entry.EnterCount | Should -Be 2
+    }
+
+    It 'retains a bookmark written by another process' {
+      InvokeRecentStoreChild Mark $childTarget
+
+      Set-LocationEx -LiteralPath $parentTarget
+
+      $entries = @(Import-Csv -LiteralPath $storeFile)
+      $entries.Path | Should -Contain $parentTarget
+      ($entries | Where-Object Path -eq $childTarget).Favour | Should -Be 'True'
+    }
+
+    It 'retains an unmark written by another process' {
+      Set-LocationEx -LiteralPath $sharedTarget
+      Microsoft.PowerShell.Management\Set-Location TestDrive:\
+      Add-Bookmark -Path $sharedTarget
+
+      InvokeRecentStoreChild Unmark $sharedTarget
+      Set-LocationEx -LiteralPath $parentTarget
+
+      $entry = Import-Csv -LiteralPath $storeFile | Where-Object Path -eq $sharedTarget
+      $entry.Favour | Should -Be 'False'
+    }
+
+    It 'does not restore an entry removed by another process' {
+      Set-LocationEx -LiteralPath $sharedTarget
+      Microsoft.PowerShell.Management\Set-Location TestDrive:\
+
+      InvokeRecentStoreChild Remove $sharedTarget
+      Set-LocationEx -LiteralPath $parentTarget
+
+      $paths = @(Import-Csv -LiteralPath $storeFile).Path
+      $paths | Should -Not -Contain $sharedTarget
+      $paths | Should -Contain $parentTarget
+    }
+
+    It 'does not restore entries cleared by another process' {
+      Set-LocationEx -LiteralPath $sharedTarget
+      Set-LocationEx -LiteralPath $childTarget
+      Microsoft.PowerShell.Management\Set-Location TestDrive:\
+
+      InvokeRecentStoreChild Clear $sharedTarget
+      Set-LocationEx -LiteralPath $parentTarget
+
+      $paths = @(Import-Csv -LiteralPath $storeFile).Path
+      $paths | Should -Not -Contain $sharedTarget
+      $paths | Should -Not -Contain $childTarget
+      $paths | Should -Contain $parentTarget
+    }
+
+    It 'reports a write failure without changing in-memory history' {
+      Set-LocationEx -LiteralPath $childTarget
+      Microsoft.PowerShell.Management\Set-Location TestDrive:\
+
+      $missingParent = Join-Path $processTestRoot store
+      $null = New-Item -ItemType Directory -Path $missingParent
+      setocd RECENT_DIRS_FILE (Join-Path $missingParent recent.csv)
+      Remove-Item -LiteralPath $missingParent -Recurse -Force
+
+      { Set-LocationEx -LiteralPath $parentTarget } | Should -Throw
+
+      $memoryPaths = &(Get-Module cd-extras) { $recent.Keys }
+      $memoryPaths | Should -Contain $childTarget
+      $memoryPaths | Should -Not -Contain $parentTarget
+      $Error.Clear()
+    }
+  }
+
   Describe 'Set-FrecentLocation' {
     BeforeEach { Remove-RecentLocation * }
 

@@ -20,8 +20,8 @@ RegisterCompletions @('Set-FrecentLocation') 'n' { CompleteFrecent @args }
 RegisterCompletions @('Set-FrecentLocation') 'Terms' { CompleteFrecent @args }
 
 $MyInvocation.MyCommand.ScriptBlock.Module.OnRemove = {
-  if ($background) { $background.Dispose() }
   $ExecutionContext.SessionState.InvokeCommand.CommandNotFoundAction = $null
   Set-Item Alias:cd $cdAlias
+  $cde.mutex.Dispose()
   Remove-Variable cde -Scope Global -ErrorAction Ignore
 }
