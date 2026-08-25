@@ -711,6 +711,66 @@ Describe 'cd-extras' {
       @(Get-RecentLocation).Count | Should -Be 1
     }
 
+    It 'bookmarks a directory containing square brackets literally' {
+      $target = (Resolve-Path -LiteralPath 'TestDrive:/powershell/directory[with]squarebrackets').Path
+
+      Add-Bookmark -Path $target
+
+      Get-Bookmark | Should -Be $target
+    }
+
+    It 'rejects a filesystem file without adding it to any location output' {
+      $file = (New-Item -ItemType File -Path TestDrive:/bookmark.txt).FullName
+
+      Add-Bookmark -Path $file -ErrorAction SilentlyContinue -ErrorVariable bookmarkErrors
+
+      $bookmarkErrors | Should -HaveCount 1
+      $bookmarkErrors[0].CategoryInfo.Category | Should -Be InvalidArgument
+      $bookmarkErrors[0].Exception.Message | Should -Be "Cannot bookmark '$file' because it is not a container."
+      Get-Bookmark | Should -BeNullOrEmpty
+      Get-RecentLocation | Should -BeNullOrEmpty
+      Get-FrecentLocation | Should -BeNullOrEmpty
+      $Error.Clear()
+      $global:Error.Clear()
+    }
+
+    It 'reports a missing bookmark path' {
+      $missing = 'TestDrive:/does-not-exist'
+
+      Add-Bookmark -Path $missing -ErrorAction SilentlyContinue -ErrorVariable bookmarkErrors
+
+      $bookmarkErrors | Should -HaveCount 1
+      $bookmarkErrors[0].CategoryInfo.Category | Should -Be InvalidArgument
+      $bookmarkErrors[0].Exception.Message | Should -Be "Cannot bookmark '$missing' because it does not exist."
+      Get-Bookmark | Should -BeNullOrEmpty
+      $Error.Clear()
+      $global:Error.Clear()
+    }
+
+    It 'continues processing valid pipeline paths after an invalid path' {
+      $terms = (Resolve-Path TestDrive:/powershell/tools/terms).Path
+      $resxGen = (Resolve-Path TestDrive:/powershell/tools/ResxGen).Path
+      $file = (New-Item -ItemType File -Path TestDrive:/invalid-pipeline-bookmark.txt).FullName
+
+      $terms, $file, $resxGen |
+      Add-Bookmark -ErrorAction SilentlyContinue -ErrorVariable bookmarkErrors
+
+      $bookmarkErrors | Should -HaveCount 1
+      @(Get-Bookmark) | Should -Contain $terms
+      @(Get-Bookmark) | Should -Contain $resxGen
+      @(Get-Bookmark) | Should -HaveCount 2
+      $Error.Clear()
+      $global:Error.Clear()
+    }
+
+    It 'bookmarks a registry container' -Skip:(!$IsWindows) {
+      $target = (Resolve-Path -LiteralPath 'HKCU:/Software').Path
+
+      Add-Bookmark -Path 'HKCU:/Software'
+
+      Get-Bookmark | Should -Be $target
+    }
+
     It 'bookmarks are not evicted when the recent list is trimmed' {
       setocd MaxRecentDirs 3
       mark TestDrive:/powershell/tools/packaging
