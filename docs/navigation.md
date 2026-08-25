@@ -149,9 +149,9 @@ You can opt in to persisting to a CSV file by setting the `RECENT_DIRS_FILE` [op
 setocd RECENT_DIRS_FILE $env:APPDATA/.recent-dirs
 ```
 
-The size of the datastore - whether persisted or not - is configured with the `MaxRecentDirs` option.
-Once the limit is reached, the least recently entered directories are discarded after every directory
-change although bookmarked directories are never dropped.
+The normal maximum size of the datastore - whether persisted or not - is configured with the
+`MaxRecentDirs` option. Every bookmark is retained, even when the bookmarks alone exceed that value.
+Any remaining capacity is used for the most recently entered non-bookmarked directories.
 
 You can manually remove entries with the `Remove-RecentLocation` command or by using the `-Prune`
 switch with `Set-RecentLocation` and `Set-FrecentLocation`. This command expects a parameter,

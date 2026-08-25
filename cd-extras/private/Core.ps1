@@ -333,10 +333,14 @@ function RemoveRecent([string[]] $dirs) {
 }
 
 function TrimRecent([hashtable] $store = $recent) {
-  if ($store.Count -gt $cde.MaxRecentDirs) {
-    $store.Values |
-      Sort-Object Favour, LastEntered |
-      select -First ($store.Count - $cde.MaxRecentDirs) -expand Path |
+  $bookmarkCount = @($store.Values.Where{ $_.Favour }).Count
+  $ordinaryCapacity = [Math]::Max(0, [int]$cde.MaxRecentDirs - $bookmarkCount)
+  $ordinary = @($store.Values.Where{ !$_.Favour })
+
+  if ($ordinary.Count -gt $ordinaryCapacity) {
+    $ordinary |
+      Sort-Object @{ Expression = 'LastEntered'; Descending = $true }, @{ Expression = 'Path'; Descending = $false } |
+      select -Skip $ordinaryCapacity -Expand Path |
       % { $store.Remove($_) } |
       Out-Null
   }

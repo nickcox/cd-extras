@@ -443,6 +443,18 @@ Describe 'cd-extras' {
       ($entries | Where-Object Path -eq $childTarget).Favour | Should -Be 'True'
     }
 
+    It 'persists every bookmark when their count exceeds MaxRecentDirs' {
+      setocd MaxRecentDirs 2
+      Add-Bookmark -Path $parentTarget
+      Add-Bookmark -Path $childTarget
+      Add-Bookmark -Path $sharedTarget
+
+      $entries = @(Import-Csv -LiteralPath $storeFile)
+      $entries | Should -HaveCount 3
+      $entries.Favour | Should -Be @('True', 'True', 'True')
+      [int](InvokeRecentStoreChild Count $sharedTarget) | Should -Be 3
+    }
+
     It 'retains an unmark written by another process' {
       Set-LocationEx -LiteralPath $sharedTarget
       Microsoft.PowerShell.Management\Set-Location TestDrive:\
@@ -710,6 +722,104 @@ Describe 'cd-extras' {
       Get-Bookmark | Should -Not -BeNullOrEmpty
       Get-Bookmark | Should -BeLike '*packaging*'
       setocd MaxRecentDirs 120
+    }
+
+    It 'keeps more bookmarks than MaxRecentDirs' {
+      try {
+        setocd MaxRecentDirs 2
+        mark TestDrive:/powershell/tools/packaging
+        mark TestDrive:/powershell/tools/releaseBuild
+        mark TestDrive:/powershell/tools/ResxGen
+
+        @(Get-Bookmark) | Should -HaveCount 3
+        @(Get-RecentLocation) | Should -HaveCount 3
+      }
+      finally {
+        setocd MaxRecentDirs 120
+      }
+    }
+
+    It 'uses only remaining capacity for ordinary recent locations' {
+      try {
+        setocd MaxRecentDirs 3
+        $packaging = (Resolve-Path TestDrive:/powershell/tools/packaging).Path
+        $releaseBuild = (Resolve-Path TestDrive:/powershell/tools/releaseBuild).Path
+        $terms = (Resolve-Path TestDrive:/powershell/tools/terms).Path
+        $failingTests = (Resolve-Path TestDrive:/powershell/tools/failingTests).Path
+        mark $packaging
+        mark $releaseBuild
+        Set-LocationEx -LiteralPath $failingTests
+        Set-LocationEx -LiteralPath $terms
+        Microsoft.PowerShell.Management\Set-Location TestDrive:/
+
+        $paths = @(Get-RecentLocation).Path
+        $paths | Should -Contain $packaging
+        $paths | Should -Contain $releaseBuild
+        $paths | Should -Contain $terms
+        $paths | Should -Not -Contain $failingTests
+        $paths | Should -HaveCount 3
+      }
+      finally {
+        setocd MaxRecentDirs 120
+      }
+    }
+
+    It 'discards an ordinary entry when bookmarks already exceed the limit' {
+      try {
+        setocd MaxRecentDirs 1
+        mark TestDrive:/powershell/tools/packaging
+        mark TestDrive:/powershell/tools/releaseBuild
+        Set-LocationEx -LiteralPath TestDrive:/powershell/tools/terms
+        Microsoft.PowerShell.Management\Set-Location TestDrive:/
+
+        @(Get-Bookmark) | Should -HaveCount 2
+        @(Get-RecentLocation) | Should -HaveCount 2
+      }
+      finally {
+        setocd MaxRecentDirs 120
+      }
+    }
+
+    It 'keeps every bookmark after the limit is lowered below their count' {
+      try {
+        setocd MaxRecentDirs 4
+        mark TestDrive:/powershell/tools/packaging
+        mark TestDrive:/powershell/tools/releaseBuild
+        mark TestDrive:/powershell/tools/ResxGen
+        Set-LocationEx -LiteralPath TestDrive:/powershell/tools/failingTests
+        Microsoft.PowerShell.Management\Set-Location TestDrive:/
+        @(Get-RecentLocation) | Should -HaveCount 4
+
+        setocd MaxRecentDirs 2
+        Set-LocationEx -LiteralPath TestDrive:/powershell/tools/terms
+        Microsoft.PowerShell.Management\Set-Location TestDrive:/
+
+        @(Get-Bookmark) | Should -HaveCount 3
+        @(Get-RecentLocation) | Should -HaveCount 3
+      }
+      finally {
+        setocd MaxRecentDirs 120
+      }
+    }
+
+    It 'trims a visited bookmark after it is unmarked with no ordinary capacity' {
+      try {
+        setocd MaxRecentDirs 1
+        $terms = (Resolve-Path TestDrive:/powershell/tools/terms).Path
+        $resxGen = (Resolve-Path TestDrive:/powershell/tools/ResxGen).Path
+        Set-LocationEx -LiteralPath $terms
+        Microsoft.PowerShell.Management\Set-Location TestDrive:/
+        mark $terms
+        mark $resxGen
+
+        unmark $terms -Confirm:$false
+
+        Get-Bookmark | Should -Be $resxGen
+        @(Get-RecentLocation).Path | Should -Not -Contain $terms
+      }
+      finally {
+        setocd MaxRecentDirs 120
+      }
     }
 
     It 'can remove a bookmark by leaf name' {
@@ -1786,6 +1896,26 @@ Describe 'cd-extras' {
         WriteLog "test"
 
         $message | Should -Be "test"
+      }
+    }
+
+    Describe 'TrimRecent' {
+      It 'uses path order to break equal ordinary timestamps' {
+        $originalMaximum = $cde.MaxRecentDirs
+        $store = @{
+          z = [RecentDir]@{ Path = 'z'; LastEntered = 10; EnterCount = 1 }
+          a = [RecentDir]@{ Path = 'a'; LastEntered = 10; EnterCount = 1 }
+          b = [RecentDir]@{ Path = 'b'; LastEntered = 10; EnterCount = 1 }
+        }
+
+        try {
+          $cde.MaxRecentDirs = 2
+          TrimRecent $store
+          @($store.Keys | Sort-Object) | Should -Be 'a', 'b'
+        }
+        finally {
+          $cde.MaxRecentDirs = $originalMaximum
+        }
       }
     }
 

@@ -51,8 +51,9 @@ setocd @{ AUTO_CD = $false; CD_PATH = '~/Documents/', '~/Downloads' }
   - When truthy, `cdr` and `cdf` will treat the argument as a literal path if no matching
     recent or frecent entry is found.
 - _MaxRecentDirs_: `[uint16] = 120`
-  - Maximum number of entries in the recent locations datastore. Once the limit is reached,
-    the least recently used non-bookmarked directories are discarded.
+  - Normal maximum number of entries in the recent locations datastore. Every bookmark is retained,
+    so bookmarks can make the total exceed this value. Any remaining capacity is used for the most
+    recently entered non-bookmarked directories.
 - _MaxRecentCompletions_: `[uint16] = 60`
   - Default number of results returned by `Get-RecentLocation`, `Get-FrecentLocation`,
     and related completions.
