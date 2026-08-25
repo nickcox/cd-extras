@@ -25,6 +25,11 @@ Disables AUTO_CD
 PS C:\> Set-CdExtrasOption -Option CD_PATH -Value @('/temp')
 
 Set the directory search paths to the single directory, '/temp'
+
+.EXAMPLE
+PS C:\> Set-CdExtrasOption -Options ([ordered]@{ MaxRecentDirs = 100; AUTO_CD = $false })
+
+Set several options from any dictionary that implements System.Collections.IDictionary.
 #>
 function Set-CdExtrasOption {
 
@@ -61,23 +66,60 @@ function Set-CdExtrasOption {
       'FileCompletions'
     )
 
-    if ($null -eq $Value -and $Option -in $flags) {
-      $Value = $true
+    $optionNames = if ($PSCmdlet.ParameterSetName -eq 'Set') { @($Option) } else { @($Options.Keys) }
+    $publicPropertyNames = @($Global:cde | Get-Member -Type Property).Name
+    $updates = @()
+
+    foreach ($optionName in $optionNames) {
+      $propertyName = $publicPropertyNames | Where-Object { $_ -eq $optionName } | Select-Object -First 1
+      if (!$propertyName) {
+        $exception = [ArgumentException]::new("Unknown cd-extras option '$optionName'.")
+        $errorRecord = [Management.Automation.ErrorRecord]::new(
+          $exception,
+          'UnknownCdExtrasOption',
+          [Management.Automation.ErrorCategory]::InvalidArgument,
+          $optionName
+        )
+        $PSCmdlet.ThrowTerminatingError($errorRecord)
+      }
+      $property = $Global:cde.PSObject.Properties[$propertyName]
+
+      $optionValue = if ($PSCmdlet.ParameterSetName -eq 'SetMany') { $Options[$optionName] } else { $Value }
+      if ($PSCmdlet.ParameterSetName -eq 'Set' -and $null -eq $optionValue -and $property.Name -in $flags) {
+        $optionValue = $true
+      }
+
+      $propertyType = [type]$property.TypeNameOfValue
+      try {
+        $convertedValue = [Management.Automation.LanguagePrimitives]::ConvertTo($optionValue, $propertyType)
+      }
+      catch {
+        $exception = [ArgumentException]::new(
+          "Invalid value for cd-extras option '$($property.Name)'. Expected $propertyType.",
+          $_.Exception
+        )
+        $errorRecord = [Management.Automation.ErrorRecord]::new(
+          $exception,
+          'InvalidCdExtrasOptionValue',
+          [Management.Automation.ErrorCategory]::InvalidArgument,
+          $optionValue
+        )
+        $PSCmdlet.ThrowTerminatingError($errorRecord)
+      }
+
+      if ($property.Name -in $completionTypes) {
+        $combined = @($property.Value)
+        foreach ($completion in $convertedValue) {
+          if ($combined -notcontains $completion) { $combined += $completion }
+        }
+        $convertedValue = [string[]]$combined
+      }
+
+      $updates += [pscustomobject]@{ Name = $property.Name; Value = $convertedValue }
     }
 
-    $opts = if ($Option) { $Option } else { $Options.Keys }
-    $opts | % {
-      $opt = $_
-      $val = if ($Options -is [hashtable] -and $Options.Keys -contains $_) { $Options[$_] } else { $Value }
-
-      if ($opt -in $completionTypes) {
-        if ($Global:cde.$opt -notcontains $val) {
-          $Global:cde.$opt += $val
-        }
-      }
-      else {
-        $Global:cde.$opt = $val
-      }
+    foreach ($update in $updates) {
+      $Global:cde.($update.Name) = $update.Value
     }
   }
 

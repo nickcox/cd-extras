@@ -1557,6 +1557,65 @@ Describe 'cd-extras' {
     }
 
     Describe 'Set-CdExtrasOption' {
+      It 'sets an option from a hashtable' {
+        $original = $cde.MaxCompletions
+        try {
+          Set-CdExtrasOption -Options @{ MaxCompletions = 7 }
+          $cde.MaxCompletions | Should -Be 7
+        }
+        finally {
+          $cde.MaxCompletions = $original
+        }
+      }
+
+      It 'sets supported property types from an ordered dictionary' {
+        $original = @{
+          ColorCompletion = $cde.ColorCompletion
+          NOARG_CD = $cde.NOARG_CD
+          MaxMenuLength = $cde.MaxMenuLength
+          CD_PATH = $cde.CD_PATH
+          ToolTip = $cde.ToolTip
+        }
+        $toolTip = { param($item) "item: $item" }
+
+        try {
+          Set-CdExtrasOption -Options ([ordered]@{
+              colorcompletion = $true
+              NOARG_CD = 'TestDrive:/'
+              MaxMenuLength = 42
+              CD_PATH = @('TestDrive:/powershell', 'TestDrive:/powershell/src')
+              ToolTip = $toolTip
+            })
+
+          $cde.ColorCompletion | Should -BeTrue
+          $cde.NOARG_CD | Should -Be 'TestDrive:/'
+          $cde.MaxMenuLength | Should -Be 42
+          $cde.CD_PATH | Should -Be @('TestDrive:/powershell', 'TestDrive:/powershell/src')
+          $cde.ToolTip | Should -Be $toolTip
+        }
+        finally {
+          $cde.ColorCompletion = $original.ColorCompletion
+          $cde.NOARG_CD = $original.NOARG_CD
+          $cde.MaxMenuLength = $original.MaxMenuLength
+          $cde.CD_PATH = $original.CD_PATH
+          $cde.ToolTip = $original.ToolTip
+        }
+      }
+
+      It 'sets an option from a directly created OrderedDictionary' {
+        $original = $cde.MaxRecentCompletions
+        $options = [Collections.Specialized.OrderedDictionary]::new()
+        $options.Add('maxrecentcompletions', 12)
+
+        try {
+          Set-CdExtrasOption -Options $options
+          $cde.MaxRecentCompletions | Should -Be 12
+        }
+        finally {
+          $cde.MaxRecentCompletions = $original
+        }
+      }
+
       It 'Setting a completion option extends existing completions' {
         $pathCompletions = $cde.PathCompletions
         $originalCount = $pathCompletions.Count
@@ -1574,6 +1633,85 @@ Describe 'cd-extras' {
         setocd FileCompletions xxx
 
         $cde.FileCompletions.Count | Should -Be $originalCount
+      }
+
+      It 'adds only new values from a completion array' {
+        $original = $cde.PathCompletions
+        $existing = $original[0]
+        $newCompletion = 'Test-MixedCompletion'
+
+        try {
+          Set-CdExtrasOption -Options @{
+            PathCompletions = @($existing, $newCompletion, $newCompletion)
+          }
+
+          @($cde.PathCompletions -eq $existing) | Should -HaveCount 1
+          @($cde.PathCompletions -eq $newCompletion) | Should -HaveCount 1
+        }
+        finally {
+          $cde.PathCompletions = $original
+        }
+      }
+
+      It 'rejects an unknown option without applying an earlier option' {
+        $original = $cde.MaxRecentDirs
+        $options = [ordered]@{
+          MaxRecentDirs = 7
+          DoesNotExist = $true
+        }
+
+        { Set-CdExtrasOption -Options $options } | Should -Throw "Unknown cd-extras option 'DoesNotExist'."
+        $cde.MaxRecentDirs | Should -Be $original
+        $Error.Clear()
+        $global:Error.Clear()
+      }
+
+      It 'does not allow hidden CdeOptions properties to be set' {
+        { Set-CdExtrasOption -Options @{ recentHash = 'not-public' } } |
+        Should -Throw "Unknown cd-extras option 'recentHash'."
+        $Error.Clear()
+        $global:Error.Clear()
+      }
+
+      It 'rejects an invalid value without applying an earlier option' {
+        $originalRecentDirs = $cde.MaxRecentDirs
+        $originalMenuLength = $cde.MaxMenuLength
+        Mock CommandNotFound
+        $options = [ordered]@{
+          MaxRecentDirs = 7
+          MaxMenuLength = 'not-a-number'
+        }
+
+        { Set-CdExtrasOption -Options $options } | Should -Throw "Invalid value for cd-extras option 'MaxMenuLength'.*"
+        $cde.MaxRecentDirs | Should -Be $originalRecentDirs
+        $cde.MaxMenuLength | Should -Be $originalMenuLength
+        Assert-MockCalled CommandNotFound -Times 0 -Exactly
+        $Error.Clear()
+        $global:Error.Clear()
+      }
+
+      It 'runs side effects once after a multi-option update' {
+        $originalRecentDirs = $cde.MaxRecentDirs
+        $originalMenuLength = $cde.MaxMenuLength
+        $originalFileCompletions = $cde.FileCompletions
+        $cde.FileCompletions = @('Test-SideEffectRegistration')
+        Mock CommandNotFound
+        Mock RegisterCompletions
+
+        try {
+          Set-CdExtrasOption -Options ([ordered]@{
+              MaxRecentDirs = 7
+              MaxMenuLength = 42
+            })
+
+          Assert-MockCalled CommandNotFound -Times 1 -Exactly
+          Assert-MockCalled RegisterCompletions -Times 3 -Exactly
+        }
+        finally {
+          $cde.MaxRecentDirs = $originalRecentDirs
+          $cde.MaxMenuLength = $originalMenuLength
+          $cde.FileCompletions = $originalFileCompletions
+        }
       }
 
       It 'Persists, loads or creates recent dirs file as necessary' {
