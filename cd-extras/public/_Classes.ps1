@@ -30,7 +30,7 @@ class CdeOptions {
   [uint16] $MaxRecentDirs = 120
   [uint16] $MaxRecentCompletions = 60
   [uint16] $MaxCompletions = 0
-  [uint16] $MaxMenuLength = 36
+  [uint16] $MaxMenuLength = 60
   [char[]] $WordDelimiters = '.', '_', '-'
   [string[]] $DirCompletions = @('Set-Location', 'Set-LocationEx', 'Push-Location')
   [string[]] $PathCompletions = @('Get-ChildItem', 'Get-Item', 'Invoke-Item', 'Expand-Path')
