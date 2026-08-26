@@ -359,7 +359,7 @@ Describe 'cd-extras' {
       Start-Sleep -Milliseconds 50
       Get-RecentLocation | Should -BeNullOrEmpty
 
-      $newList | Export-Csv -LiteralPath $cde.RECENT_DIRS_FILE
+      $newList | Export-Csv -NoTypeInformation -LiteralPath $cde.RECENT_DIRS_FILE
 
       Get-RecentLocation | Should -Not -BeNullOrEmpty
       setocd RECENT_DIRS_FILE
@@ -713,8 +713,8 @@ Describe 'cd-extras' {
     }
 
     It 'treats case variants as duplicate filesystem paths on Windows' -Skip:(!$IsWindows) {
-      $first = (Resolve-Path TestDrive:/powershell).Path
-      $second = (Resolve-Path TestDrive:/powershell/tools).Path
+      $first = (Resolve-Path (Join-Path $TestDrive 'powershell')).Path
+      $second = (Resolve-Path (Join-Path $TestDrive 'powershell/tools')).Path
       $caseVariant = $first.ToUpperInvariant()
       setocd FrecentProvider { $first; $caseVariant; $second }
 
@@ -1502,12 +1502,12 @@ Describe 'cd-extras' {
         @(
           [pscustomobject]@{ Path = $firstPath; LastEntered = $now; EnterCount = 1; Favour = $false }
           [pscustomobject]@{ Path = $secondPath; LastEntered = $now + 1; EnterCount = 1; Favour = $false }
-        ) | Export-Csv -LiteralPath $storeFile
+        ) | Export-Csv -NoTypeInformation -LiteralPath $storeFile
         @(Get-RecentLocation).Path | Should -Contain $firstPath
 
         @(
           [pscustomobject]@{ Path = $secondPath; LastEntered = $now + 1; EnterCount = 1; Favour = $false }
-        ) | Export-Csv -LiteralPath $storeFile
+        ) | Export-Csv -NoTypeInformation -LiteralPath $storeFile
 
         @(Get-RecentLocation).Path | Should -Be $secondPath
         $recent.ContainsKey($firstPath) | Should -BeFalse
@@ -1516,7 +1516,7 @@ Describe 'cd-extras' {
       It 'clears in-memory state when the configured file is deleted' {
         @(
           [pscustomobject]@{ Path = $firstPath; LastEntered = $now; EnterCount = 1; Favour = $false }
-        ) | Export-Csv -LiteralPath $storeFile
+        ) | Export-Csv -NoTypeInformation -LiteralPath $storeFile
         Get-RecentLocation | Should -Not -BeNullOrEmpty
 
         Remove-Item -LiteralPath $storeFile
@@ -1528,13 +1528,13 @@ Describe 'cd-extras' {
       It 'refreshes bookmarks directly after an external update' {
         @(
           [pscustomobject]@{ Path = $firstPath; LastEntered = $now; EnterCount = 1; Favour = $true }
-        ) | Export-Csv -LiteralPath $storeFile
+        ) | Export-Csv -NoTypeInformation -LiteralPath $storeFile
 
         Get-Bookmark | Should -Be $firstPath
 
         @(
           [pscustomobject]@{ Path = $secondPath; LastEntered = $now + 1; EnterCount = 1; Favour = $true }
-        ) | Export-Csv -LiteralPath $storeFile
+        ) | Export-Csv -NoTypeInformation -LiteralPath $storeFile
 
         Get-Bookmark | Should -Be $secondPath
       }
@@ -1542,7 +1542,7 @@ Describe 'cd-extras' {
       It 'refreshes bookmarks before removing one after an external update' {
         @(
           [pscustomobject]@{ Path = $firstPath; LastEntered = $now; EnterCount = 1; Favour = $true }
-        ) | Export-Csv -LiteralPath $storeFile
+        ) | Export-Csv -NoTypeInformation -LiteralPath $storeFile
 
         Remove-Bookmark -Pattern $firstPath -Confirm:$false
 
@@ -1558,12 +1558,12 @@ Describe 'cd-extras' {
         param($Field, $Value, $Message)
         @(
           [pscustomobject]@{ Path = $firstPath; LastEntered = $now; EnterCount = 1; Favour = $false }
-        ) | Export-Csv -LiteralPath $storeFile
+        ) | Export-Csv -NoTypeInformation -LiteralPath $storeFile
         Get-RecentLocation | Should -Not -BeNullOrEmpty
 
         $invalid = [ordered]@{ Path = $secondPath; LastEntered = $now; EnterCount = 1; Favour = $false }
         $invalid[$Field] = $Value
-        @([pscustomobject]$invalid) | Export-Csv -LiteralPath $storeFile
+        @([pscustomobject]$invalid) | Export-Csv -NoTypeInformation -LiteralPath $storeFile
 
         { Get-RecentLocation } | Should -Throw "*row 2 $Message*"
         $recent.Keys | Should -Be $firstPath
@@ -1574,12 +1574,12 @@ Describe 'cd-extras' {
       It 'rejects a missing required column without replacing valid state' {
         @(
           [pscustomobject]@{ Path = $firstPath; LastEntered = $now; EnterCount = 1; Favour = $false }
-        ) | Export-Csv -LiteralPath $storeFile
+        ) | Export-Csv -NoTypeInformation -LiteralPath $storeFile
         Get-RecentLocation | Should -Not -BeNullOrEmpty
 
         @(
           [pscustomobject]@{ Path = $secondPath; LastEntered = $now; EnterCount = 1 }
-        ) | Export-Csv -LiteralPath $storeFile
+        ) | Export-Csv -NoTypeInformation -LiteralPath $storeFile
 
         { Get-RecentLocation } | Should -Throw "*row 1 is missing required column 'Favour'*"
         $recent.Keys | Should -Be $firstPath
@@ -1590,13 +1590,13 @@ Describe 'cd-extras' {
       It 'rejects duplicate paths without replacing valid state' {
         @(
           [pscustomobject]@{ Path = $firstPath; LastEntered = $now; EnterCount = 1; Favour = $false }
-        ) | Export-Csv -LiteralPath $storeFile
+        ) | Export-Csv -NoTypeInformation -LiteralPath $storeFile
         Get-RecentLocation | Should -Not -BeNullOrEmpty
 
         @(
           [pscustomobject]@{ Path = $secondPath; LastEntered = $now; EnterCount = 1; Favour = $false }
           [pscustomobject]@{ Path = $secondPath; LastEntered = $now + 1; EnterCount = 2; Favour = $true }
-        ) | Export-Csv -LiteralPath $storeFile
+        ) | Export-Csv -NoTypeInformation -LiteralPath $storeFile
 
         { Get-RecentLocation } | Should -Throw "*row 3 duplicates path*"
         $recent.Keys | Should -Be $firstPath
@@ -1608,10 +1608,10 @@ Describe 'cd-extras' {
         $secondStore = 'TestDrive:/second-recent-store.csv'
         @(
           [pscustomobject]@{ Path = $firstPath; LastEntered = $now; EnterCount = 1; Favour = $false }
-        ) | Export-Csv -LiteralPath $storeFile
+        ) | Export-Csv -NoTypeInformation -LiteralPath $storeFile
         @(
           [pscustomobject]@{ Path = $secondPath; LastEntered = $now + 1; EnterCount = 1; Favour = $false }
-        ) | Export-Csv -LiteralPath $secondStore
+        ) | Export-Csv -NoTypeInformation -LiteralPath $secondStore
 
         setocd RECENT_DIRS_FILE $storeFile
         $recent.Keys | Should -Be $firstPath
@@ -1626,7 +1626,7 @@ Describe 'cd-extras' {
         $secondStore = 'TestDrive:/missing-recent-store.csv'
         @(
           [pscustomobject]@{ Path = $firstPath; LastEntered = $now; EnterCount = 1; Favour = $false }
-        ) | Export-Csv -LiteralPath $storeFile
+        ) | Export-Csv -NoTypeInformation -LiteralPath $storeFile
         setocd RECENT_DIRS_FILE $storeFile
 
         setocd RECENT_DIRS_FILE $secondStore

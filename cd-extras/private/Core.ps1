@@ -192,34 +192,34 @@ function ReadRecentStore() {
     }
 
     $rowNumber = 1
-    (Import-Csv -LiteralPath $cde.RECENT_DIRS_FILE -ErrorAction Stop).ForEach{
+    foreach ($row in @(Import-Csv -LiteralPath $cde.RECENT_DIRS_FILE -ErrorAction Stop)) {
       $rowNumber++
 
-      if ([string]::IsNullOrWhiteSpace($_.Path)) {
-        ThrowInvalidRecentStore $_ $rowNumber 'has an empty Path'
+      if ([string]::IsNullOrWhiteSpace($row.Path)) {
+        ThrowInvalidRecentStore $row $rowNumber 'has an empty Path'
       }
 
       $lastEntered = [uint64]0
-      if (![uint64]::TryParse($_.LastEntered, [ref]$lastEntered)) {
-        ThrowInvalidRecentStore $_ $rowNumber "has invalid LastEntered value '$($_.LastEntered)'"
+      if (![uint64]::TryParse($row.LastEntered, [ref]$lastEntered)) {
+        ThrowInvalidRecentStore $row $rowNumber "has invalid LastEntered value '$($row.LastEntered)'"
       }
 
       $enterCount = [uint32]0
-      if (![uint32]::TryParse($_.EnterCount, [ref]$enterCount)) {
-        ThrowInvalidRecentStore $_ $rowNumber "has invalid EnterCount value '$($_.EnterCount)'"
+      if (![uint32]::TryParse($row.EnterCount, [ref]$enterCount)) {
+        ThrowInvalidRecentStore $row $rowNumber "has invalid EnterCount value '$($row.EnterCount)'"
       }
 
       $favour = $false
-      if (![bool]::TryParse($_.Favour, [ref]$favour)) {
-        ThrowInvalidRecentStore $_ $rowNumber "has invalid Favour value '$($_.Favour)'"
+      if (![bool]::TryParse($row.Favour, [ref]$favour)) {
+        ThrowInvalidRecentStore $row $rowNumber "has invalid Favour value '$($row.Favour)'"
       }
 
-      if ($store.ContainsKey($_.Path)) {
-        ThrowInvalidRecentStore $_ $rowNumber "duplicates path '$($_.Path)'"
+      if ($store.ContainsKey($row.Path)) {
+        ThrowInvalidRecentStore $row $rowNumber "duplicates path '$($row.Path)'"
       }
 
-      $store[$_.Path] = [RecentDir]@{
-        Path = $_.Path
+      $store[$row.Path] = [RecentDir]@{
+        Path = $row.Path
         LastEntered = $lastEntered
         EnterCount = $enterCount
         Favour = $favour

@@ -61,9 +61,19 @@ function Get-FrecentLocation {
       [Management.Automation.PathInfo] $left,
       [Management.Automation.PathInfo] $right
     ) {
-      $left.Provider.Name -ceq $right.Provider.Name -and
-      ($left.ProviderPath | RemoveTrailingSeparator) -ceq
-      ($right.ProviderPath | RemoveTrailingSeparator)
+      if ($left.Provider.Name -cne $right.Provider.Name) { return $false }
+
+      $comparison = if (
+        $left.Provider.Name -ceq 'FileSystem' -and
+        [Environment]::OSVersion.Platform -eq [PlatformID]::Win32NT
+      ) { [StringComparison]::OrdinalIgnoreCase }
+      else { [StringComparison]::Ordinal }
+
+      [string]::Equals(
+        ($left.ProviderPath | RemoveTrailingSeparator),
+        ($right.ProviderPath | RemoveTrailingSeparator),
+        $comparison
+      )
     }
 
     $providerResults = @(&$cde.FrecentProvider @Terms)

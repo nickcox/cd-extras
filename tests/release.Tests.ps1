@@ -31,7 +31,9 @@ Describe 'release metadata and build' {
   }
 
   It 'validates the public API and session cleanup in a clean process' {
-    $powerShell = (Get-Process -Id $PID).Path
+    $powerShellCommand = if ($PSEdition -eq 'Core') { 'pwsh' } else { 'powershell.exe' }
+    $powerShell = Get-Command $powerShellCommand -CommandType Application -ErrorAction Stop |
+    Select-Object -First 1 -ExpandProperty Definition
     $validationScript = Join-Path $PSScriptRoot 'validate-module.ps1'
     $output = & $powerShell -NoLogo -NoProfile -File $validationScript -ModulePath $manifestPath 2>&1 |
     Out-String
@@ -39,7 +41,8 @@ Describe 'release metadata and build' {
     $LASTEXITCODE | Should -Be 0 -Because $output
   }
 
-  It 'builds stable metadata and help without publishing' {
+  # Packaging runs in pwsh; Windows PowerShell validates the module itself in the tests above.
+  It 'builds stable metadata and help without publishing' -Skip:($PSEdition -ne 'Core') {
     $package = & $publishScript -OutputDirectory TestDrive:/release
     $stagedModule = Join-Path (Split-Path -Parent $package) 'cd-extras'
     $stagedManifest = Test-ModuleManifest (Join-Path $stagedModule 'cd-extras.psd1')
@@ -54,16 +57,17 @@ Describe 'release metadata and build' {
     Test-Path -LiteralPath (Join-Path $stagedModule 'assets/overview.svg') | Should -BeTrue
   }
 
-  It 'retains a requested prerelease label in a build' {
+  It 'retains a requested prerelease label in a build' -Skip:($PSEdition -ne 'Core') {
     $package = & $publishScript -Version 3.0.0-rc1 -OutputDirectory TestDrive:/release
     $stagedModule = Join-Path (Split-Path -Parent $package) 'cd-extras'
     $stagedManifest = Test-ModuleManifest (Join-Path $stagedModule 'cd-extras.psd1')
+    $stagedManifestData = Import-PowerShellDataFile (Join-Path $stagedModule 'cd-extras.psd1')
 
     $stagedManifest.Version.ToString() | Should -Be '3.0.0'
-    $stagedManifest.PrivateData.PSData.Prerelease | Should -Be 'rc1'
+    $stagedManifestData.PrivateData.PSData.Prerelease | Should -Be 'rc1'
   }
 
-  It 'refuses publishing when the checkout does not have the matching tag' {
+  It 'refuses publishing when the checkout does not have the matching tag' -Skip:($PSEdition -ne 'Core') {
     Mock git { 'v2.9.4' }
     Mock Publish-PSResource
 
@@ -72,7 +76,7 @@ Describe 'release metadata and build' {
     Assert-MockCalled Publish-PSResource -Times 0 -Exactly
   }
 
-  It 'publishes the exact package that was built and validated' {
+  It 'publishes the exact package that was built and validated' -Skip:($PSEdition -ne 'Core') {
     $package = & $publishScript -OutputDirectory TestDrive:/release
     Mock git { $global:LASTEXITCODE = 0; 'v3.0.0' }
     Mock Publish-PSResource
@@ -84,7 +88,7 @@ Describe 'release metadata and build' {
     }
   }
 
-  It 'refuses a package whose metadata does not match the release version' {
+  It 'refuses a package whose metadata does not match the release version' -Skip:($PSEdition -ne 'Core') {
     $package = & $publishScript -Version 3.0.0-rc1 -OutputDirectory TestDrive:/release
     Mock git { $global:LASTEXITCODE = 0; 'v3.0.0' }
     Mock Publish-PSResource

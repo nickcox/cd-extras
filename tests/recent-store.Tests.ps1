@@ -32,6 +32,9 @@ Describe 'coordinated recent store processes' {
 
       $process = Start-Process -FilePath $powerShellCommand -ArgumentList $arguments -PassThru `
         -RedirectStandardOutput $stdout -RedirectStandardError $stderr
+      # Start-Process can lose access to ExitCode on Windows when output is redirected unless
+      # the process handle is read before the child exits.
+      $null = $process.Handle
       $child = [pscustomobject]@{ Process = $process; Stdout = $stdout; Stderr = $stderr }
       $script:children += $child
       $child
@@ -52,6 +55,7 @@ Describe 'coordinated recent store processes' {
         $child.Process.Kill()
         throw "Child process $($child.Process.Id) did not exit within 10 seconds.`n$(StoreDiagnostics)"
       }
+      $child.Process.WaitForExit()
 
       $stdout = if (Test-Path -LiteralPath $child.Stdout) { Get-Content -Raw $child.Stdout }
       $stderr = if (Test-Path -LiteralPath $child.Stderr) { Get-Content -Raw $child.Stderr }

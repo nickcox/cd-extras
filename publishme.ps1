@@ -119,9 +119,10 @@ if ($Publish) {
 }
 else {
   $stagedManifest = Test-ModuleManifest -Path $stagedManifestPath
+  $stagedManifestData = Import-PowerShellDataFile -Path $stagedManifestPath
   if (
     $stagedManifest.Version.ToString() -ne $baseVersion -or
-    "$($stagedManifest.PrivateData.PSData.Prerelease)" -ne $prerelease
+    "$($stagedManifestData.PrivateData.PSData.Prerelease)" -ne $prerelease
   ) {
     throw "Staged manifest version does not match requested version '$Version'."
   }

@@ -71,10 +71,7 @@ jobs:
         run: |
           md ./_reports -ea Ignore
           Install-Module Pester -RequiredVersion 5.7.1 -Scope CurrentUser -Force -SkipPublisherCheck
-          Install-Module Microsoft.PowerShell.PSResourceGet -RequiredVersion 1.2.0 `
-            -Scope CurrentUser -Force
           Import-Module Pester -RequiredVersion 5.7.1
-          Import-Module Microsoft.PowerShell.PSResourceGet -RequiredVersion 1.2.0
           ./tests/test.ps1 -EnableExit `
             -TestResultOutputPath ./_reports/testresults-windows-latest-windows-powershell.xml
         shell: powershell
