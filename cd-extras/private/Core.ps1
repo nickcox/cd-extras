@@ -254,6 +254,15 @@ function SetRecentState([hashtable] $store, [AllowNull()] [string] $recentHash) 
   $cde.recentHash = $recentHash
 }
 
+function InstallRecentStoreFile([string] $tempFile, [string] $backupFile) {
+  if (Test-Path -LiteralPath $cde.RECENT_DIRS_FILE) {
+    [IO.File]::Replace($tempFile, $cde.RECENT_DIRS_FILE, $backupFile)
+  }
+  else {
+    [IO.File]::Move($tempFile, $cde.RECENT_DIRS_FILE)
+  }
+}
+
 function WriteRecentStore([hashtable] $store) {
   if (!$cde.RECENT_DIRS_FILE) { return }
 
@@ -274,27 +283,31 @@ function WriteRecentStore([hashtable] $store) {
     Sort-Object Path |
     Export-Csv -NoTypeInformation -LiteralPath $tempFile
 
-    if (Test-Path -LiteralPath $cde.RECENT_DIRS_FILE) {
-      [IO.File]::Replace($tempFile, $cde.RECENT_DIRS_FILE, $backupFile)
-    }
-    else {
-      [IO.File]::Move($tempFile, $cde.RECENT_DIRS_FILE)
-    }
+    InstallRecentStoreFile $tempFile $backupFile
   }
   finally {
     Remove-Item -LiteralPath $tempFile, $backupFile -ErrorAction Ignore
   }
 }
 
-function ImportRecent() {
+function OpenRecentStore() {
+  if (!$cde.RECENT_DIRS_FILE) { return }
+
   InvokeWithRecentLock {
-    $snapshot = ReadRecentSnapshot
-    $store = $snapshot.Store
-    $previousCount = $store.Count
-    TrimRecent $store
-    if ($store.Count -ne $previousCount) { WriteRecentStore $store }
-    $storeHash = if ($store.Count -ne $previousCount) { GetRecentStoreHash } else { $snapshot.Hash }
-    SetRecentState $store $storeHash
+    if (Test-Path -LiteralPath $cde.RECENT_DIRS_FILE) {
+      $snapshot = ReadRecentSnapshot
+      $store = $snapshot.Store
+      $previousCount = $store.Count
+      TrimRecent $store
+      if ($store.Count -ne $previousCount) { WriteRecentStore $store }
+      $storeHash = if ($store.Count -ne $previousCount) { GetRecentStoreHash } else { $snapshot.Hash }
+      SetRecentState $store $storeHash
+    }
+    else {
+      TrimRecent
+      WriteRecentStore $recent
+      SetRecentState $recent (GetRecentStoreHash)
+    }
   }
 }
 
@@ -427,16 +440,6 @@ function InvokeRecentStoreOperation([scriptblock] $operation) {
     TrimRecent $store
     WriteRecentStore $store
     SetRecentState $store (GetRecentStoreHash)
-  }
-}
-
-function PersistRecent() {
-  if (!$cde.RECENT_DIRS_FILE) { return }
-
-  InvokeWithRecentLock {
-    TrimRecent
-    WriteRecentStore $recent
-    SetRecentState $recent (GetRecentStoreHash)
   }
 }
 

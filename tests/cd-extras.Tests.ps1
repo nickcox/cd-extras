@@ -1669,6 +1669,39 @@ Describe 'cd-extras' {
       }
     }
 
+    Describe 'Recent store replacement errors' {
+      BeforeEach {
+        setocd RECENT_DIRS_FILE
+        Remove-RecentLocation *
+        $storeFile = 'TestDrive:/recent-replacement-failure.csv'
+        $storedPath = (Resolve-Path 'TestDrive:/powershell').Path
+        $newPath = (Resolve-Path 'TestDrive:/powershell/docs').Path
+        setocd RECENT_DIRS_FILE $storeFile
+        UpdateRecent $storedPath
+      }
+
+      AfterEach {
+        setocd RECENT_DIRS_FILE
+        Remove-RecentLocation *
+        $Error.Clear()
+        $global:Error.Clear()
+      }
+
+      It 'keeps the valid CSV and removes temporary files when replacement fails' {
+        $originalCsv = Get-Content -Raw $storeFile
+        Mock InstallRecentStoreFile { throw 'replacement failed' }
+
+        { UpdateRecent $newPath } | Should -Throw 'replacement failed'
+
+        Get-Content -Raw $storeFile | Should -Be $originalCsv
+        $recent.Keys | Should -Contain $storedPath
+        $recent.Keys | Should -Not -Contain $newPath
+        @(Get-ChildItem TestDrive:/ -File).Name | Should -Be 'recent-replacement-failure.csv'
+        $Error.Clear()
+        $global:Error.Clear()
+      }
+    }
+
     Describe 'Path expansion' {
       It 'expands multiple items' {
         $actual = CompletePaths -wordToComplete 'pow/t/c' | % CompletionText
