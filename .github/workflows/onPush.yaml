@@ -14,22 +14,23 @@ jobs:
 
       - name: Run the tests
         run: |
-          . ./cd-extras/public/_Classes.ps1
           md ./_reports
-          Import-Module Pester
-          cd tests
-          ./test.ps1 -Cover -EnableExit -CodeCoverageOutputFile ../_reports/coverage.xml -OutputFile ../_reports/testresults.xml
+          Install-Module Pester -RequiredVersion 5.7.1 -Scope CurrentUser -Force -SkipPublisherCheck
+          Import-Module Pester -RequiredVersion 5.7.1
+          ./tests/test.ps1 -Cover -EnableExit `
+            -CoverageOutputPath ./_reports/coverage.xml `
+            -TestResultOutputPath ./_reports/testresults-pwsh.xml
         shell: pwsh
 
       # run the tests again on Windows, this time in PowerShell v5
       - name: Run the tests (Powershell v5)
         if: matrix.os == 'windows-latest'
         run: |
-          . ./cd-extras/public/_Classes.ps1
           md ./_reports -ea Ignore
-          Import-Module Pester
-          cd tests
-          ./test.ps1 -EnableExit -OutputFile ../_reports/testresults.xml
+          Install-Module Pester -RequiredVersion 5.7.1 -Scope CurrentUser -Force -SkipPublisherCheck
+          Import-Module Pester -RequiredVersion 5.7.1
+          ./tests/test.ps1 -EnableExit `
+            -TestResultOutputPath ./_reports/testresults-windows-powershell.xml
         shell: powershell
 
       - name: Upload test report

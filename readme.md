@@ -110,3 +110,21 @@ For the full options reference, see [Configuration](docs/configuration.md).
 _cd-extras_ works on Windows, macOS and Linux. It is designed for the filesystem provider
 but should work with other providers too. See the [compatibility section](docs/navigation.md#compatibility)
 for details on cross-platform setup and alternative providers.
+
+
+## Testing
+
+The test suite requires Pester 5.7.1. Install that version and run the suite from the repository root:
+
+```powershell
+Install-Module Pester -RequiredVersion 5.7.1 -Scope CurrentUser
+./tests/test.ps1
+```
+
+To collect code coverage and write reports to a chosen directory:
+
+```powershell
+./tests/test.ps1 -Cover `
+  -CoverageOutputPath ./_reports/coverage.xml `
+  -TestResultOutputPath ./_reports/testresults.xml
+```
