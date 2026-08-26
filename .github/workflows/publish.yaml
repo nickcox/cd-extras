@@ -1,6 +1,12 @@
 name: Publish to PowerShell Gallery
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Stable version to publish, without the v prefix
+        required: true
+        type: string
 
 jobs:
   publish:
@@ -9,9 +15,35 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          ref: v${{ inputs.version }}
+          fetch-depth: 0
 
-      - name: Publish
+      - name: Build the tagged release
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: ./publishme.ps1 -Version $env:RELEASE_VERSION
+        shell: pwsh
+
+      - name: Import the staged module
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          $manifestPath = Join-Path './out' "$env:RELEASE_VERSION/cd-extras/cd-extras.psd1"
+          $module = Test-ModuleManifest $manifestPath
+          Import-Module $module.Path -Force
+          Get-Command -Module cd-extras -Name Set-FrecentLocation -ErrorAction Stop
+        shell: pwsh
+
+      - name: Upload the staged module
+        uses: actions/upload-artifact@v6
+        with:
+          name: cd-extras-${{ inputs.version }}
+          path: out/${{ inputs.version }}/cd-extras
+
+      - name: Publish the validated staged module
         env:
           PSNugetKey: ${{ secrets.PSNugetKey }}
-        run: ./publishme.ps1 -Confirm:$false
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: ./publishme.ps1 -Version $env:RELEASE_VERSION -Publish -Confirm:$false
         shell: pwsh

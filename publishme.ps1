@@ -1,42 +1,93 @@
 [CmdletBinding()]
-Param(
-  [string]$Version = $null,
-  [string]$NuGetApiKey = $env:PSNugetKey,
-  [switch]$Confirm = $false,
-  [switch]$WhatIf = $false
+param(
+  [string] $Version,
+  [string] $OutputDirectory = (Join-Path $PSScriptRoot 'out'),
+  [switch] $Publish,
+  [string] $NuGetApiKey = $env:PSNugetKey,
+  [switch] $Confirm,
+  [switch] $WhatIf
 )
 
-Copy-Item $PSScriptRoot/readme.md $PSScriptRoot/cd-extras/about_Cd-Extras.help.txt
-$manifest = Import-PowerShellDataFile "$PSScriptRoot/cd-extras/cd-extras.psd1"
+$ErrorActionPreference = 'Stop'
+$sourceManifestPath = Join-Path $PSScriptRoot 'cd-extras/cd-extras.psd1'
+$sourceManifest = Test-ModuleManifest -Path $sourceManifestPath
+$changelog = Get-Content -Raw (Join-Path $PSScriptRoot 'CHANGELOG.md')
+$release = [regex]::Match(
+  $changelog,
+  '(?ms)^## \[(?<version>[^]]+)\]\s*\r?\n(?<notes>.*?)(?=^## \[|\z)'
+)
 
-If ([String]::IsNullOrEmpty($Version)) {
-  $Version = $manifest.ModuleVersion
+if (!$release.Success) { throw 'CHANGELOG.md does not contain a release section.' }
+
+$changelogVersion = $release.Groups['version'].Value
+$releaseNotes = $release.Groups['notes'].Value.Trim()
+if ($changelogVersion -ne $sourceManifest.Version.ToString()) {
+  throw "CHANGELOG.md begins with version $changelogVersion, but the manifest contains $($sourceManifest.Version)."
 }
-Else {
-  If ($Version[0] -Eq 'v') {
-    $Version = [regex]::Replace($Version, '^v', "")
+
+if ([string]::IsNullOrWhiteSpace($Version)) { $Version = $changelogVersion }
+$Version = $Version -replace '^v', ''
+$versionMatch = [regex]::Match($Version, '^(?<base>\d+\.\d+\.\d+)(?:-(?<prerelease>[0-9A-Za-z.-]+))?$')
+if (!$versionMatch.Success) { throw "Version '$Version' is not a valid module version." }
+
+$baseVersion = $versionMatch.Groups['base'].Value
+$prerelease = $versionMatch.Groups['prerelease'].Value
+
+if ($Publish) {
+  if ($baseVersion -ne $sourceManifest.Version.ToString()) {
+    throw "Publish version $baseVersion does not match manifest version $($sourceManifest.Version)."
+  }
+
+  $expectedTag = "v$Version"
+  $actualTag = &git -C $PSScriptRoot describe --tags --exact-match HEAD 2>$null
+  if ($LASTEXITCODE -ne 0 -or $actualTag -ne $expectedTag) {
+    throw "Publishing version $Version requires HEAD to have the exact tag '$expectedTag'."
+  }
+
+  if ([string]::IsNullOrWhiteSpace($NuGetApiKey)) {
+    throw 'A PowerShell Gallery API key is required when -Publish is specified.'
   }
 }
 
-$outputDirectory = "$PSScriptRoot/out/$Version"
-$null = Remove-Item -Force -Recurse $outputDirectory -ErrorAction Ignore
-$null = New-Item -Type Directory $outputDirectory
-$null = Copy-Item -Recurse "$PSScriptRoot/cd-extras" "$outputDirectory/cd-extras"
-$releaseNotes = (Get-Content -Raw CHANGELOG.md).Split('##') | select -Skip 1 -f 1 | % { $_.Trim() }
+$stagingDirectory = Join-Path $OutputDirectory $Version
+$stagedModule = Join-Path $stagingDirectory 'cd-extras'
+$stagedManifestPath = Join-Path $stagedModule 'cd-extras.psd1'
 
-If ($manifest.ModuleVersion -ne $Version) {
-  Write-Warning "Version $Version specified on commandline, but manifest contains $($manifest.ModuleVersion)."
-  Write-Warning "Preferring $Version from commandline."
+if (!$Publish) {
+  Remove-Item -LiteralPath $stagingDirectory -Force -Recurse -ErrorAction Ignore
+  $null = New-Item -ItemType Directory -Path $stagingDirectory
+  Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'cd-extras') -Destination $stagedModule -Recurse
+  Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'readme.md') `
+    -Destination (Join-Path $stagedModule 'about_Cd-Extras.help.txt')
 
-  Update-ModuleManifest -Path "$outputDirectory/cd-extras/cd-extras.psd1" -ModuleVersion $Version
-  Update-ModuleManifest -Path "$outputDirectory/cd-extras/cd-extras.psd1" -ReleaseNotes $releaseNotes
+  $updateParameters = @{
+    Path = $stagedManifestPath
+    ModuleVersion = $baseVersion
+    ReleaseNotes = $releaseNotes
+  }
+  if ($prerelease) { $updateParameters.Prerelease = $prerelease }
+  Update-ModuleManifest @updateParameters
 }
 
-$publishParameters = @{
-  Path        = "$outputDirectory/cd-extras"
-  NuGetApiKey = $NugetAPIKey
-  Repository  = "PSGallery"
-  WhatIf      = $WhatIf
+if (!(Test-Path -LiteralPath $stagedManifestPath)) {
+  throw "Staged module '$stagedModule' does not exist. Run a build-only invocation before publishing."
 }
 
-Publish-Module -Confirm:$Confirm @publishParameters
+$stagedManifest = Test-ModuleManifest -Path $stagedManifestPath
+if (
+  $stagedManifest.Version.ToString() -ne $baseVersion -or
+  "$($stagedManifest.PrivateData.PSData.Prerelease)" -ne $prerelease
+) {
+  throw "Staged manifest version does not match requested version '$Version'."
+}
+if ($stagedManifest.PrivateData.PSData.ReleaseNotes.Trim() -ne $releaseNotes) {
+  throw 'Staged manifest release notes do not match CHANGELOG.md.'
+}
+
+if ($Publish) {
+  Publish-Module -Path $stagedModule -NuGetApiKey $NuGetApiKey -Repository PSGallery `
+    -Confirm:$Confirm -WhatIf:$WhatIf
+}
+else {
+  Write-Output $stagedModule
+}

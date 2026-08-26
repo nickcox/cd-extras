@@ -1,5 +1,44 @@
 # Changes
 
+## [3.0.0]
+
+### Added
+
+- Add recent and frecent directory navigation with `Get-RecentLocation`, `Set-RecentLocation`,
+  `Get-FrecentLocation` and `Set-FrecentLocation`.
+- Add directory bookmarks with `Add-Bookmark`, `Get-Bookmark` and `Remove-Bookmark`.
+- Add optional CSV persistence for recent locations and bookmarks. The CSV contains `Path`,
+  `LastEntered`, `EnterCount` and `Favour` columns and is enabled with `RECENT_DIRS_FILE`.
+- Add configurable frecency providers and automatic zoxide integration when zoxide is available.
+- Add `Get-CdExtrasOption` and its `getocd` alias.
+- Add separate navigation, completion and configuration documentation.
+
+### Changed
+
+- Allow recent and frecent navigation by index or search terms.
+- Allow `Set-CdExtrasOption` to update multiple options from any `IDictionary` implementation.
+- Retain every bookmark when recent history is trimmed.
+- Make `cdr -Prune` and `cdf -Prune` default to the current directory when no pattern is supplied.
+- Normalise custom frecency results, discard invalid results and apply the result limit afterwards.
+- Replace wildcard manifest exports with the explicit 3.0 public command and alias lists.
+- Remove the completion warning beep and report truncated results in the completion tooltip.
+
+### Fixed
+
+- Prevent concurrent shells from losing each other's persisted history updates.
+- Persist deletion of the final recent entry and reconcile external CSV additions, removals and
+  deletion consistently.
+- Validate persisted CSV rows before replacing in-memory history.
+- Prevent ordinary recent entries from displacing bookmarks.
+- Reject missing paths and non-container items when creating bookmarks.
+
+### Breaking changes
+
+- Remove `Step-Between` and its `cdb` alias. Use `Set-RecentLocation` or `cdr` to move between
+  recently used directories.
+- Replace the `ToolTipExtraInfo` option with `ToolTip`. The new callback receives the completion item
+  and a Boolean indicating whether results were truncated, and returns the complete tooltip text.
+
 ## [2.9.4]
 - Fix an issue where UNC paths not expanded properly, thanks @sba923!
 
