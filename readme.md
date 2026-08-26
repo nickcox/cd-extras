@@ -145,3 +145,20 @@ $version = (Test-ModuleManifest ./cd-extras/cd-extras.psd1).Version.ToString()
 $package = ./publishme.ps1 -Version $version
 ./tests/validate-package.ps1 -PackagePath $package -Version $version
 ```
+
+## Releases
+
+Every pushed commit produces a validated package after the analysis and test jobs pass. To publish a
+release:
+
+1. Create and push an exact version tag for the reviewed commit, such as `v3.0.0` or
+   `v3.0.0-beta3`.
+2. Wait for the **Run tests** workflow triggered by the tag to pass.
+3. Run the **Publish to PowerShell Gallery** workflow and enter the version without the `v` prefix.
+
+The publishing workflow downloads the package built for the tagged commit, validates it again and
+publishes that exact package. A prerelease can be installed explicitly with:
+
+```powershell
+Install-Module cd-extras -AllowPrerelease
+```

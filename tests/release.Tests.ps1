@@ -69,6 +69,11 @@ Describe 'release metadata and build' {
     $stagedManifestData.PrivateData.PSData.Prerelease | Should -Be 'rc1'
   }
 
+  It 'refuses to build a package whose base version differs from the manifest' -Skip:($PSEdition -ne 'Core') {
+    { & $publishScript -Version 4.0.0-beta1 -OutputDirectory TestDrive:/release } |
+    Should -Throw '*Package version 4.0.0 does not match manifest version 3.0.0*'
+  }
+
   It 'refuses publishing when the checkout does not have the matching tag' -Skip:($PSEdition -ne 'Core') {
     Mock git { 'v2.9.4' }
     Mock Publish-PSResource
@@ -84,6 +89,18 @@ Describe 'release metadata and build' {
     Mock Publish-PSResource
 
     & $publishScript -Version 3.0.0 -PackagePath $package -Publish -NuGetApiKey test -Confirm:$false
+
+    Assert-MockCalled Publish-PSResource -Times 1 -Exactly -ParameterFilter {
+      $NupkgPath -eq $package -and $Repository -eq 'PSGallery'
+    }
+  }
+
+  It 'publishes an exact prerelease package from its matching tag' -Skip:($PSEdition -ne 'Core') {
+    $package = & $publishScript -Version 3.0.0-beta3 -OutputDirectory TestDrive:/release
+    Mock git { $global:LASTEXITCODE = 0; 'v3.0.0-beta3' }
+    Mock Publish-PSResource
+
+    & $publishScript -Version 3.0.0-beta3 -PackagePath $package -Publish -NuGetApiKey test -Confirm:$false
 
     Assert-MockCalled Publish-PSResource -Times 1 -Exactly -ParameterFilter {
       $NupkgPath -eq $package -and $Repository -eq 'PSGallery'

@@ -61,11 +61,11 @@ if (!$versionMatch.Success) { throw "Version '$Version' is not a valid module ve
 $baseVersion = $versionMatch.Groups['base'].Value
 $prerelease = $versionMatch.Groups['prerelease'].Value
 
-if ($Publish) {
-  if ($baseVersion -ne $sourceManifest.Version.ToString()) {
-    throw "Publish version $baseVersion does not match manifest version $($sourceManifest.Version)."
-  }
+if ($baseVersion -ne $sourceManifest.Version.ToString()) {
+  throw "Package version $baseVersion does not match manifest version $($sourceManifest.Version)."
+}
 
+if ($Publish) {
   $expectedTag = "v$Version"
   $actualTag = &git -C $PSScriptRoot describe --tags --exact-match HEAD 2>$null
   if ($LASTEXITCODE -ne 0 -or $actualTag -ne $expectedTag) {

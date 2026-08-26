@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: Stable version to publish, without the v prefix
+        description: Stable or prerelease version to publish, without the v prefix
         required: true
         type: string
 
@@ -29,8 +29,8 @@ jobs:
         env:
           RELEASE_VERSION: ${{ inputs.version }}
         run: |
-          if ($env:RELEASE_VERSION -notmatch '^\d+\.\d+\.\d+$') {
-            throw "Release version '$env:RELEASE_VERSION' is not a stable version."
+          if ($env:RELEASE_VERSION -notmatch '^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$') {
+            throw "Release version '$env:RELEASE_VERSION' is not valid."
           }
           $expectedTag = "v$env:RELEASE_VERSION"
           $actualTag = git describe --tags --exact-match HEAD
@@ -44,6 +44,7 @@ jobs:
         id: workflow
         uses: actions/github-script@v8
         env:
+          PACKAGE_ARTIFACT: cd-extras-package-${{ steps.release.outputs.sha }}-${{ inputs.version }}
           RELEASE_SHA: ${{ steps.release.outputs.sha }}
         with:
           script: |
@@ -56,17 +57,31 @@ jobs:
               event: 'push',
               per_page: 100
             });
-            const run = response.data.workflow_runs[0];
-            if (!run) {
-              core.setFailed(`No successful package workflow found for ${process.env.RELEASE_SHA}.`);
-              return;
+            for (const run of response.data.workflow_runs) {
+              const artifacts = await github.paginate(
+                github.rest.actions.listWorkflowRunArtifacts,
+                {
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  run_id: run.id,
+                  per_page: 100
+                }
+              );
+              if (artifacts.some(artifact =>
+                artifact.name === process.env.PACKAGE_ARTIFACT && !artifact.expired
+              )) {
+                core.setOutput('run-id', run.id);
+                return;
+              }
             }
-            core.setOutput('run-id', run.id);
+            core.setFailed(
+              `No successful workflow produced ${process.env.PACKAGE_ARTIFACT}.`
+            );
 
       - name: Download the validated package
         uses: actions/download-artifact@v6
         with:
-          name: cd-extras-package-${{ steps.release.outputs.sha }}
+          name: cd-extras-package-${{ steps.release.outputs.sha }}-${{ inputs.version }}
           path: out/${{ inputs.version }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           run-id: ${{ steps.workflow.outputs.run-id }}
