@@ -640,6 +640,7 @@ Describe 'cd-extras' {
 
   Describe 'Get-FrecentLocation' {
     BeforeEach { Remove-RecentLocation * }
+    AfterEach { setocd FrecentProvider $null }
 
     It 'prefers highest ranked directory when last accessed times are similar' {
       Get-FrecentLocation | Should -BeNullOrEmpty
@@ -674,7 +675,111 @@ Describe 'cd-extras' {
       setocd FrecentProvider { $providerPaths }
       $result = Get-FrecentLocation
       $result.Path | Should -Be $providerPaths[0]
-      setocd FrecentProvider $null
+    }
+
+    It 'excludes the current directory from custom provider results' {
+      $current = $PWD
+      $other = (Resolve-Path TestDrive:/powershell).Path
+      setocd FrecentProvider { $current; $other }
+
+      $result = Get-FrecentLocation
+
+      $result | Should -HaveCount 1
+      $result.Path | Should -Be $other
+    }
+
+    It 'removes empty and duplicate provider results before applying First' {
+      $first = (Resolve-Path TestDrive:/powershell).Path
+      $second = (Resolve-Path TestDrive:/powershell/tools).Path
+      $third = (Resolve-Path TestDrive:/powershell/docs).Path
+      setocd FrecentProvider { $null; ''; $first; $first; $second; $third }
+
+      $result = Get-FrecentLocation -First 2
+
+      $result.Path | Should -Be $first, $second
+    }
+
+    It 'preserves custom provider ordering when limiting results' {
+      $first = (Resolve-Path TestDrive:/powershell/tools).Path
+      $second = (Resolve-Path TestDrive:/powershell/docs).Path
+      $third = (Resolve-Path TestDrive:/powershell).Path
+      setocd FrecentProvider { $first; $second; $third }
+
+      $result = Get-FrecentLocation -First 2
+
+      $result.Path | Should -Be $first, $second
+    }
+
+    It 'treats case variants as duplicate filesystem paths on Windows' -Skip:(!$IsWindows) {
+      $first = (Resolve-Path TestDrive:/powershell).Path
+      $second = (Resolve-Path TestDrive:/powershell/tools).Path
+      $caseVariant = $first.ToUpperInvariant()
+      setocd FrecentProvider { $first; $caseVariant; $second }
+
+      $result = Get-FrecentLocation -First 2
+
+      $result.Path | Should -Be $first, $second
+    }
+
+    It 'keeps provider errors visible' {
+      setocd FrecentProvider { throw 'provider failed' }
+
+      { Get-FrecentLocation } | Should -Throw 'provider failed'
+      $Error.Clear()
+      $global:Error.Clear()
+    }
+
+    It 'rejects relative provider paths without reducing valid results' {
+      $absolute = (Resolve-Path TestDrive:/powershell).Path
+      setocd FrecentProvider { 'powershell'; $absolute }
+
+      $result = Get-FrecentLocation -First 1 -ErrorAction SilentlyContinue -ErrorVariable providerErrors
+
+      $providerErrors | Should -HaveCount 1
+      $providerErrors[0].CategoryInfo.Category | Should -Be InvalidData
+      $result.Path | Should -Be $absolute
+      $Error.Clear()
+      $global:Error.Clear()
+    }
+
+    It 'rejects missing provider paths without reducing valid results' {
+      $missing = Join-Path $TestDrive 'missing'
+      $existing = (Resolve-Path TestDrive:/powershell).Path
+      setocd FrecentProvider { $missing; $existing }
+
+      $result = Get-FrecentLocation -First 1 -ErrorAction SilentlyContinue -ErrorVariable providerErrors
+
+      $providerErrors | Should -HaveCount 1
+      $providerErrors[0].CategoryInfo.Category | Should -Be InvalidData
+      $result.Path | Should -Be $existing
+      $Error.Clear()
+      $global:Error.Clear()
+    }
+
+    It 'rejects non-directory provider paths without reducing valid results' {
+      $file = Join-Path $TestDrive 'provider-result.txt'
+      Set-Content -LiteralPath $file -Value 'not a directory'
+      $directory = (Resolve-Path TestDrive:/powershell).Path
+      setocd FrecentProvider { $file; $directory }
+
+      $result = Get-FrecentLocation -First 1 -ErrorAction SilentlyContinue -ErrorVariable providerErrors
+
+      $providerErrors | Should -HaveCount 1
+      $providerErrors[0].CategoryInfo.Category | Should -Be InvalidData
+      $result.Path | Should -Be $directory
+      $Error.Clear()
+      $global:Error.Clear()
+    }
+
+    It 'normalises output shaped like the automatic zoxide provider' {
+      $current = $PWD.Path
+      $first = (Resolve-Path TestDrive:/powershell/tools).Path
+      $second = (Resolve-Path TestDrive:/powershell/docs).Path
+      setocd FrecentProvider { $current; $first; $first; ''; $second }
+
+      $result = Get-FrecentLocation -First 2
+
+      $result.Path | Should -Be $first, $second
     }
   }
 

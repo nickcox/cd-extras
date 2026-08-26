@@ -57,8 +57,56 @@ function Get-FrecentLocation {
   )
 
   $recents = if ($cde.FrecentProvider) {
-    &$cde.FrecentProvider @Terms | select -First $First
-  } else { @(GetFrecent $First $Terms) }
+    function PathsEqual(
+      [Management.Automation.PathInfo] $left,
+      [Management.Automation.PathInfo] $right
+    ) {
+      $left.Provider.Name -ceq $right.Provider.Name -and
+      ($left.ProviderPath | RemoveTrailingSeparator) -ceq
+      ($right.ProviderPath | RemoveTrailingSeparator)
+    }
+
+    $providerResults = @(&$cde.FrecentProvider @Terms)
+    $accepted = @()
+
+    if ($First) {
+      foreach ($providerResult in $providerResults) {
+        if ($null -eq $providerResult) { continue }
+
+        $path = "$providerResult"
+        if ([string]::IsNullOrWhiteSpace($path)) { continue }
+
+        $driveName = $null
+        if (!$ExecutionContext.SessionState.Path.IsPSAbsolute($path, [ref]$driveName)) {
+          Write-Error "FrecentProvider returned relative path '$path'. Providers must return absolute paths." `
+            -Category InvalidData -TargetObject $providerResult
+          continue
+        }
+
+        $resolved = Resolve-Path -LiteralPath $path -ErrorAction Ignore
+        if (!$resolved) {
+          Write-Error "FrecentProvider returned missing path '$path'. Providers must return existing directories." `
+            -Category InvalidData -TargetObject $providerResult
+          continue
+        }
+
+        if (!(Test-Path -LiteralPath $resolved.Path -PathType Container)) {
+          Write-Error "FrecentProvider returned non-directory path '$path'. Providers must return existing directories." `
+            -Category InvalidData -TargetObject $providerResult
+          continue
+        }
+
+        if (PathsEqual $resolved $PWD) { continue }
+        if ($accepted.Where{ PathsEqual $_ $resolved }) { continue }
+
+        $accepted += $resolved
+        if ($accepted.Count -ge $First) { break }
+      }
+    }
+
+    $accepted.Path
+  }
+  else { @(GetFrecent $First $Terms) }
 
   if ($recents.Count) { IndexPaths $recents }
 }

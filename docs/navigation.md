@@ -126,9 +126,10 @@ provider — no setup required.
 
 You can also supply your own custom provider via the
 [`FrecentProvider`](configuration.md) option. This is a scriptblock that receives the
-search terms as arguments and should return a list of directory paths. Any external tool
-that can query and list directories will work. Set `FrecentProvider` to `$null` to revert
-to the built-in algorithm.
+search terms as arguments and should return absolute paths to existing directories in ranked order.
+Empty values, missing paths, non-directory paths, duplicate paths and the current directory are
+removed from its output. Any external tool that can query and list directories will work. Set
+`FrecentProvider` to `$null` to revert to the built-in algorithm.
 
 ```powershell
 # use a custom tool as the frecency provider

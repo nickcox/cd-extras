@@ -60,7 +60,9 @@ setocd @{ AUTO_CD = $false; CD_PATH = '~/Documents/', '~/Downloads' }
 - _FrecentProvider_: `[scriptblock] = $null`
   - An optional scriptblock that provides frecent directory paths. If [zoxide][3] is found
     on `PATH` at module load time, this is automatically set to `{ &zoxide query -l -- $args }`.
-    Set to `$null` to use the built-in frecency algorithm.
+    The scriptblock must return absolute paths to existing directories in ranked order. Empty values,
+    missing paths, non-directory paths, duplicate paths and the current directory are removed before
+    the result limit is applied. Set to `$null` to use the built-in frecency algorithm.
 - _WordDelimiters_ : `[string[]] = '.', '_', '-'`
   - Word boundaries within path segments. For example, `.foo` will be expanded into `*.foo*`.
 - _ToolTip_ : `[ScriptBlock] = { param ($item, $isTruncated) ... }`
