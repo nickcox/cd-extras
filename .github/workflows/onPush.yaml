@@ -18,30 +18,39 @@ jobs:
           Install-Module Pester -RequiredVersion 5.7.1 -Scope CurrentUser -Force -SkipPublisherCheck
           Import-Module Pester -RequiredVersion 5.7.1
           ./tests/test.ps1 -Cover -EnableExit `
-            -CoverageOutputPath ./_reports/coverage.xml `
-            -TestResultOutputPath ./_reports/testresults-pwsh.xml
+            -CoverageOutputPath ./_reports/coverage-${{ matrix.os }}.xml `
+            -TestResultOutputPath ./_reports/testresults-${{ matrix.os }}-pwsh.xml
         shell: pwsh
+
+      - name: Upload PowerShell test report
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: Test Report (${{ matrix.os }}, pwsh)
+          path: _reports/testresults-${{ matrix.os }}-pwsh.xml
 
       # run the tests again on Windows, this time in PowerShell v5
       - name: Run the tests (Powershell v5)
-        if: matrix.os == 'windows-latest'
+        if: always() && matrix.os == 'windows-latest'
         run: |
           md ./_reports -ea Ignore
           Install-Module Pester -RequiredVersion 5.7.1 -Scope CurrentUser -Force -SkipPublisherCheck
           Import-Module Pester -RequiredVersion 5.7.1
           ./tests/test.ps1 -EnableExit `
-            -TestResultOutputPath ./_reports/testresults-windows-powershell.xml
+            -TestResultOutputPath ./_reports/testresults-windows-latest-windows-powershell.xml
         shell: powershell
 
-      - name: Upload test report
+      - name: Upload Windows PowerShell test report
+        if: always() && matrix.os == 'windows-latest'
         uses: actions/upload-artifact@v6
         with:
-          name: Test Report (${{ matrix.os }})
-          path: _reports
+          name: Test Report (windows-latest, Windows PowerShell)
+          path: _reports/testresults-windows-latest-windows-powershell.xml
 
       - name: Upload coverage to Codecov
+        if: always() && hashFiles(format('_reports/coverage-{0}.xml', matrix.os)) != ''
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          file: ./_reports/coverage.xml
+          files: ./_reports/coverage-${{ matrix.os }}.xml
           flags: ${{ runner.os }}
