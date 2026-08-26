@@ -59,24 +59,6 @@ jobs:
           name: Test Report (${{ matrix.os }}, pwsh)
           path: _reports/testresults-${{ matrix.os }}-pwsh.xml
 
-      # run the tests again on Windows, this time in PowerShell v5
-      - name: Run the tests (Powershell v5)
-        if: always() && matrix.os == 'windows-latest'
-        run: |
-          md ./_reports -ea Ignore
-          Install-Module Pester -RequiredVersion 5.7.1 -Scope CurrentUser -Force -SkipPublisherCheck
-          Import-Module Pester -RequiredVersion 5.7.1
-          ./tests/test.ps1 -EnableExit `
-            -TestResultOutputPath ./_reports/testresults-windows-latest-windows-powershell.xml
-        shell: powershell
-
-      - name: Upload Windows PowerShell test report
-        if: always() && matrix.os == 'windows-latest'
-        uses: actions/upload-artifact@v6
-        with:
-          name: Test Report (windows-latest, Windows PowerShell)
-          path: _reports/testresults-windows-latest-windows-powershell.xml
-
       - name: Upload coverage to Codecov
         if: always() && hashFiles(format('_reports/coverage-{0}.xml', matrix.os)) != ''
         uses: codecov/codecov-action@v5
@@ -85,9 +67,34 @@ jobs:
           files: ./_reports/coverage-${{ matrix.os }}.xml
           flags: ${{ runner.os }}
 
+  windows-powershell:
+    name: Run tests (Windows PowerShell 5)
+    needs: analyse
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Run the tests
+        run: |
+          md ./_reports
+          Install-Module Pester -RequiredVersion 5.7.1 -Scope CurrentUser -Force -SkipPublisherCheck
+          Import-Module Pester -RequiredVersion 5.7.1
+          ./tests/test.ps1 -EnableExit `
+            -TestResultOutputPath ./_reports/testresults-windows-latest-windows-powershell.xml
+        shell: powershell
+
+      - name: Upload Windows PowerShell test report
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: Test Report (windows-latest, Windows PowerShell)
+          path: _reports/testresults-windows-latest-windows-powershell.xml
+
   package:
     name: Build and validate package
-    needs: [analyse, test]
+    needs: [analyse, test, windows-powershell]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
