@@ -6,6 +6,8 @@
     'PSAvoidGlobalVars',
     # Navigation commands change session state and must not prompt before changing directory.
     'PSUseShouldProcessForStateChangingFunctions',
+    # Recent and frecent commands delegate their WhatIf operations to commands that call ShouldProcess.
+    'PSShouldProcess',
     # Pester setup variables are consumed in other scopes, which static analysis cannot follow.
     'PSUseDeclaredVarsMoreThanAssignments',
     # Public pipeline commands retain their current begin/process/end behaviour for compatibility.
