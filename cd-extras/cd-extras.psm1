@@ -1,4 +1,5 @@
 $cdAlias = if ($x = (Get-Alias -Name 'cd' -ErrorAction ignore)) { $x.Definition }
+$commandNotFoundAction = $ExecutionContext.SessionState.InvokeCommand.CommandNotFoundAction
 
 . "$PSScriptRoot/public/_Classes.ps1"
 
@@ -20,8 +21,8 @@ RegisterCompletions @('Set-FrecentLocation') 'n' { CompleteFrecent @args }
 RegisterCompletions @('Set-FrecentLocation') 'Terms' { CompleteFrecent @args }
 
 $MyInvocation.MyCommand.ScriptBlock.Module.OnRemove = {
-  $ExecutionContext.SessionState.InvokeCommand.CommandNotFoundAction = $null
+  $ExecutionContext.SessionState.InvokeCommand.CommandNotFoundAction = $commandNotFoundAction
   Set-Item Alias:cd $cdAlias
   $cde.mutex.Dispose()
   Remove-Variable cde -Scope Global -ErrorAction Ignore
-}
+}.GetNewClosure()

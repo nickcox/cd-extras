@@ -1,14 +1,42 @@
-[CmdletBinding()]
+[CmdletBinding(DefaultParameterSetName = 'Build')]
 param(
   [string] $Version,
   [string] $OutputDirectory = (Join-Path $PSScriptRoot 'out'),
+  [Parameter(Mandatory, ParameterSetName = 'Publish')]
   [switch] $Publish,
+  [Parameter(ParameterSetName = 'Publish')]
+  [string] $PackagePath,
   [string] $NuGetApiKey = $env:PSNugetKey,
   [switch] $Confirm,
   [switch] $WhatIf
 )
 
 $ErrorActionPreference = 'Stop'
+
+function Get-PackageVersion([string] $Path) {
+  Add-Type -AssemblyName System.IO.Compression.FileSystem
+  $resolvedPath = (Resolve-Path -LiteralPath $Path).Path
+  $archive = [IO.Compression.ZipFile]::OpenRead($resolvedPath)
+
+  try {
+    $nuspecEntries = @($archive.Entries | Where-Object FullName -like '*.nuspec')
+    if ($nuspecEntries.Count -ne 1) { throw "Package '$Path' must contain one nuspec file." }
+
+    $stream = $nuspecEntries[0].Open()
+    $reader = [IO.StreamReader]::new($stream)
+    try { [xml] $nuspec = $reader.ReadToEnd() }
+    finally {
+      $reader.Dispose()
+      $stream.Dispose()
+    }
+
+    return "$($nuspec.package.metadata.version)"
+  }
+  finally {
+    $archive.Dispose()
+  }
+}
+
 $sourceManifestPath = Join-Path $PSScriptRoot 'cd-extras/cd-extras.psd1'
 $sourceManifest = Test-ModuleManifest -Path $sourceManifestPath
 $changelog = Get-Content -Raw (Join-Path $PSScriptRoot 'CHANGELOG.md')
@@ -52,6 +80,9 @@ if ($Publish) {
 $stagingDirectory = Join-Path $OutputDirectory $Version
 $stagedModule = Join-Path $stagingDirectory 'cd-extras'
 $stagedManifestPath = Join-Path $stagedModule 'cd-extras.psd1'
+if ([string]::IsNullOrWhiteSpace($PackagePath)) {
+  $PackagePath = Join-Path $stagingDirectory "cd-extras.$Version.nupkg"
+}
 
 if (!$Publish) {
   Remove-Item -LiteralPath $stagingDirectory -Force -Recurse -ErrorAction Ignore
@@ -59,6 +90,11 @@ if (!$Publish) {
   Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'cd-extras') -Destination $stagedModule -Recurse
   Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'readme.md') `
     -Destination (Join-Path $stagedModule 'about_Cd-Extras.help.txt')
+  $null = New-Item -ItemType Directory -Path (Join-Path $stagedModule 'docs')
+  $documentation = Get-ChildItem -LiteralPath (Join-Path $PSScriptRoot 'docs') -File -Filter '*.md'
+  Copy-Item -LiteralPath $documentation.FullName -Destination (Join-Path $stagedModule 'docs')
+  Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'assets') -Destination (Join-Path $stagedModule 'assets') `
+    -Recurse
 
   $updateParameters = @{
     Path = $stagedManifestPath
@@ -69,25 +105,31 @@ if (!$Publish) {
   Update-ModuleManifest @updateParameters
 }
 
-if (!(Test-Path -LiteralPath $stagedManifestPath)) {
-  throw "Staged module '$stagedModule' does not exist. Run a build-only invocation before publishing."
-}
-
-$stagedManifest = Test-ModuleManifest -Path $stagedManifestPath
-if (
-  $stagedManifest.Version.ToString() -ne $baseVersion -or
-  "$($stagedManifest.PrivateData.PSData.Prerelease)" -ne $prerelease
-) {
-  throw "Staged manifest version does not match requested version '$Version'."
-}
-if ($stagedManifest.PrivateData.PSData.ReleaseNotes.Trim() -ne $releaseNotes) {
-  throw 'Staged manifest release notes do not match CHANGELOG.md.'
-}
-
 if ($Publish) {
-  Publish-Module -Path $stagedModule -NuGetApiKey $NuGetApiKey -Repository PSGallery `
+  if (!(Test-Path -LiteralPath $PackagePath -PathType Leaf)) {
+    throw "Validated package '$PackagePath' does not exist."
+  }
+  if ((Get-PackageVersion -Path $PackagePath) -ne $Version) {
+    throw "Package metadata does not match requested version '$Version'."
+  }
+
+  Import-Module Microsoft.PowerShell.PSResourceGet -RequiredVersion 1.2.0
+  Publish-PSResource -NupkgPath $PackagePath -ApiKey $NuGetApiKey -Repository PSGallery `
     -Confirm:$Confirm -WhatIf:$WhatIf
 }
 else {
-  Write-Output $stagedModule
+  $stagedManifest = Test-ModuleManifest -Path $stagedManifestPath
+  if (
+    $stagedManifest.Version.ToString() -ne $baseVersion -or
+    "$($stagedManifest.PrivateData.PSData.Prerelease)" -ne $prerelease
+  ) {
+    throw "Staged manifest version does not match requested version '$Version'."
+  }
+  if ($stagedManifest.PrivateData.PSData.ReleaseNotes.Trim() -ne $releaseNotes) {
+    throw 'Staged manifest release notes do not match CHANGELOG.md.'
+  }
+
+  Import-Module Microsoft.PowerShell.PSResourceGet -RequiredVersion 1.2.0
+  $package = Compress-PSResource -Path $stagedModule -DestinationPath $stagingDirectory -PassThru
+  Write-Output $package.FullName
 }

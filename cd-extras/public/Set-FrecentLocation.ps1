@@ -59,7 +59,7 @@ PS ~> cdf -p
 
 .LINK
 Get-FrecentLocation
-Remove-FrecentLocation
+Remove-RecentLocation
 Add-Bookmark
 Remove-Bookmark
 #>

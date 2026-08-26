@@ -4,6 +4,7 @@ Describe 'release metadata and build' {
     $manifestPath = Join-Path $repositoryRoot 'cd-extras/cd-extras.psd1'
     $changelogPath = Join-Path $repositoryRoot 'CHANGELOG.md'
     $publishScript = Join-Path $repositoryRoot 'publishme.ps1'
+    $approvedExports = Import-PowerShellDataFile (Join-Path $PSScriptRoot 'approved-exports.psd1')
     $manifest = Test-ModuleManifest -Path $manifestPath
     $changelog = Get-Content -Raw $changelogPath
     $release = [regex]::Match(
@@ -24,63 +25,38 @@ Describe 'release metadata and build' {
   }
 
   It 'exports the approved command and alias lists' {
-    $manifest.ExportedFunctions.Keys | Sort-Object | Should -Be @(
-      'Add-Bookmark'
-      'Clear-Stack'
-      'Expand-Path'
-      'Get-Ancestors'
-      'Get-Bookmark'
-      'Get-CdExtrasOption'
-      'Get-FrecentLocation'
-      'Get-RecentLocation'
-      'Get-Stack'
-      'Get-Up'
-      'Redo-Location'
-      'Remove-Bookmark'
-      'Remove-RecentLocation'
-      'Set-CdExtrasOption'
-      'Set-FrecentLocation'
-      'Set-LocationEx'
-      'Set-RecentLocation'
-      'Step-Up'
-      'Switch-LocationPart'
-      'Undo-Location'
-    )
-    $manifest.ExportedAliases.Keys | Sort-Object | Should -Be @(
-      '..'
-      '~'
-      '~~'
-      'cd-'
-      'cd:'
-      'cd+'
-      'cdf'
-      'cdr'
-      'dirs'
-      'dirsc'
-      'getocd'
-      'gup'
-      'mark'
-      'setocd'
-      'unmark'
-      'up'
-      'xpa'
-      'xup'
-    )
+    $manifest.ExportedFunctions.Keys | Sort-Object | Should -Be $approvedExports.Functions
+    $manifest.ExportedAliases.Keys | Sort-Object | Should -Be $approvedExports.Aliases
+    $manifest.ExportedVariables.Keys | Sort-Object | Should -Be $approvedExports.Variables
+  }
+
+  It 'validates the public API and session cleanup in a clean process' {
+    $powerShell = (Get-Process -Id $PID).Path
+    $validationScript = Join-Path $PSScriptRoot 'validate-module.ps1'
+    $output = & $powerShell -NoLogo -NoProfile -File $validationScript -ModulePath $manifestPath 2>&1 |
+    Out-String
+
+    $LASTEXITCODE | Should -Be 0 -Because $output
   }
 
   It 'builds stable metadata and help without publishing' {
-    $stagedModule = & $publishScript -OutputDirectory TestDrive:/release
+    $package = & $publishScript -OutputDirectory TestDrive:/release
+    $stagedModule = Join-Path (Split-Path -Parent $package) 'cd-extras'
     $stagedManifest = Test-ModuleManifest (Join-Path $stagedModule 'cd-extras.psd1')
 
+    Test-Path -LiteralPath $package | Should -BeTrue
     $stagedManifest.Version.ToString() | Should -Be '3.0.0'
     $stagedManifest.PrivateData.PSData.Prerelease | Should -BeNullOrEmpty
     $stagedManifest.PrivateData.PSData.ReleaseNotes.Trim() |
     Should -Be $release.Groups['notes'].Value.Trim()
     Test-Path -LiteralPath (Join-Path $stagedModule 'about_Cd-Extras.help.txt') | Should -BeTrue
+    Test-Path -LiteralPath (Join-Path $stagedModule 'docs/navigation.md') | Should -BeTrue
+    Test-Path -LiteralPath (Join-Path $stagedModule 'assets/overview.svg') | Should -BeTrue
   }
 
   It 'retains a requested prerelease label in a build' {
-    $stagedModule = & $publishScript -Version 3.0.0-rc1 -OutputDirectory TestDrive:/release
+    $package = & $publishScript -Version 3.0.0-rc1 -OutputDirectory TestDrive:/release
+    $stagedModule = Join-Path (Split-Path -Parent $package) 'cd-extras'
     $stagedManifest = Test-ModuleManifest (Join-Path $stagedModule 'cd-extras.psd1')
 
     $stagedManifest.Version.ToString() | Should -Be '3.0.0'
@@ -89,10 +65,32 @@ Describe 'release metadata and build' {
 
   It 'refuses publishing when the checkout does not have the matching tag' {
     Mock git { 'v2.9.4' }
-    Mock Publish-Module
+    Mock Publish-PSResource
 
     { & $publishScript -Version 3.0.0 -Publish -NuGetApiKey test } |
     Should -Throw "*requires HEAD to have the exact tag 'v3.0.0'*"
-    Assert-MockCalled Publish-Module -Times 0 -Exactly
+    Assert-MockCalled Publish-PSResource -Times 0 -Exactly
+  }
+
+  It 'publishes the exact package that was built and validated' {
+    $package = & $publishScript -OutputDirectory TestDrive:/release
+    Mock git { $global:LASTEXITCODE = 0; 'v3.0.0' }
+    Mock Publish-PSResource
+
+    & $publishScript -Version 3.0.0 -PackagePath $package -Publish -NuGetApiKey test -Confirm:$false
+
+    Assert-MockCalled Publish-PSResource -Times 1 -Exactly -ParameterFilter {
+      $NupkgPath -eq $package -and $Repository -eq 'PSGallery'
+    }
+  }
+
+  It 'refuses a package whose metadata does not match the release version' {
+    $package = & $publishScript -Version 3.0.0-rc1 -OutputDirectory TestDrive:/release
+    Mock git { $global:LASTEXITCODE = 0; 'v3.0.0' }
+    Mock Publish-PSResource
+
+    { & $publishScript -Version 3.0.0 -PackagePath $package -Publish -NuGetApiKey test } |
+    Should -Throw "*Package metadata does not match requested version '3.0.0'*"
+    Assert-MockCalled Publish-PSResource -Times 0 -Exactly
   }
 }

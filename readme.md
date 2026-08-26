@@ -128,3 +128,17 @@ To collect code coverage and write reports to a chosen directory:
   -CoverageOutputPath ./_reports/coverage.xml `
   -TestResultOutputPath ./_reports/testresults.xml
 ```
+
+Run the same static and package checks used by CI before preparing a release:
+
+```powershell
+Install-Module PSScriptAnalyzer -RequiredVersion 1.24.0 -Scope CurrentUser
+Install-Module Microsoft.PowerShell.PSResourceGet -RequiredVersion 1.2.0 -Scope CurrentUser
+
+./tests/analyse.ps1
+./tests/validate-module.ps1 -ModulePath ./cd-extras/cd-extras.psd1
+
+$version = (Test-ModuleManifest ./cd-extras/cd-extras.psd1).Version.ToString()
+$package = ./publishme.ps1 -Version $version
+./tests/validate-package.ps1 -PackagePath $package -Version $version
+```

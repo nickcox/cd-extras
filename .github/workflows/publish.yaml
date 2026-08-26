@@ -8,10 +8,15 @@ on:
         required: true
         type: string
 
+permissions:
+  actions: read
+  contents: read
+
 jobs:
   publish:
     name: Publish to PSGallery
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -19,31 +24,70 @@ jobs:
           ref: v${{ inputs.version }}
           fetch-depth: 0
 
-      - name: Build the tagged release
-        env:
-          RELEASE_VERSION: ${{ inputs.version }}
-        run: ./publishme.ps1 -Version $env:RELEASE_VERSION
-        shell: pwsh
-
-      - name: Import the staged module
+      - name: Resolve and validate the release tag
+        id: release
         env:
           RELEASE_VERSION: ${{ inputs.version }}
         run: |
-          $manifestPath = Join-Path './out' "$env:RELEASE_VERSION/cd-extras/cd-extras.psd1"
-          $module = Test-ModuleManifest $manifestPath
-          Import-Module $module.Path -Force
-          Get-Command -Module cd-extras -Name Set-FrecentLocation -ErrorAction Stop
+          if ($env:RELEASE_VERSION -notmatch '^\d+\.\d+\.\d+$') {
+            throw "Release version '$env:RELEASE_VERSION' is not a stable version."
+          }
+          $expectedTag = "v$env:RELEASE_VERSION"
+          $actualTag = git describe --tags --exact-match HEAD
+          if ($LASTEXITCODE -or $actualTag -ne $expectedTag) {
+            throw "The checked-out commit must have the exact tag '$expectedTag'."
+          }
+          "sha=$(git rev-parse HEAD)" >> $env:GITHUB_OUTPUT
         shell: pwsh
 
-      - name: Upload the staged module
-        uses: actions/upload-artifact@v6
+      - name: Find the successful package workflow
+        id: workflow
+        uses: actions/github-script@v8
+        env:
+          RELEASE_SHA: ${{ steps.release.outputs.sha }}
         with:
-          name: cd-extras-${{ inputs.version }}
-          path: out/${{ inputs.version }}/cd-extras
+          script: |
+            const response = await github.rest.actions.listWorkflowRuns({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'onPush.yaml',
+              head_sha: process.env.RELEASE_SHA,
+              status: 'success',
+              event: 'push',
+              per_page: 100
+            });
+            const run = response.data.workflow_runs[0];
+            if (!run) {
+              core.setFailed(`No successful package workflow found for ${process.env.RELEASE_SHA}.`);
+              return;
+            }
+            core.setOutput('run-id', run.id);
 
-      - name: Publish the validated staged module
+      - name: Download the validated package
+        uses: actions/download-artifact@v6
+        with:
+          name: cd-extras-package-${{ steps.release.outputs.sha }}
+          path: out/${{ inputs.version }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ steps.workflow.outputs.run-id }}
+
+      - name: Validate the downloaded package
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          Install-Module Microsoft.PowerShell.PSResourceGet -RequiredVersion 1.2.0 `
+            -Scope CurrentUser -Force
+          Import-Module Microsoft.PowerShell.PSResourceGet -RequiredVersion 1.2.0
+          $package = "./out/$env:RELEASE_VERSION/cd-extras.$env:RELEASE_VERSION.nupkg"
+          ./tests/validate-package.ps1 -PackagePath $package -Version $env:RELEASE_VERSION
+        shell: pwsh
+
+      - name: Publish the validated package
         env:
           PSNugetKey: ${{ secrets.PSNugetKey }}
           RELEASE_VERSION: ${{ inputs.version }}
-        run: ./publishme.ps1 -Version $env:RELEASE_VERSION -Publish -Confirm:$false
+        run: |
+          $package = "./out/$env:RELEASE_VERSION/cd-extras.$env:RELEASE_VERSION.nupkg"
+          ./publishme.ps1 -Version $env:RELEASE_VERSION -PackagePath $package `
+            -Publish -Confirm:$false
         shell: pwsh

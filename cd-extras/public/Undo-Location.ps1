@@ -31,7 +31,7 @@ PS C:\Windows\System32> _
 
 .LINK
 Redo-Location
-Get-Stack 
+Get-Stack
 #>
 function Undo-Location {
   [OutputType([void], [Management.Automation.PathInfo])]
