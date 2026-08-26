@@ -8,7 +8,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Check repository for whitespace errors
         run: |
@@ -37,7 +37,7 @@ jobs:
         os: [ubuntu-latest, windows-latest, macOS-latest]
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Run the tests
         run: |
@@ -54,14 +54,14 @@ jobs:
 
       - name: Upload PowerShell test report
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: Test Report (${{ matrix.os }}, pwsh)
           path: _reports/testresults-${{ matrix.os }}-pwsh.xml
 
       - name: Upload coverage to Codecov
         if: always() && hashFiles(format('_reports/coverage-{0}.xml', matrix.os)) != ''
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./_reports/coverage-${{ matrix.os }}.xml
@@ -74,7 +74,7 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Run the tests
         run: |
@@ -87,7 +87,7 @@ jobs:
 
       - name: Upload Windows PowerShell test report
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: Test Report (windows-latest, Windows PowerShell)
           path: _reports/testresults-windows-latest-windows-powershell.xml
@@ -99,7 +99,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Build the package
         id: build
@@ -130,7 +130,7 @@ jobs:
         shell: pwsh
 
       - name: Upload the validated package
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: cd-extras-package-${{ github.sha }}-${{ steps.build.outputs.version }}
           path: ${{ steps.build.outputs.path }}

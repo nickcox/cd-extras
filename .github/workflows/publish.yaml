@@ -19,7 +19,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: v${{ inputs.version }}
           fetch-depth: 0
@@ -42,7 +42,7 @@ jobs:
 
       - name: Find the successful package workflow
         id: workflow
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         env:
           PACKAGE_ARTIFACT: cd-extras-package-${{ steps.release.outputs.sha }}-${{ inputs.version }}
           RELEASE_SHA: ${{ steps.release.outputs.sha }}
@@ -79,7 +79,7 @@ jobs:
             );
 
       - name: Download the validated package
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v8
         with:
           name: cd-extras-package-${{ steps.release.outputs.sha }}-${{ inputs.version }}
           path: out/${{ inputs.version }}
