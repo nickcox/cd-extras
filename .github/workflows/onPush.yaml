@@ -9,19 +9,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
 
-      - name: Check changed lines for whitespace errors
-        env:
-          BEFORE_SHA: ${{ github.event.before }}
+      - name: Check repository for whitespace errors
         run: |
-          if ($env:BEFORE_SHA -match '^0+$') {
-            git diff --check HEAD^ HEAD
-          }
-          else {
-            git diff --check $env:BEFORE_SHA $env:GITHUB_SHA
-          }
+          $emptyTree = git hash-object -t tree /dev/null
+          if ($LASTEXITCODE) { throw 'Could not create an empty Git tree.' }
+          git diff --check $emptyTree HEAD
           if ($LASTEXITCODE) { throw 'git diff --check failed.' }
         shell: pwsh
 

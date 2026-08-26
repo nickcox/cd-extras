@@ -97,7 +97,7 @@ Function Set-LocationEx {
     SupportsTransactions,
     HelpUri = 'https://go.microsoft.com/fwlink/?LinkID=113397')
   ]
- 	param(
+  param(
     [Parameter(ParameterSetName = 'Path', Position = 0, ValueFromPipeline, ValueFromPipelineByPropertyName)]
     [string] ${Path},
 
@@ -114,7 +114,7 @@ Function Set-LocationEx {
     [string] ${StackName}
   )
 
- 	begin {
+  begin {
 
     $startLocation = $PWD.Path
 
@@ -182,16 +182,16 @@ Function Set-LocationEx {
     $scriptCmd = { & $wrappedCmd @PSBoundParameters }
     $steppablePipeline = $scriptCmd.GetSteppablePipeline($myInvocation.CommandOrigin)
     $steppablePipeline.Begin($PSCmdlet)
- 	}
+  }
 
- 	process {
+  process {
 
     if ($steppablePipeline) {
       $steppablePipeline.Process($_)
     }
   }
 
- 	end {
+  end {
 
     if ($PWD.Path -ne $startLocation) {
       $redoStack.Clear()
@@ -207,5 +207,5 @@ Function Set-LocationEx {
     if ($steppablePipeline) {
       $steppablePipeline.End()
     }
- 	}
+  }
 }

@@ -9,4 +9,3 @@ coverage:
       default:
         target: auto
         informational: true
-
