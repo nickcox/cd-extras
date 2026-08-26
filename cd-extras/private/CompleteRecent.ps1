@@ -1,6 +1,8 @@
 function CompleteRecent {
   param($commandName, $parameterName, $wordToComplete)
 
+  if ($parameterName -eq 'n' -and $wordToComplete -match '^\d+$') { return }
+
   $recents = Get-RecentLocation $wordToComplete
 
   if (!$recents) { return }

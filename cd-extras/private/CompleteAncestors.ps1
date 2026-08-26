@@ -1,5 +1,8 @@
 function CompleteAncestors {
   param($commandName, $parameterName, $wordToComplete)
+
+  if ($parameterName -eq 'n' -and $wordToComplete -match '^\d+$') { return }
+
   $ups = Get-Ancestors
   if (!$ups) { return }
 

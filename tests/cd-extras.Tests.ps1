@@ -2002,6 +2002,13 @@ Describe 'cd-extras' {
         $actual[0].CompletionText | Should -Be 1
       }
 
+      It 'does not expand an index that the user has already typed' {
+        Set-LocationEx TestDrive:/powershell/docker/release/fedora26
+        Set-LocationEx TestDrive:/powershell/tools/terms
+
+        CompleteStack -parameterName n -wordToComplete '2' -commandName 'Undo' | Should -BeNullOrEmpty
+      }
+
       It 'uses the full path when menu completion is off' {
         Set-LocationEx powershell
         Set-LocationEx src
@@ -2044,6 +2051,12 @@ Describe 'cd-extras' {
         $cde.IndexedCompletion = $true
         $actual = CompleteAncestors -wordToComplete ''
         $actual[0].CompletionText | Should -Be 1
+      }
+
+      It 'does not expand an index that the user has already typed' {
+        Set-Location ./powershell/docs/host-powershell/sample-dotnet2.0-powershell.beta.1/Logic
+
+        CompleteAncestors -parameterName n -wordToComplete '2' | Should -BeNullOrEmpty
       }
 
       It 'uses the full path when menu completion is off' {
@@ -2096,6 +2109,16 @@ Describe 'cd-extras' {
 
       It 'returns no completion when no recent directory matches' {
         CompleteRecent -wordToComplete 'does-not-exist' | Should -BeNullOrEmpty
+      }
+
+      It 'does not expand an index already typed for recent or frecent navigation' {
+        cd TestDrive:/powershell/tools/terms
+        cd TestDrive:/powershell/docker/release/fedora26
+        cd TestDrive:/
+
+        foreach ($inputText in @('cdr -n 2', 'cdf -n 2')) {
+          (TabExpansion2 $inputText $inputText.Length).CompletionMatches | Should -BeNullOrEmpty
+        }
       }
     }
 

@@ -1,6 +1,8 @@
 function CompleteStack {
   param($commandName, $parameterName, $wordToComplete)
 
+  if ($parameterName -eq 'n' -and $wordToComplete -match '^\d+$') { return }
+
   $stack = if (
     $commandName -match 'Redo' -or
     ($aliased = (Get-Alias $commandName -ea Ignore).ResolvedCommandName -and $aliased -match 'Redo')
