@@ -164,26 +164,94 @@ function InvokeWithRecentLock([scriptblock] $action) {
   }
 }
 
+function ThrowInvalidRecentStore($row, [int] $rowNumber, [string] $reason) {
+  $message = "Recent directories file '$($cde.RECENT_DIRS_FILE)' row $rowNumber $reason."
+  throw [Management.Automation.ErrorRecord]::new(
+    [IO.InvalidDataException]::new($message),
+    'InvalidRecentStore',
+    [Management.Automation.ErrorCategory]::InvalidData,
+    $row
+  )
+}
+
 function ReadRecentStore() {
   $store = @{}
 
   if ($cde.RECENT_DIRS_FILE -and (Test-Path -LiteralPath $cde.RECENT_DIRS_FILE)) {
-    (Import-Csv -LiteralPath $cde.RECENT_DIRS_FILE).ForEach{
-      $dir = [RecentDir]$_
-      $dir.Favour = $_.Favour -and [bool]::Parse($_.Favour)
-      $store[$_.Path] = $dir
+    $header = Get-Content -LiteralPath $cde.RECENT_DIRS_FILE -TotalCount 1 -ErrorAction Stop
+    if ([string]::IsNullOrWhiteSpace($header)) {
+      ThrowInvalidRecentStore $header 1 'has an empty header'
+    }
+
+    $schema = @($header, 'x,x,x,x') | ConvertFrom-Csv -ErrorAction Stop | select -First 1
+    $columns = @($schema.PSObject.Properties.Name)
+    foreach ($requiredColumn in 'Path', 'LastEntered', 'EnterCount', 'Favour') {
+      if ($columns -notcontains $requiredColumn) {
+        ThrowInvalidRecentStore $header 1 "is missing required column '$requiredColumn'"
+      }
+    }
+
+    $rowNumber = 1
+    (Import-Csv -LiteralPath $cde.RECENT_DIRS_FILE -ErrorAction Stop).ForEach{
+      $rowNumber++
+
+      if ([string]::IsNullOrWhiteSpace($_.Path)) {
+        ThrowInvalidRecentStore $_ $rowNumber 'has an empty Path'
+      }
+
+      $lastEntered = [uint64]0
+      if (![uint64]::TryParse($_.LastEntered, [ref]$lastEntered)) {
+        ThrowInvalidRecentStore $_ $rowNumber "has invalid LastEntered value '$($_.LastEntered)'"
+      }
+
+      $enterCount = [uint32]0
+      if (![uint32]::TryParse($_.EnterCount, [ref]$enterCount)) {
+        ThrowInvalidRecentStore $_ $rowNumber "has invalid EnterCount value '$($_.EnterCount)'"
+      }
+
+      $favour = $false
+      if (![bool]::TryParse($_.Favour, [ref]$favour)) {
+        ThrowInvalidRecentStore $_ $rowNumber "has invalid Favour value '$($_.Favour)'"
+      }
+
+      if ($store.ContainsKey($_.Path)) {
+        ThrowInvalidRecentStore $_ $rowNumber "duplicates path '$($_.Path)'"
+      }
+
+      $store[$_.Path] = [RecentDir]@{
+        Path = $_.Path
+        LastEntered = $lastEntered
+        EnterCount = $enterCount
+        Favour = $favour
+      }
     }
   }
 
   $store
 }
 
-function SetRecentState([hashtable] $store) {
-  $Script:recent = $store
-  $cde.recentHash = if ($cde.RECENT_DIRS_FILE -and (Test-Path -LiteralPath $cde.RECENT_DIRS_FILE)) {
+function GetRecentStoreHash() {
+  if ($cde.RECENT_DIRS_FILE -and (Test-Path -LiteralPath $cde.RECENT_DIRS_FILE)) {
     (Get-FileHash -LiteralPath $cde.RECENT_DIRS_FILE).Hash.ToString()
   }
   else { $null }
+}
+
+function ReadRecentSnapshot() {
+  $hashBefore = GetRecentStoreHash
+  $store = ReadRecentStore
+  $hashAfter = GetRecentStoreHash
+
+  if ($hashBefore -ne $hashAfter) {
+    throw [IO.IOException]::new("Recent directories file '$($cde.RECENT_DIRS_FILE)' changed while it was being read.")
+  }
+
+  [pscustomobject]@{ Store = $store; Hash = $hashAfter }
+}
+
+function SetRecentState([hashtable] $store, [AllowNull()] [string] $recentHash) {
+  $Script:recent = $store
+  $cde.recentHash = $recentHash
 }
 
 function WriteRecentStore([hashtable] $store) {
@@ -220,11 +288,13 @@ function WriteRecentStore([hashtable] $store) {
 
 function ImportRecent() {
   InvokeWithRecentLock {
-    $store = ReadRecentStore
+    $snapshot = ReadRecentSnapshot
+    $store = $snapshot.Store
     $previousCount = $store.Count
     TrimRecent $store
     if ($store.Count -ne $previousCount) { WriteRecentStore $store }
-    SetRecentState $store
+    $storeHash = if ($store.Count -ne $previousCount) { GetRecentStoreHash } else { $snapshot.Hash }
+    SetRecentState $store $storeHash
   }
 }
 
@@ -232,14 +302,12 @@ function RefreshRecent() {
   if (!$cde.RECENT_DIRS_FILE) { return }
 
   InvokeWithRecentLock {
-    $currentHash = if (Test-Path -LiteralPath $cde.RECENT_DIRS_FILE) {
-      (Get-FileHash -LiteralPath $cde.RECENT_DIRS_FILE).Hash.ToString()
-    }
-    else { $null }
+    $currentHash = GetRecentStoreHash
 
     if ($currentHash -ne $cde.recentHash) {
       WriteLog ($currentHash, $cde.recentHash)
-      SetRecentState (ReadRecentStore)
+      $snapshot = ReadRecentSnapshot
+      SetRecentState $snapshot.Store $snapshot.Hash
     }
   }
 }
@@ -354,11 +422,11 @@ function InvokeRecentStoreOperation([scriptblock] $operation) {
   }
 
   InvokeWithRecentLock {
-    $store = ReadRecentStore
+    $store = (ReadRecentSnapshot).Store
     &$operation $store
     TrimRecent $store
     WriteRecentStore $store
-    SetRecentState $store
+    SetRecentState $store (GetRecentStoreHash)
   }
 }
 
@@ -368,7 +436,7 @@ function PersistRecent() {
   InvokeWithRecentLock {
     TrimRecent
     WriteRecentStore $recent
-    SetRecentState $recent
+    SetRecentState $recent (GetRecentStoreHash)
   }
 }
 

@@ -32,6 +32,7 @@ function Remove-Bookmark() {
   )
 
   Begin {
+    RefreshRecent
     $recents = $recent.Values.Where{ $_.Favour }
     $accepted = @()
   }

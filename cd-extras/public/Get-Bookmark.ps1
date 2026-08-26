@@ -29,6 +29,7 @@ function Get-Bookmark {
   param(
     [Parameter(Position = 0)] [uint16] $First = $cde.MaxRecentCompletions
   )
+  RefreshRecent
   $recent.Values.Where{ $_.Favour } |
   Sort-Object EnterCount, LastEntered -Descending |
   select -First $First -Expand Path

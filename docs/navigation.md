@@ -150,6 +150,11 @@ You can opt in to persisting to a CSV file by setting the `RECENT_DIRS_FILE` [op
 setocd RECENT_DIRS_FILE $env:APPDATA/.recent-dirs
 ```
 
+When a missing CSV file is configured, the current in-memory store is saved to it. An existing file
+is the complete persisted state and replaces the in-memory store. If the active file is subsequently
+deleted, the in-memory store is cleared when it is next read. Invalid CSV reports an error without
+replacing the last valid state; repair or replace the file before making further datastore changes.
+
 The normal maximum size of the datastore - whether persisted or not - is configured with the
 `MaxRecentDirs` option. Every bookmark is retained, even when the bookmarks alone exceed that value.
 Any remaining capacity is used for the most recently entered non-bookmarked directories.

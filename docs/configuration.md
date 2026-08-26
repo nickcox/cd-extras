@@ -44,7 +44,9 @@ setocd @{ AUTO_CD = $false; CD_PATH = '~/Documents/', '~/Downloads' }
   - Paths to be searched by `cd` and tab completion. An array, not a delimited string.
 - _RECENT_DIRS_FILE_: `[string] = $null`
   - Path to a CSV file for persisting recent, frecent and bookmarked locations between sessions.
-    If not set, the datastore is not persisted.
+    If not set, the datastore is not persisted. When a missing file is configured, the current
+    in-memory store is saved to it. An existing file is the complete persisted state and replaces
+    the in-memory store. Invalid CSV reports an error and leaves the last valid state unchanged.
 - _RECENT_DIRS_EXCLUDE_: `[string[]] = @()`
   - Directories to exclude from the recent locations list.
 - _RecentDirsFallThrough_: `[bool] = $true`

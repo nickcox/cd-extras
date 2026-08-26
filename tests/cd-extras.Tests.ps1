@@ -499,7 +499,9 @@ Describe 'cd-extras' {
 
       $missingParent = Join-Path $processTestRoot store
       $null = New-Item -ItemType Directory -Path $missingParent
-      setocd RECENT_DIRS_FILE (Join-Path $missingParent recent.csv)
+      $failureStore = Join-Path $missingParent recent.csv
+      Copy-Item -LiteralPath $storeFile -Destination $failureStore
+      setocd RECENT_DIRS_FILE $failureStore
       Remove-Item -LiteralPath $missingParent -Recurse -Force
 
       $warnings = Set-LocationEx -LiteralPath $parentTarget 3>&1
@@ -1477,6 +1479,164 @@ Describe 'cd-extras' {
 
   InModuleScope cd-extras {
 
+    Describe 'External recent store reconciliation' {
+      BeforeEach {
+        setocd RECENT_DIRS_FILE
+        Remove-RecentLocation *
+        $storeFile = 'TestDrive:/external-recent-store.csv'
+        $firstPath = (Resolve-Path 'TestDrive:/powershell').Path
+        $secondPath = (Resolve-Path 'TestDrive:/powershell/docs').Path
+        $now = [System.DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
+        setocd RECENT_DIRS_FILE $storeFile
+      }
+
+      AfterEach {
+        setocd RECENT_DIRS_FILE
+        Remove-RecentLocation *
+        Remove-Item -LiteralPath $storeFile -ErrorAction Ignore
+        $Error.Clear()
+        $global:Error.Clear()
+      }
+
+      It 'replaces in-memory state when an external update removes a row' {
+        @(
+          [pscustomobject]@{ Path = $firstPath; LastEntered = $now; EnterCount = 1; Favour = $false }
+          [pscustomobject]@{ Path = $secondPath; LastEntered = $now + 1; EnterCount = 1; Favour = $false }
+        ) | Export-Csv -LiteralPath $storeFile
+        @(Get-RecentLocation).Path | Should -Contain $firstPath
+
+        @(
+          [pscustomobject]@{ Path = $secondPath; LastEntered = $now + 1; EnterCount = 1; Favour = $false }
+        ) | Export-Csv -LiteralPath $storeFile
+
+        @(Get-RecentLocation).Path | Should -Be $secondPath
+        $recent.ContainsKey($firstPath) | Should -BeFalse
+      }
+
+      It 'clears in-memory state when the configured file is deleted' {
+        @(
+          [pscustomobject]@{ Path = $firstPath; LastEntered = $now; EnterCount = 1; Favour = $false }
+        ) | Export-Csv -LiteralPath $storeFile
+        Get-RecentLocation | Should -Not -BeNullOrEmpty
+
+        Remove-Item -LiteralPath $storeFile
+
+        Get-RecentLocation | Should -BeNullOrEmpty
+        $recent.Count | Should -Be 0
+      }
+
+      It 'refreshes bookmarks directly after an external update' {
+        @(
+          [pscustomobject]@{ Path = $firstPath; LastEntered = $now; EnterCount = 1; Favour = $true }
+        ) | Export-Csv -LiteralPath $storeFile
+
+        Get-Bookmark | Should -Be $firstPath
+
+        @(
+          [pscustomobject]@{ Path = $secondPath; LastEntered = $now + 1; EnterCount = 1; Favour = $true }
+        ) | Export-Csv -LiteralPath $storeFile
+
+        Get-Bookmark | Should -Be $secondPath
+      }
+
+      It 'refreshes bookmarks before removing one after an external update' {
+        @(
+          [pscustomobject]@{ Path = $firstPath; LastEntered = $now; EnterCount = 1; Favour = $true }
+        ) | Export-Csv -LiteralPath $storeFile
+
+        Remove-Bookmark -Pattern $firstPath -Confirm:$false
+
+        (Import-Csv -LiteralPath $storeFile).Favour | Should -Be 'False'
+      }
+
+      It 'preserves the last valid state when a field is invalid' -TestCases @(
+        @{ Field = 'Path'; Value = ''; Message = 'has an empty Path' }
+        @{ Field = 'LastEntered'; Value = '-1'; Message = 'has invalid LastEntered value' }
+        @{ Field = 'EnterCount'; Value = '-1'; Message = 'has invalid EnterCount value' }
+        @{ Field = 'Favour'; Value = 'perhaps'; Message = 'has invalid Favour value' }
+      ) {
+        param($Field, $Value, $Message)
+        @(
+          [pscustomobject]@{ Path = $firstPath; LastEntered = $now; EnterCount = 1; Favour = $false }
+        ) | Export-Csv -LiteralPath $storeFile
+        Get-RecentLocation | Should -Not -BeNullOrEmpty
+
+        $invalid = [ordered]@{ Path = $secondPath; LastEntered = $now; EnterCount = 1; Favour = $false }
+        $invalid[$Field] = $Value
+        @([pscustomobject]$invalid) | Export-Csv -LiteralPath $storeFile
+
+        { Get-RecentLocation } | Should -Throw "*row 2 $Message*"
+        $recent.Keys | Should -Be $firstPath
+        $Error.Clear()
+        $global:Error.Clear()
+      }
+
+      It 'rejects a missing required column without replacing valid state' {
+        @(
+          [pscustomobject]@{ Path = $firstPath; LastEntered = $now; EnterCount = 1; Favour = $false }
+        ) | Export-Csv -LiteralPath $storeFile
+        Get-RecentLocation | Should -Not -BeNullOrEmpty
+
+        @(
+          [pscustomobject]@{ Path = $secondPath; LastEntered = $now; EnterCount = 1 }
+        ) | Export-Csv -LiteralPath $storeFile
+
+        { Get-RecentLocation } | Should -Throw "*row 1 is missing required column 'Favour'*"
+        $recent.Keys | Should -Be $firstPath
+        $Error.Clear()
+        $global:Error.Clear()
+      }
+
+      It 'rejects duplicate paths without replacing valid state' {
+        @(
+          [pscustomobject]@{ Path = $firstPath; LastEntered = $now; EnterCount = 1; Favour = $false }
+        ) | Export-Csv -LiteralPath $storeFile
+        Get-RecentLocation | Should -Not -BeNullOrEmpty
+
+        @(
+          [pscustomobject]@{ Path = $secondPath; LastEntered = $now; EnterCount = 1; Favour = $false }
+          [pscustomobject]@{ Path = $secondPath; LastEntered = $now + 1; EnterCount = 2; Favour = $true }
+        ) | Export-Csv -LiteralPath $storeFile
+
+        { Get-RecentLocation } | Should -Throw "*row 3 duplicates path*"
+        $recent.Keys | Should -Be $firstPath
+        $Error.Clear()
+        $global:Error.Clear()
+      }
+
+      It 'replaces state when RECENT_DIRS_FILE changes' {
+        $secondStore = 'TestDrive:/second-recent-store.csv'
+        @(
+          [pscustomobject]@{ Path = $firstPath; LastEntered = $now; EnterCount = 1; Favour = $false }
+        ) | Export-Csv -LiteralPath $storeFile
+        @(
+          [pscustomobject]@{ Path = $secondPath; LastEntered = $now + 1; EnterCount = 1; Favour = $false }
+        ) | Export-Csv -LiteralPath $secondStore
+
+        setocd RECENT_DIRS_FILE $storeFile
+        $recent.Keys | Should -Be $firstPath
+
+        setocd RECENT_DIRS_FILE $secondStore
+        $recent.Keys | Should -Be $secondPath
+
+        Remove-Item -LiteralPath $secondStore
+      }
+
+      It 'copies current state when RECENT_DIRS_FILE changes to a missing file' {
+        $secondStore = 'TestDrive:/missing-recent-store.csv'
+        @(
+          [pscustomobject]@{ Path = $firstPath; LastEntered = $now; EnterCount = 1; Favour = $false }
+        ) | Export-Csv -LiteralPath $storeFile
+        setocd RECENT_DIRS_FILE $storeFile
+
+        setocd RECENT_DIRS_FILE $secondStore
+
+        (Import-Csv -LiteralPath $secondStore).Path | Should -Be $firstPath
+        $recent.Keys | Should -Be $firstPath
+        Remove-Item -LiteralPath $secondStore
+      }
+    }
+
     Describe 'Empty recent store persistence errors' {
       BeforeEach {
         setocd RECENT_DIRS_FILE
@@ -1989,7 +2149,7 @@ Describe 'cd-extras' {
         }
       }
 
-      It 'Persists, loads or creates recent dirs file as necessary' {
+      It 'saves current state to a missing file and loads an existing file as authoritative state' {
         Remove-RecentLocation *
         cd TestDrive:/powershell/tools/terms
         cd TestDrive:/powershell/tools/ResxGen
@@ -1997,9 +2157,8 @@ Describe 'cd-extras' {
 
         $file = 'TestDrive:/recent_dirs'
         setocd RECENT_DIRS_FILE $file
-        Start-Sleep -Milliseconds 50 # save is async
 
-        # there should be three entries, so four lines including header
+        Test-Path -LiteralPath $file | Should -BeTrue
         (Get-Content $file).Length | Should -Be 4 -Because "File content is `n$(Get-Content $file | Out-String)`n"
 
         setocd RECENT_DIRS_FILE
@@ -2007,32 +2166,25 @@ Describe 'cd-extras' {
         Get-RecentLocation | Should -BeNullOrEmpty
 
         cd powershell/tools/packaging/macos
-        setocd RECENT_DIRS_FILE $file # the three locations in the file should have been added
-
-        # Get-RecentLocation doesn't include the current location, so three results
-        (Get-RecentLocation).Count | Should -Be 3
-
-        Remove-RecentLocation *
-        cd TestDrive:/
-        $file = Join-Path ([io.path]::GetTempPath()) ([io.path]::GetRandomFileName())
-        Test-Path $file | Should -Be $false
         setocd RECENT_DIRS_FILE $file
-        Start-Sleep -Milliseconds 50 # save is async
-        Test-Path $file | Should -Be $true
+
+        $persistedPaths = @(Get-RecentLocation).Path
+        $persistedPaths | Should -Contain (Resolve-Path TestDrive:/powershell/tools/terms).Path
+        $persistedPaths | Should -Contain (Resolve-Path TestDrive:/powershell/tools/ResxGen).Path
+        $persistedPaths | Should -Contain (Resolve-Path TestDrive:/).Path
+        $persistedPaths | Should -HaveCount 3
 
         setocd RECENT_DIRS_FILE
       }
 
       It 'round-trips EnterCount through the recent dirs file' {
-        Remove-RecentLocation *
-        cd TestDrive:/powershell/tools/terms
-        cd TestDrive:/
-        cd TestDrive:/powershell/tools/terms
-        cd TestDrive:/
-
         $file = 'TestDrive:/recent_dirs_roundtrip'
         setocd RECENT_DIRS_FILE $file
-        Start-Sleep -Milliseconds 50 # save is async
+
+        cd TestDrive:/powershell/tools/terms
+        cd TestDrive:/
+        cd TestDrive:/powershell/tools/terms
+        cd TestDrive:/
 
         $beforeCount = ($recent.Values | Where-Object { $_.Path -like '*terms' }).EnterCount
         $beforeCount | Should -BeGreaterThan 1
