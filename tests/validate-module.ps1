@@ -2,7 +2,8 @@
 param(
   [Parameter(Mandatory)]
   [string] $ModulePath,
-  [string] $ApprovedExportsPath = (Join-Path $PSScriptRoot 'approved-exports.psd1')
+  [Parameter(Mandatory)]
+  [string] $ApprovedExportsPath
 )
 
 $ErrorActionPreference = 'Stop'

@@ -35,7 +35,9 @@ Describe 'release metadata and build' {
     $powerShell = Get-Command $powerShellCommand -CommandType Application -ErrorAction Stop |
     Select-Object -First 1 -ExpandProperty Definition
     $validationScript = Join-Path $PSScriptRoot 'validate-module.ps1'
-    $output = & $powerShell -NoLogo -NoProfile -File $validationScript -ModulePath $manifestPath 2>&1 |
+    $approvedExportsPath = Join-Path $PSScriptRoot 'approved-exports.psd1'
+    $output = & $powerShell -NoLogo -NoProfile -File $validationScript `
+      -ModulePath $manifestPath -ApprovedExportsPath $approvedExportsPath 2>&1 |
     Out-String
 
     $LASTEXITCODE | Should -Be 0 -Because $output

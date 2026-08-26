@@ -136,7 +136,8 @@ Install-Module PSScriptAnalyzer -RequiredVersion 1.24.0 -Scope CurrentUser
 Install-Module Microsoft.PowerShell.PSResourceGet -RequiredVersion 1.2.0 -Scope CurrentUser
 
 ./tests/analyse.ps1
-./tests/validate-module.ps1 -ModulePath ./cd-extras/cd-extras.psd1
+./tests/validate-module.ps1 -ModulePath ./cd-extras/cd-extras.psd1 `
+  -ApprovedExportsPath ./tests/approved-exports.psd1
 
 $version = (Test-ModuleManifest ./cd-extras/cd-extras.psd1).Version.ToString()
 $package = ./publishme.ps1 -Version $version

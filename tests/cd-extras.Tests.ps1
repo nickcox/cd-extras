@@ -916,6 +916,9 @@ Describe 'cd-extras' {
         mark $packaging
         mark $releaseBuild
         Set-LocationEx -LiteralPath $failingTests
+        $afterFirstEntry = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
+        do { Start-Sleep -Milliseconds 1 }
+        while ([DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds() -le $afterFirstEntry)
         Set-LocationEx -LiteralPath $terms
         Microsoft.PowerShell.Management\Set-Location TestDrive:/
 
