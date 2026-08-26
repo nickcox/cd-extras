@@ -78,6 +78,7 @@ Or skip typing `cd` altogether with `AUTO_CD`:
 | `Get-Up` | `gup` | Get ancestor directory path |
 | `Expand-Path` | `xpa` | Expand abbreviated paths |
 | `Switch-LocationPart` | `cd:` | Replace part of the current path |
+| `Get-CdExtrasOption` | `getocd` | View cd-extras options |
 | `Set-CdExtrasOption` | `setocd` | Configure cd-extras options |
 
 
@@ -100,6 +101,7 @@ Import-Module cd-extras
 setocd AUTO_CD $false
 setocd CD_PATH '~/Documents/', '~/Downloads'
 setocd CDABLE_VARS
+getocd AUTO_CD
 ```
 
 For the full options reference, see [Configuration](docs/configuration.md).

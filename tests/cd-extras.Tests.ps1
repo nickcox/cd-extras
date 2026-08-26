@@ -233,6 +233,32 @@ Describe 'cd-extras' {
       $thru.Path | Should -BeLike '*ResxGen'
     }
 
+    It 'can move to an explicitly indexed recent location with passthrough' {
+      Set-LocationEx -LiteralPath TestDrive:/powershell/tools/terms
+      $afterFirstEntry = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
+      do { Start-Sleep -Milliseconds 1 }
+      while ([DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds() -le $afterFirstEntry)
+      Set-LocationEx -LiteralPath TestDrive:/powershell/tools/ResxGen
+      Microsoft.PowerShell.Management\Set-Location TestDrive:/
+      $recents = @(Get-RecentLocation)
+
+      $thru = cdr -n $recents.Count -PassThru
+
+      $thru.Path | Should -Be $recents[-1].Path
+      $PWD.Path | Should -Be $recents[-1].Path
+    }
+
+    It 'does nothing when an explicit recent index is out of range' {
+      Set-LocationEx -LiteralPath TestDrive:/powershell/tools/terms
+      Microsoft.PowerShell.Management\Set-Location TestDrive:/
+      $start = $PWD.Path
+
+      $result = cdr -n 2 -PassThru
+
+      $result | Should -BeNullOrEmpty
+      $PWD.Path | Should -Be $start
+    }
+
     It 'truncates the recent locations list if necessary' {
       cd TestDrive:/powershell/tools/failingTests
       cd TestDrive:/powershell/tools/packaging
@@ -1365,6 +1391,50 @@ Describe 'cd-extras' {
     }
   }
 
+  Describe 'Get-CdExtrasOption' {
+    It 'returns the active options object through its alias' {
+      [object]::ReferenceEquals((getocd), $cde) | Should -BeTrue
+    }
+
+    It 'retrieves public option values of each supported type' -ForEach @(
+      @{ Option = 'AUTO_CD' }
+      @{ Option = 'MaxRecentDirs' }
+      @{ Option = 'NOARG_CD' }
+      @{ Option = 'CD_PATH' }
+      @{ Option = 'ToolTip' }
+    ) {
+      Get-CdExtrasOption $Option | Should -Be $cde.$Option
+    }
+
+    It 'matches option names without regard to case' {
+      getocd auto_cd | Should -Be $cde.AUTO_CD
+    }
+
+    It 'rejects an unknown option clearly' {
+      { getocd does_not_exist } | Should -Throw "Unknown cd-extras option 'does_not_exist'."
+      $Error.Clear()
+      $global:Error.Clear()
+    }
+
+    It 'completes public option names for <Command>' -ForEach @(
+      @{ Command = 'getocd' }
+      @{ Command = 'setocd' }
+    ) {
+      $inputText = "$Command AUT"
+      $completionMatches = (TabExpansion2 $inputText $inputText.Length).CompletionMatches
+
+      $completionMatches.CompletionText | Should -Contain 'AUTO_CD'
+    }
+
+    It 'does not offer hidden implementation properties' {
+      $inputText = 'getocd '
+      $completionMatches = (TabExpansion2 $inputText $inputText.Length).CompletionMatches
+
+      $completionMatches.CompletionText | Should -Not -Contain 'recentHash'
+      $completionMatches.CompletionText | Should -Not -Contain 'mutex'
+    }
+  }
+
   Describe 'Expand-Path' {
     It 'returns expected expansion Windows style' {
       Expand-Path p/s/m/UN |
@@ -1421,6 +1491,15 @@ Describe 'cd-extras' {
 
     It 'works in Windows registry' -Skip:(!$IsWindows) {
       (Expand-Path HKLM:\Soft\Mic\*).Count | Should -BeGreaterOrEqual 1
+    }
+
+    It 'preserves a UNC server and share while expanding later segments' {
+      $script:expandedUncPath = $null
+      Mock Get-Item { $script:expandedUncPath = $Path } -ModuleName cd-extras
+
+      Expand-Path '\\server\share\pro\cd' -SearchPaths @()
+
+      $script:expandedUncPath | Should -Be '\\server\share\pro*\cd*'
     }
   }
 
@@ -2014,6 +2093,10 @@ Describe 'cd-extras' {
         $actual = CompleteRecent -wordToComplete 'Util'
         $actual[0].CompletionText | Should -BeLike "*common${/}Utilities"*
       }
+
+      It 'returns no completion when no recent directory matches' {
+        CompleteRecent -wordToComplete 'does-not-exist' | Should -BeNullOrEmpty
+      }
     }
 
     Describe 'Frecents expansion' {
@@ -2024,6 +2107,10 @@ Describe 'cd-extras' {
         cd ..
         $actual = CompleteFrecent -wordToComplete 'Util'
         $actual[0].CompletionText | Should -BeLike "*common${/}Utilities"*
+      }
+
+      It 'returns no completion when no frecent directory matches' {
+        CompleteFrecent -wordToComplete 'does-not-exist' | Should -BeNullOrEmpty
       }
     }
 
@@ -2268,6 +2355,38 @@ Describe 'cd-extras' {
         }
         finally {
           $cde.MaxRecentDirs = $originalMaximum
+        }
+      }
+    }
+
+    Describe 'GetFrecent' {
+      It 'ranks every frecency age band in descending order' {
+        $recent.Clear()
+        $now = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
+        $paths = @(
+          (Resolve-Path 'TestDrive:/powershell/tools/terms').Path
+          (Resolve-Path 'TestDrive:/powershell/tools/ResxGen').Path
+          (Resolve-Path 'TestDrive:/powershell/tools/packaging').Path
+          (Resolve-Path 'TestDrive:/powershell/tools/releaseBuild').Path
+        )
+        $timestamps = @(
+          $now - (30 * 60 * 1000)
+          $now - (2 * 60 * 60 * 1000)
+          $now - (2 * 24 * 60 * 60 * 1000)
+          $now - (8 * 24 * 60 * 60 * 1000)
+        )
+
+        try {
+          for ($index = 0; $index -lt $paths.Count; $index++) {
+            $recent[$paths[$index]] = [RecentDir]@{
+              Path = $paths[$index]; LastEntered = $timestamps[$index]; EnterCount = 1
+            }
+          }
+
+          @(GetFrecent 4) | Should -Be $paths
+        }
+        finally {
+          $recent.Clear()
         }
       }
     }

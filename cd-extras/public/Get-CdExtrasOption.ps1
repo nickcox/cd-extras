@@ -3,7 +3,8 @@
 Get one or all cd-extras options.
 
 .PARAMETER Option
-The name of the option to retrieve. If omitted, all options are returned.
+The name of the option to retrieve. If omitted, all options are returned. An unknown option produces
+an InvalidArgument error.
 
 .EXAMPLE
 PS C:\> getocd
@@ -30,7 +31,20 @@ function Get-CdExtrasOption {
   )
 
   if ($Option) {
-    $global:cde.$Option
+    $propertyName = @($global:cde | Get-Member -Type Property).Name |
+    Where-Object { $_ -eq $Option } |
+    Select-Object -First 1
+    if (!$propertyName) {
+      $exception = [ArgumentException]::new("Unknown cd-extras option '$Option'.")
+      $errorRecord = [Management.Automation.ErrorRecord]::new(
+        $exception,
+        'UnknownCdExtrasOption',
+        [Management.Automation.ErrorCategory]::InvalidArgument,
+        $Option
+      )
+      $PSCmdlet.ThrowTerminatingError($errorRecord)
+    }
+    $global:cde.$propertyName
   }
   else {
     $global:cde

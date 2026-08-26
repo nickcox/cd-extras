@@ -23,6 +23,14 @@ Import-Module cd-extras
 setocd @{ AUTO_CD = $false; CD_PATH = '~/Documents/', '~/Downloads' }
 ```
 
+Use `Get-CdExtrasOption` (`getocd`) to inspect the active configuration. With no argument it returns
+the complete options object; with an option name it returns that option's value:
+
+```powershell
+getocd
+getocd AUTO_CD
+```
+
 <!-- TOC -->
 
 - [Options reference](#options-reference)
