@@ -16,11 +16,12 @@ setocd MaxCompletions 0 # auto calculate the maximum number of completions to di
 setocd ToolTip { "$($args[0]) ($($args[0].Mode))" }
 ```
 
-Multiple options can also be set at once by passing a hashtable:
+Multiple options can also be set at once by passing any dictionary that implements
+`System.Collections.IDictionary`, including a hashtable or ordered dictionary:
 
 ```powershell
 Import-Module cd-extras
-setocd @{ AUTO_CD = $false; CD_PATH = '~/Documents/', '~/Downloads' }
+setocd ([ordered]@{ AUTO_CD = $false; CD_PATH = '~/Documents/', '~/Downloads' })
 ```
 
 Use `Get-CdExtrasOption` (`getocd`) to inspect the active configuration. With no argument it returns
@@ -73,7 +74,7 @@ getocd AUTO_CD
     The scriptblock must return absolute paths to existing directories in ranked order. Empty values,
     missing paths, non-directory paths, duplicate paths and the current directory are removed before
     the result limit is applied. Set to `$null` to use the built-in frecency algorithm.
-- _WordDelimiters_ : `[string[]] = '.', '_', '-'`
+- _WordDelimiters_ : `[char[]] = '.', '_', '-'`
   - Word boundaries within path segments. For example, `.foo` will be expanded into `*.foo*`.
 - _ToolTip_ : `[ScriptBlock] = { param ($item, $isTruncated) ... }`
   - Information displayed in the menu-completion tooltip. This is passed two arguments: the current item,
@@ -87,15 +88,15 @@ getocd AUTO_CD
   - Commands that participate in enhanced tab completion for any path (files or directories).
 - _FileCompletions_: `[string[]] = @()`
   - Commands that participate in enhanced tab completion for files.
-- _ColorCompletion_ : `[bool] = false`
+- _ColorCompletion_ : `[bool] = $false`
   - When truthy, dir/path/file completions will be coloured by `Format-ColorizedFilename`, if
     available.
-- _MaxMenuLength_ : `[int] = 35`
+- _MaxMenuLength_ : `[uint16] = 60`
   - Truncate completion menu items to this length.
-- _MaxCompletions_ : `[int] = 0`
-  - Limit the number of menu completions offered. If falsy then _cd_extras_ will attempt to
+- _MaxCompletions_ : `[uint16] = 0`
+  - Limit the number of menu completions offered. When set to zero, _cd-extras_ attempts to
   calculate the maximum number of completions that can fit on the screen given the current
-  `$Host.UI.RawUI.WindowSize` and `$cde.MaxMenuLength`. Otherwise should be no greater than
+  `$Host.UI.RawUI.WindowSize` and `$cde.MaxMenuLength`. A non-zero value should be no greater than
   `(Get-PSReadLineOption).CompletionQueryItems`.
 
 

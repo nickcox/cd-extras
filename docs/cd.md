@@ -57,7 +57,7 @@ containing `.sdk` is expanded into `*.sdk*`.
 ```
 
 > **Note:**
-> Powershell interprets a hyphen at the start of an argument as a parameter name. So while you can do
+> PowerShell interprets a hyphen at the start of an argument as a parameter name. So while you can do
 > this...
 >
 > ```powershell
@@ -83,7 +83,7 @@ into `s*32`.
 [C:/Windows/System32/drivers/etc]> _
 ```
 
-Directories in [`CD_PATH`](#cd_path) will be also be shortened.
+Directories in [`CD_PATH`](#cd_path) will also be shortened.
 
 ```powershell
 [C:/]> setocd CD_PATH ~/projects

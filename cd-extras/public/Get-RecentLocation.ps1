@@ -10,7 +10,7 @@ Terms to match, separated with spaces or commas. The last term must match the le
 in order to be considered a match.
 
 .EXAMPLE
-PS C:\temp> # get the entire list
+PS C:\temp> # list recent locations
 PS C:\temp> Get-RecentLocation
 
  n Name             Path
@@ -34,7 +34,7 @@ n Name      Path
 
 .EXAMPLE
 PS C:\temp> # get the first (most recent) location matching the given terms
-PS C:\temp> Get-FrecentLocation temp abc -f 1
+PS C:\temp> Get-RecentLocation temp abc -f 1
 
 n Name      Path
 - ----      ----

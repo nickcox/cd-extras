@@ -25,7 +25,7 @@
   - [Clear-Stack (dirsc)](#clear-stack-dirsc)
   - [Expand-Path (xpa)](#expand-path-xpa)
 - [Compatibility](#compatibility)
-  - [OS X & Linux](#os-x--linux)
+  - [macOS and Linux](#macos-and-linux)
   - [Alternative providers](#alternative-providers)
 
 <!-- /TOC -->
@@ -37,7 +37,7 @@ _cd-extras_ provides the following navigation commands and corresponding aliases
 
 - `Undo-Location`, (`cd-` or `~`)
 - `Redo-Location`, (`cd+` or `~~`)
-- `Step-Up`, (`up`or `..`)
+- `Step-Up`, (`up` or `..`)
 - `Set-RecentLocation`, (`cdr`)
 - `Set-FrecentLocation`, (`cdf`)
 
@@ -55,8 +55,8 @@ _cd-extras_ provides the following navigation commands and corresponding aliases
 > get [auto-completion](#completions).
 
 > **Note:**
-> Repeated uses of `cd-`  keep moving backwards towards the beginning of the stack rather than
-> toggling between the two most recent directories as in vanilla bash, neither will it echo the path
+> Repeated uses of `cd-` keep moving backwards towards the beginning of the stack rather than
+> toggling between the two most recent directories as in vanilla bash, and it does not echo the path
 > of the target directory. Use `Set-RecentLocation` (`cdr`) to toggle between directories and the
 > `-PassThru` switch if you need to output the new directory path.
 
@@ -79,8 +79,8 @@ C:\
 
 ## Parameters
 
-`up`, `cd+`, `cd-`, `cdr` and `cdf` each take an optional argument, `n` which navigates by the given
-number of steps.
+`up`, `cd+` and `cd-` each take an optional argument, `n`, which navigates by the given number of
+steps. For `cdr` and `cdf`, `n` selects the location with that index in the corresponding list.
 
 ```powershell
 [C:/Windows/System32]> .. 2 # or `up 2`
@@ -96,7 +96,7 @@ from the available locations. Given a `NamePart`, _cd-extras_ will match the fir
 leaf name contains the given string. If none is found then it will attempt to match against the
 full path of each candidate directory.
 
-`cdr` and `cdf` use a slightly different name matching logic which is cribbed from [Zoxide][3].
+`cdr` and `cdf` use matching logic based on [Zoxide][3].
 Each command takes one or more `Terms` where each term must match part of a target directory, in order,
 and the _last_ (or only) term must match the target's leaf name.
 
@@ -147,7 +147,7 @@ sessions by default.
 You can opt in to persisting to a CSV file by setting the `RECENT_DIRS_FILE` [option](configuration.md).
 
 ```powershell
-setocd RECENT_DIRS_FILE $env:APPDATA/.recent-dirs
+setocd RECENT_DIRS_FILE $HOME/.recent-dirs.csv
 ```
 
 When a missing CSV file is configured, the current in-memory store is saved to it. An existing file
@@ -160,9 +160,9 @@ The normal maximum size of the datastore - whether persisted or not - is configu
 Any remaining capacity is used for the most recently entered non-bookmarked directories.
 
 You can manually remove entries with the `Remove-RecentLocation` command or by using the `-Prune`
-switch with `Set-RecentLocation` and `Set-FrecentLocation`. This command expects a parameter,
-`Pattern`, which is a PowerShell wildcard pattern used to match against the directory path or a
-complete directory leaf name. If no pattern is given then the current working directory is removed.
+switch with `Set-RecentLocation` and `Set-FrecentLocation`. The optional pattern is a PowerShell
+wildcard matched against the directory path or a complete directory leaf name. If no pattern is
+given then the current working directory is removed.
 
 ```powershell
 [~]> Set-Alias z Set-FrecentLocation
@@ -281,6 +281,9 @@ _cd-extras_ detects _PSReadLine_ options in order to set _IndexedCompletion_ at 
 _PSReadLine_ `MenuComplete` option is bound to at least one key combination then _IndexedCompletion_
 is turned on by default. You can turn it off if you prefer.
 
+When you have already typed a numeric value, such as `cdf 3` or `up 2`, pressing Tab leaves that
+value unchanged. Run the command directly to use the selected index or number of steps.
+
 ```powershell
 [C:/Windows/System32/drivers/etc]> setocd IndexedCompletion 0
 [C:/Windows/System32/drivers/etc]> up <tab><tab>
@@ -387,7 +390,7 @@ expand *children* of the matched path(s). Contents of `CD_PATH` will be included
 
 ## Compatibility
 
-### OS X & Linux
+### macOS and Linux
 
 _cd-extras_ works on non-Windows operating systems. The `IndexedCompletion` option is off by
 default unless you configured PSReadLine with a `MenuComplete` keybinding _before_ importing

@@ -14,7 +14,7 @@ List the matching recent locations instead of changing directory. Equivalent to 
 The current directory is always excluded from the list.
 
 .PARAMETER ListTerms
-Terms to matching when listing recent locations. This can be a single term or a comma or space separated list.
+Terms to match when listing recent locations. This can be a single term or a comma or space separated list.
 The last (or only) term must match the leaf name of a directory in order to be considered a match.
 
 .PARAMETER First

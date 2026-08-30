@@ -22,6 +22,8 @@
 - Normalise custom frecency results, discard invalid results and apply the result limit afterwards.
 - Replace wildcard manifest exports with the explicit 3.0 public command and alias lists.
 - Remove the completion warning beep and report truncated results in the completion tooltip.
+- Increase the default `MaxMenuLength` from 35 to 60.
+- Reduce filesystem path-completion overhead by reusing paths already present on filesystem items.
 
 ### Fixed
 
@@ -31,6 +33,7 @@
 - Validate persisted CSV rows before replacing in-memory history.
 - Prevent ordinary recent entries from displacing bookmarks.
 - Reject missing paths and non-container items when creating bookmarks.
+- Leave explicitly typed numeric navigation values unchanged during tab completion.
 
 ### Breaking changes
 

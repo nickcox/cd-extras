@@ -11,7 +11,7 @@ of a directory in order to be considered a match. The current directory is alway
 the list.
 
 .EXAMPLE
-PS C:\temp> # get the entire list
+PS C:\temp> # list frecent locations
 PS C:\temp> Get-FrecentLocation
 
 n Name             Path

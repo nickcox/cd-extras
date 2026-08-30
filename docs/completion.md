@@ -2,9 +2,9 @@
 
 **Enhanced completion for `cd` and other commands**
 
-`cd-extras` provides enhanced completion for `cd`, `pushd`, `ls`, `Get-Item` and `Invoke-Item`
-by default, expanding all path segments in one go so that you don't have to individually tab
-through each one. The path shortening logic is provided by `Expand-Path` and works as
+`cd-extras` provides enhanced completion for `cd`, `pushd`, `ls`, `Get-Item`, `Invoke-Item` and
+`Expand-Path` by default, expanding all path segments in one go so that you don't have to
+individually tab through each one. The path shortening logic is provided by `Expand-Path` and works as
 [described in the `cd` guide](cd.md#path-shortening).
 
 <!-- TOC -->
@@ -41,10 +41,9 @@ Paths within [`$cde.CD_PATH`](cd.md#cd_path) are included in the completion resu
 
 > **Note:**
 > The total number of completions offered is limited by the `MaxCompletions` [option](configuration.md)
-> or calculated dynamically to fit the screen if `MaxCompletions` is falsy. Although the completions
-> are sorted by type (folders first) and then by name for ease of reading, that sort is applied
-> _after_ the limit has been applied to the original results. Those original results are sorted
-> breadth first in order to keep the completion as responsive as possible.
+> or calculated dynamically to fit the screen when `MaxCompletions` is zero. PowerShell provider
+> enumeration determines which results reach that limit. _cd-extras_ then sorts the selected results
+> by type (directories first) and name for display.
 
 > **Note:**
 > If the number of available completions is greater than `MaxCompletions`, causing the list to be

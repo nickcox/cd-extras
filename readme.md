@@ -25,7 +25,7 @@ Import-Module cd-extras
 Add-Content $PROFILE `n, 'Import-Module cd-extras'
 ```
 
-or get the latest from github:
+or get the latest from GitHub:
 
 ```powershell
 git clone https://github.com/nickcox/cd-extras.git
@@ -65,12 +65,17 @@ Or skip typing `cd` altogether with `AUTO_CD`:
 
 | Command | Alias | Description |
 |---|---|---|
+| `Set-LocationEx` | `cd` | Change directory with cd-extras path handling |
 | `Undo-Location` | `cd-`, `~` | Move backward through location history |
 | `Redo-Location` | `cd+`, `~~` | Move forward through location history |
 | `Step-Up` | `up`, `..` | Move to a parent directory |
 | `Set-RecentLocation` | `cdr` | Jump to a recent directory |
+| `Get-RecentLocation` | None | List recent directories |
 | `Set-FrecentLocation` | `cdf` | Jump using frecency |
+| `Get-FrecentLocation` | None | List directories by frecency |
+| `Remove-RecentLocation` | None | Remove directories from recent history |
 | `Add-Bookmark` | `mark` | Bookmark a directory |
+| `Get-Bookmark` | None | List bookmarked directories |
 | `Remove-Bookmark` | `unmark` | Remove a bookmark |
 | `Get-Ancestors` | `xup` | List ancestor directories |
 | `Get-Stack` | `dirs` | View undo/redo stacks |
@@ -105,6 +110,20 @@ getocd AUTO_CD
 ```
 
 For the full options reference, see [Configuration](docs/configuration.md).
+
+
+## Upgrading from 2.x
+
+Version 3.0 has two intentional breaking changes:
+
+- `Step-Between` and its `cdb` alias have been removed. Use `Set-RecentLocation` or `cdr` to move
+  between recently used directories.
+- The `ToolTipExtraInfo` option has been replaced by `ToolTip`. The new callback receives the
+  completion item and a Boolean indicating whether the results were truncated, and returns the
+  complete tooltip text.
+
+See the [changelog](https://github.com/nickcox/cd-extras/blob/master/CHANGELOG.md) for the complete
+list of changes.
 
 
 ## Compatibility
