@@ -32,7 +32,7 @@ function CompletePaths {
   filter CompletionResult ($isListTruncated = $false) {
     Begin { $seenNames = @{} } # for disambiguation purposes
     Process {
-      $fullPath = $_ | Convert-Path
+      $fullPath = if ($_.PSProvider.Name -eq 'FileSystem') { $_.FullName } else { $_ | Convert-Path }
 
       $completionText =
       if ($wordToComplete -in '.', '..') { $wordToComplete }

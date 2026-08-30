@@ -1855,6 +1855,16 @@ Describe 'cd-extras' {
         $actual[0].CompletionText | Should -BeLike "$root*"
       }
 
+      It 'uses FullName for filesystem completions' {
+        $path = (Resolve-Path 'TestDrive:/powershell/src').ProviderPath
+        Mock Convert-Path { throw 'Convert-Path should not be called for filesystem items' }
+
+        $actual = CompletePaths -dirsOnly -wordToComplete $path
+
+        $actual.CompletionText | Should -BeLike "*powershell${/}src${/}"
+        Assert-MockCalled Convert-Path -Times 0 -Exactly
+      }
+
       It 'expands multiple dots' {
         Set-Location p*\src\Sys*\Format*\common\Utilities
         (CompletePaths -wordToComplete '...').CompletionText | Should -Match 'FormatAndOutput'
